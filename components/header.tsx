@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { ChatbotModal } from "@/components/chatbot-modal"
 
@@ -38,13 +39,14 @@ export function Header() {
 
             {/* Login Button */}
             <div className="flex items-center space-x-4">
-              <Button
-                variant="ghost"
-                className="text-foreground hover:text-primary"
-                onClick={() => setIsChatbotOpen(true)}
-              >
-                로그인
-              </Button>
+              <Link href="/login">
+                <Button
+                  variant="ghost"
+                  className="text-foreground hover:text-primary"
+                >
+                  로그인
+                </Button>
+              </Link>
             </div>
           </div>
         </div>
