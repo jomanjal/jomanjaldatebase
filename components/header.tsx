@@ -29,10 +29,9 @@ export function Header() {
 
             {/* Navigation */}
             <nav className="hidden md:flex items-center space-x-8">
-              <HoverCard>
-                <HoverCardTrigger className="flex items-center space-x-1 text-foreground hover:text-primary transition-colors cursor-pointer">
+              <HoverCard openDelay={0} closeDelay={100}>
+                <HoverCardTrigger className="text-foreground hover:text-primary transition-colors cursor-pointer">
                   <span>GCA 소개</span>
-                  <ChevronDown className="h-4 w-4" />
                 </HoverCardTrigger>
                 <HoverCardContent className="w-48 p-2">
                   <div className="space-y-1">
