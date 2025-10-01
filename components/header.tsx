@@ -61,8 +61,14 @@ export function Header() {
               </a>
             </nav>
 
-            {/* Login Button */}
+            {/* Login and AI Matching Buttons */}
             <div className="flex items-center space-x-4">
+              <Button
+                onClick={() => setIsChatbotOpen(true)}
+                className="bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 text-white font-semibold shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
+              >
+                AI 매칭
+              </Button>
               <Link href="/login">
                 <Button
                   variant="ghost"
