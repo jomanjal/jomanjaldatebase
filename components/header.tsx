@@ -5,11 +5,10 @@ import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { ChatbotModal } from "@/components/chatbot-modal"
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
+  HoverCard,
+  HoverCardContent,
+  HoverCardTrigger,
+} from "@/components/ui/hover-card"
 import { ChevronDown } from "lucide-react"
 
 export function Header() {
@@ -30,26 +29,28 @@ export function Header() {
 
             {/* Navigation */}
             <nav className="hidden md:flex items-center space-x-8">
-              <DropdownMenu>
-                <DropdownMenuTrigger className="flex items-center space-x-1 text-foreground hover:text-primary transition-colors">
+              <HoverCard>
+                <HoverCardTrigger className="flex items-center space-x-1 text-foreground hover:text-primary transition-colors cursor-pointer">
                   <span>GCA 소개</span>
                   <ChevronDown className="h-4 w-4" />
-                </DropdownMenuTrigger>
-                <DropdownMenuContent>
-                  <DropdownMenuItem asChild>
-                    <Link href="#company">회사 소개</Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <Link href="#team">팀 소개</Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <Link href="#history">연혁</Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <Link href="#location">오시는 길</Link>
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
+                </HoverCardTrigger>
+                <HoverCardContent className="w-48 p-2">
+                  <div className="space-y-1">
+                    <Link href="#company" className="block px-3 py-2 text-sm hover:bg-accent rounded-md transition-colors">
+                      회사 소개
+                    </Link>
+                    <Link href="#team" className="block px-3 py-2 text-sm hover:bg-accent rounded-md transition-colors">
+                      팀 소개
+                    </Link>
+                    <Link href="#history" className="block px-3 py-2 text-sm hover:bg-accent rounded-md transition-colors">
+                      연혁
+                    </Link>
+                    <Link href="#location" className="block px-3 py-2 text-sm hover:bg-accent rounded-md transition-colors">
+                      오시는 길
+                    </Link>
+                  </div>
+                </HoverCardContent>
+              </HoverCard>
               <Link href="/coaches" className="text-foreground hover:text-primary transition-colors">
                 코치 목록
               </Link>
