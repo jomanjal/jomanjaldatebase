@@ -182,3 +182,40 @@
 .gentle-float-animation {
   animation: gentle-float 4s ease-in-out infinite;
 }
+
+/* 텍스트 선택 및 우클릭 방지 */
+.no-select {
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+.no-context-menu {
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+/* 개발자도구 감지 및 경고 */
+body {
+  position: relative;
+}
+
+body::before {
+  content: "개발자도구 사용이 감지되었습니다. 콘텐츠 수정을 금지합니다.";
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  background: #ff4444;
+  color: white;
+  padding: 10px;
+  text-align: center;
+  z-index: 9999;
+  display: none;
+  font-weight: bold;
+}
