@@ -23,14 +23,14 @@ export function Header() {
 
             {/* Navigation */}
             <nav className="hidden md:flex items-center space-x-8">
+              <a href="#about" className="text-foreground hover:text-primary transition-colors">
+                GCA 소개
+              </a>
               <Link href="/coaches" className="text-foreground hover:text-primary transition-colors">
                 코치 목록
               </Link>
-              <a href="#lessons" className="text-foreground hover:text-primary transition-colors">
-                수업듣기
-              </a>
-              <a href="#manage" className="text-foreground hover:text-primary transition-colors">
-                수업관리
+              <a href="#reviews" className="text-foreground hover:text-primary transition-colors">
+                수업후기
               </a>
               <a href="#notice" className="text-foreground hover:text-primary transition-colors">
                 공지사항
