@@ -6,7 +6,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Star, Clock, ChevronRight } from "lucide-react"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 
 // 게임 카테고리 데이터
 const gameCategories = [
@@ -107,8 +107,28 @@ const reviews = [
 export default function ReviewsPage() {
   const [selectedCategory, setSelectedCategory] = useState("all")
   const [showPerformanceOnly, setShowPerformanceOnly] = useState(false)
+  const [reviews, setReviews] = useState([])
+  const [loading, setLoading] = useState(true)
 
-  const filteredReviews = reviews.filter(review => {
+  // 서버에서 데이터 가져오기
+  useEffect(() => {
+    async function fetchReviews() {
+      try {
+        const response = await fetch('/api/reviews')
+        const data = await response.json()
+        if (data.success) {
+          setReviews(data.data)
+        }
+      } catch (error) {
+        console.error('리뷰 데이터 로드 실패:', error)
+      } finally {
+        setLoading(false)
+      }
+    }
+    fetchReviews()
+  }, [])
+
+  const filteredReviews = reviews.filter((review: any) => {
     if (showPerformanceOnly && review.rating < 5) return false
     return true
   })
@@ -173,8 +193,14 @@ export default function ReviewsPage() {
       {/* 수업후기 목록 */}
       <section className="py-8">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="space-y-6">
-            {filteredReviews.map((review) => (
+          {loading ? (
+            <div className="text-center py-8">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
+              <p className="mt-4 text-muted-foreground">리뷰를 불러오는 중...</p>
+            </div>
+          ) : (
+            <div className="space-y-6">
+              {filteredReviews.map((review: any) => (
               <Card key={review.id} className="overflow-hidden hover:shadow-lg transition-shadow">
                 <CardContent className="p-6">
                   {/* 후기 헤더 */}
@@ -233,8 +259,9 @@ export default function ReviewsPage() {
                   </div>
                 </CardContent>
               </Card>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
 
           {/* 더보기 버튼 */}
           <div className="text-center mt-8">

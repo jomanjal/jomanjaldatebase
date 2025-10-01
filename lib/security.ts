@@ -118,3 +118,4 @@ export function disableSourceView() {
     window.location.href = '/';
   }
 }
+
