@@ -53,9 +53,9 @@ export function Header() {
               <Link href="/coaches" className="text-foreground hover:text-primary transition-colors">
                 코치 목록
               </Link>
-              <a href="#reviews" className="text-foreground hover:text-primary transition-colors">
+              <Link href="/reviews" className="text-foreground hover:text-primary transition-colors">
                 수업후기
-              </a>
+              </Link>
               <a href="#notice" className="text-foreground hover:text-primary transition-colors">
                 공지사항
               </a>
