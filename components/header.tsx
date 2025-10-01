@@ -23,9 +23,9 @@ export function Header() {
 
             {/* Navigation */}
             <nav className="hidden md:flex items-center space-x-8">
-              <a href="#coaches" className="text-foreground hover:text-primary transition-colors">
-                코치찾기
-              </a>
+              <Link href="/coaches" className="text-foreground hover:text-primary transition-colors">
+                코치 목록
+              </Link>
               <a href="#lessons" className="text-foreground hover:text-primary transition-colors">
                 수업듣기
               </a>
