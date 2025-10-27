@@ -277,11 +277,15 @@ export default function CoachDetailPage({ params }: { params: { id: string } }) 
                       <div className="text-3xl font-bold text-green-600">30,000</div>
                     </div>
 
-                    <Button className="w-full mb-4 bg-gray-800 text-white hover:bg-gray-700">강의 구매</Button>
+                    <Button 
+                      className="w-full mb-4 bg-gray-800 text-white hover:bg-gray-700"
+                      onClick={() => window.open('https://open.kakao.com/o/s6kCFbZh', '_blank')}
+                    >
+                      강의 구매
+                    </Button>
 
                     <div className="space-y-2 text-sm text-muted-foreground">
                       <div>• 총 1개의 커리큘럼 (1시간)</div>
-                      <div>• 가장 빠른 일정 2025-10-27 14:30</div>
                     </div>
                   </CardContent>
                 </Card>
@@ -299,7 +303,11 @@ export default function CoachDetailPage({ params }: { params: { id: string } }) 
                       </div>
                     </div>
 
-                    <Button variant="outline" className="w-full mb-4">
+                    <Button 
+                      variant="outline" 
+                      className="w-full mb-4"
+                      onClick={() => window.open('https://open.kakao.com/o/s6kCFbZh', '_blank')}
+                    >
                       상담하기
                     </Button>
 
