@@ -11,14 +11,14 @@ import { Star, Users, Trophy, Clock } from "lucide-react"
 const coaches = [
   {
     id: 1,
-    name: "발로마스터",
+    name: "Jomanjal",
     game: "발로란트",
     tier: "레디언트",
     experience: "3년",
-    rating: 4.8,
-    students: 85,
-    price: "45,000원/시간",
-    specialties: ["듀얼리스트", "전략", "에이밍"],
+    rating: 5.0,
+    students: 200,
+    price: "30,000원/시간",
+    specialties: ["전략", "에이밍"],
     description: "발로란트 베타부터 플레이한 베테랑 코치입니다.",
     image: "/api/placeholder/150/150"
   }
