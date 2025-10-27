@@ -35,6 +35,11 @@ export default function CoachDetailPage({ params }: { params: { id: string } }) 
   const coachId = parseInt(params.id)
   const coach = coaches.find(c => c.id === coachId)
   const [sortBy, setSortBy] = useState("latest")
+  
+  const handleKakaoChat = () => {
+    const chatUrl = process.env.NEXT_PUBLIC_KAKAO_CHAT_URL || 'https://open.kakao.com/o/s6kCFbZh'
+    window.open(chatUrl, '_blank', 'noopener,noreferrer')
+  }
 
   if (!coach) {
     return (
@@ -279,7 +284,7 @@ export default function CoachDetailPage({ params }: { params: { id: string } }) 
 
                     <Button 
                       className="w-full mb-4 bg-gray-800 text-white hover:bg-gray-700"
-                      onClick={() => window.open('https://open.kakao.com/o/s6kCFbZh', '_blank')}
+                      onClick={handleKakaoChat}
                     >
                       강의 구매
                     </Button>
@@ -306,7 +311,7 @@ export default function CoachDetailPage({ params }: { params: { id: string } }) 
                     <Button 
                       variant="outline" 
                       className="w-full mb-4"
-                      onClick={() => window.open('https://open.kakao.com/o/s6kCFbZh', '_blank')}
+                      onClick={handleKakaoChat}
                     >
                       상담하기
                     </Button>
