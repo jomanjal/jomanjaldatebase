@@ -7,7 +7,6 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Star, Users, Clock, MapPin, Trophy } from "lucide-react"
 import Link from "next/link"
-import { use } from "react"
 
 // 강사 데이터 (나중에 API로 대체)
 const coaches = [
@@ -30,9 +29,8 @@ const coaches = [
   }
 ]
 
-export default function CoachDetailPage({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = use(params)
-  const coachId = parseInt(id)
+export default function CoachDetailPage({ params }: { params: { id: string } }) {
+  const coachId = parseInt(params.id)
   const coach = coaches.find(c => c.id === coachId)
 
   if (!coach) {
