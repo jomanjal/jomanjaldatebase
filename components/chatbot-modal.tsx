@@ -5,11 +5,11 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent } from "@/components/ui/card"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { X, Bot, User } from "lucide-react"
+import { X, Bot, User, Loader2 } from "lucide-react"
 import { submitWaitlist } from "@/actions/notion"
 
 interface ChatMessage {
-  type: "bot" | "user"
+  type: "bot" | "user" | "loading"
   message: string
 }
 
@@ -31,27 +31,64 @@ export function ChatbotModal({ isOpen, onClose }: ChatbotModalProps) {
   const [userInput, setUserInput] = useState("")
   const [userInfo, setUserInfo] = useState<UserInfo>({ name: "", email: "" })
   const [userAnswers, setUserAnswers] = useState<string[]>([])
+  const [selectedGame, setSelectedGame] = useState("")
   const [selectedTier, setSelectedTier] = useState("")
   const [isCompleted, setIsCompleted] = useState(false)
   const [isCollectingInfo, setIsCollectingInfo] = useState(true)
+  const [isSelectingGame, setIsSelectingGame] = useState(false)
   const [isSelectingTier, setIsSelectingTier] = useState(false)
+  const [isProcessingAI, setIsProcessingAI] = useState(false)
 
-  const questions = [
-    "안녕하세요! 먼저 이름과 이메일을 알려주세요.",
-    "어떤 목표로 코칭을 원하시나요?",
-    "당신의 주 게임 티어는 어느 정도인가요?",
-    "코칭에서 가장 중요한 건 무엇인가요?",
+  const games = [
+    "리그 오브 레전드",
+    "발로란트",
+    "오버워치 2",
+    "배틀그라운드",
   ]
 
-  const tierOptions = [
+  const lolTiers = [
+    "아이언",
     "브론즈",
-    "실버", 
+    "실버",
+    "골드",
+    "플래티넘",
+    "에메랄드",
+    "다이아",
+    "마스터",
+    "그랜드마스터",
+    "챌린저",
+  ]
+
+  const valorantTiers = [
+    "아이언",
+    "브론즈",
+    "실버",
     "골드",
     "플래티넘",
     "다이아",
     "초월자",
     "불멸",
     "레디언트",
+  ]
+
+  const getTierOptions = () => {
+    if (selectedGame === "리그 오브 레전드") return lolTiers
+    if (selectedGame === "발로란트") return valorantTiers
+    return lolTiers // 기본값
+  }
+
+  const questions = [
+    "안녕하세요! 먼저 이름과 이메일을 알려주세요.",
+    "배우고 싶으신 게임을 선택해주세요.",
+    "당신의 게임 티어는 어느 정도인가요?",
+    "마지막으로 원하는 매칭 스타일을 입력해주세요.",
+  ]
+
+  const matchingStyleExamples = [
+    "공격적으로 플레이 스타일을 개선하고 싶어요",
+    "전략적 사고와 맵 움직임을 배우고 싶어요",
+    "대인전 실력을 향상시키고 싶어요",
+    "팀 전술과 협동 능력을 키우고 싶어요",
   ]
 
   // 이메일 유효성 검사
@@ -89,6 +126,42 @@ export function ChatbotModal({ isOpen, onClose }: ChatbotModalProps) {
     setTimeout(() => {
       setMessages((prev) => [...prev, { type: "bot", message: questions[1] }])
       setCurrentStep(1)
+      setIsSelectingGame(true)
+    }, 1000)
+  }
+
+  const handleGameSelect = (game: string) => {
+    setSelectedGame(game)
+    const newMessages = [...messages, { type: "user" as const, message: game }]
+    const newAnswers = [...userAnswers, game]
+
+    setMessages(newMessages)
+    setUserAnswers(newAnswers)
+    setIsSelectingGame(false)
+
+    setTimeout(() => {
+      setMessages((prev) => [...prev, { type: "bot", message: questions[2] }])
+      setCurrentStep(2)
+      setIsSelectingTier(true)
+    }, 1000)
+  }
+
+  const handleTierSelect = (tier: string) => {
+    setSelectedTier(tier)
+    const newMessages = [...messages, { type: "user" as const, message: tier }]
+    const newAnswers = [...userAnswers, tier]
+
+    setMessages(newMessages)
+    setUserAnswers(newAnswers)
+    setIsSelectingTier(false)
+
+    setTimeout(() => {
+      setMessages((prev) => [
+        ...prev, 
+        { type: "bot", message: questions[3] },
+        { type: "bot", message: "예시: " + matchingStyleExamples[Math.floor(Math.random() * matchingStyleExamples.length)] }
+      ])
+      setCurrentStep(3)
     }, 1000)
   }
 
@@ -102,61 +175,38 @@ export function ChatbotModal({ isOpen, onClose }: ChatbotModalProps) {
     setUserAnswers(newAnswers)
     setUserInput("")
 
-    if (currentStep === 1) {
-      // 목표 입력 후 티어 선택으로
-      setTimeout(() => {
-        setMessages((prev) => [...prev, { type: "bot", message: questions[2] }])
-        setCurrentStep(2)
-        setIsSelectingTier(true)
-      }, 1000)
-    } else if (currentStep < questions.length - 1) {
-      setTimeout(() => {
-        setMessages((prev) => [...prev, { type: "bot", message: questions[currentStep + 1] }])
-        setCurrentStep(currentStep + 1)
-      }, 1000)
-    } else {
-      setTimeout(() => {
-        setMessages((prev) => [
-          ...prev,
-          {
-            type: "bot",
-            message: "완벽해요! 이제 AI가 당신에게 최적의 강사를 매칭해드릴게요. 웨이팅 리스트에 등록하시겠어요?",
-          },
-        ])
-        setIsCompleted(true)
-      }, 1000)
-    }
-  }
-
-  const handleTierSelect = (tier: string) => {
-    setSelectedTier(tier)
-    const newMessages = [...messages, { type: "user" as const, message: tier }]
-    const newAnswers = [...userAnswers, tier]
-
-    setMessages(newMessages)
-    setUserAnswers(newAnswers)
-    setIsSelectingTier(false)
-
+    // 매칭 스타일 입력 후 완료
     setTimeout(() => {
-      setMessages((prev) => [...prev, { type: "bot", message: questions[3] }])
-      setCurrentStep(3)
+      setMessages((prev) => [
+        ...prev,
+        {
+          type: "bot",
+          message: "완벽해요! 이제 AI가 당신에게 최적의 강사를 매칭해드릴게요.",
+        },
+      ])
+      setIsCompleted(true)
     }, 1000)
   }
 
   const handleFinalSubmit = async () => {
-    // 로딩 상태 표시
+    setIsProcessingAI(true)
+    
+    // AI가 고민하는 로딩 화면
     setMessages((prev) => [
       ...prev,
-      { type: "bot", message: "웨이팅 리스트에 등록 중입니다..." },
+      { type: "loading", message: "AI가 최적의 강사를 찾고 있어요... 🤔" },
     ])
+
+    // 3-5초 AI 처럼 시간 지연
+    await new Promise(resolve => setTimeout(resolve, 3500))
 
     try {
       console.log('웨이팅 리스트 제출 시작:', {
         name: userInfo.name,
         email: userInfo.email,
-        goal: userAnswers[0] || "",
+        game: selectedGame || "",
         tier: selectedTier || "",
-        importantPoint: userAnswers[2] || "",
+        matchingStyle: userAnswers[2] || "",
       })
 
       // 타임아웃 설정 (30초)
@@ -169,7 +219,7 @@ export function ChatbotModal({ isOpen, onClose }: ChatbotModalProps) {
         submitWaitlist({
           name: userInfo.name,
           email: userInfo.email,
-          goal: userAnswers[0] || "",
+          goal: selectedGame || "",
           tier: selectedTier || "",
           importantPoint: userAnswers[2] || "",
         }),
@@ -179,14 +229,18 @@ export function ChatbotModal({ isOpen, onClose }: ChatbotModalProps) {
       console.log('웨이팅 리스트 제출 결과:', result)
 
       if (result.success) {
+        // 로딩 메시지 제거
+        setMessages((prev) => prev.filter(msg => msg.type !== "loading"))
+        
         setMessages((prev) => [
           ...prev,
           {
             type: "bot",
-            message: "웨이팅 리스트 등록 완료! 출시되면 가장 먼저 알려드릴게요. 🎮",
+            message: "🎉 웨이팅 리스트 등록 완료! 출시되면 가장 먼저 알려드릴게요. 감사합니다!",
           },
         ])
       } else {
+        setMessages((prev) => prev.filter(msg => msg.type !== "loading"))
         setMessages((prev) => [
           ...prev,
           {
@@ -194,10 +248,12 @@ export function ChatbotModal({ isOpen, onClose }: ChatbotModalProps) {
             message: `등록 중 오류가 발생했습니다: ${result.error}`,
           },
         ])
+        setIsProcessingAI(false)
         return
       }
     } catch (error) {
       console.error('Error submitting waitlist:', error)
+      setMessages((prev) => prev.filter(msg => msg.type !== "loading"))
       setMessages((prev) => [
         ...prev,
         {
@@ -207,9 +263,12 @@ export function ChatbotModal({ isOpen, onClose }: ChatbotModalProps) {
             : "서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.",
         },
       ])
+      setIsProcessingAI(false)
       return
     }
 
+    setIsProcessingAI(false)
+    
     setTimeout(() => {
       onClose()
       // Reset state
@@ -217,18 +276,38 @@ export function ChatbotModal({ isOpen, onClose }: ChatbotModalProps) {
       setMessages([{ type: "bot", message: "안녕하세요! 먼저 이름과 이메일을 알려주세요." }])
       setUserInfo({ name: "", email: "" })
       setUserAnswers([])
+      setSelectedGame("")
       setSelectedTier("")
       setIsCompleted(false)
       setIsCollectingInfo(true)
+      setIsSelectingGame(false)
       setIsSelectingTier(false)
-    }, 2000)
+    }, 3000)
+  }
+
+  const handleClose = () => {
+    // 모든 상태를 초기화
+    setCurrentStep(0)
+    setMessages([{ type: "bot", message: "안녕하세요! 먼저 이름과 이메일을 알려주세요." }])
+    setUserInfo({ name: "", email: "" })
+    setUserAnswers([])
+    setSelectedGame("")
+    setSelectedTier("")
+    setIsCompleted(false)
+    setIsCollectingInfo(true)
+    setIsSelectingGame(false)
+    setIsSelectingTier(false)
+    setIsProcessingAI(false)
+    
+    // 모달 닫기
+    onClose()
   }
 
   if (!isOpen) return null
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-      <Card className="w-full max-w-md bg-white border border-gray-200 shadow-2xl">
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50" onClick={handleClose}>
+      <Card className="w-full max-w-md bg-white border border-gray-200 shadow-2xl" onClick={(e) => e.stopPropagation()}>
         <CardContent className="p-0">
           {/* Header */}
           <div className="flex items-center justify-between p-4 border-b border-gray-200 bg-gray-50">
@@ -238,7 +317,7 @@ export function ChatbotModal({ isOpen, onClose }: ChatbotModalProps) {
               </div>
               <span className="font-semibold text-foreground">GameCoach.AI</span>
             </div>
-            <Button variant="ghost" size="sm" onClick={onClose} className="hover:bg-gray-200">
+            <Button variant="ghost" size="sm" onClick={handleClose} className="hover:bg-gray-200">
               <X className="w-4 h-4" />
             </Button>
           </div>
@@ -256,9 +335,12 @@ export function ChatbotModal({ isOpen, onClose }: ChatbotModalProps) {
                   className={`max-w-[80%] p-3 rounded-lg shadow-sm ${
                     msg.type === "bot"
                       ? "bg-white text-foreground border border-gray-200"
-                      : "bg-primary text-white ml-auto"
+                      : msg.type === "user"
+                      ? "bg-primary text-white ml-auto"
+                      : "bg-white text-foreground border border-primary/50 flex items-center gap-2"
                   }`}
                 >
+                  {msg.type === "loading" && <Loader2 className="w-4 h-4 animate-spin" />}
                   {msg.message}
                 </div>
                 {msg.type === "user" && (
@@ -297,6 +379,21 @@ export function ChatbotModal({ isOpen, onClose }: ChatbotModalProps) {
                   다음 단계로
                 </Button>
               </div>
+            ) : isSelectingGame ? (
+              <div className="space-y-3">
+                <Select onValueChange={handleGameSelect}>
+                  <SelectTrigger className="w-full border-gray-300 focus:border-primary">
+                    <SelectValue placeholder="게임을 선택하세요" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {games.map((game) => (
+                      <SelectItem key={game} value={game}>
+                        {game}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
             ) : isSelectingTier ? (
               <div className="space-y-3">
                 <Select onValueChange={handleTierSelect}>
@@ -304,7 +401,7 @@ export function ChatbotModal({ isOpen, onClose }: ChatbotModalProps) {
                     <SelectValue placeholder="티어를 선택하세요" />
                   </SelectTrigger>
                   <SelectContent>
-                    {tierOptions.map((tier) => (
+                    {getTierOptions().map((tier) => (
                       <SelectItem key={tier} value={tier}>
                         {tier}
                       </SelectItem>
@@ -317,7 +414,7 @@ export function ChatbotModal({ isOpen, onClose }: ChatbotModalProps) {
                 <Input
                   value={userInput}
                   onChange={(e) => setUserInput(e.target.value)}
-                  placeholder="답변을 입력하세요..."
+                  placeholder="매칭 스타일을 입력하세요..."
                   onKeyPress={(e) => e.key === "Enter" && handleSubmit()}
                   className="flex-1 border-gray-300 focus:border-primary"
                 />
@@ -326,8 +423,12 @@ export function ChatbotModal({ isOpen, onClose }: ChatbotModalProps) {
                 </Button>
               </div>
             ) : (
-              <Button onClick={handleFinalSubmit} className="w-full bg-primary hover:bg-primary/90">
-                웨이팅 리스트 등록하기
+              <Button 
+                onClick={handleFinalSubmit} 
+                disabled={isProcessingAI}
+                className="w-full bg-primary hover:bg-primary/90"
+              >
+                {isProcessingAI ? "처리 중..." : "AI 매칭 시작"}
               </Button>
             )}
           </div>
