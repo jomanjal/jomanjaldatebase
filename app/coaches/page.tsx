@@ -77,7 +77,7 @@ export default function CoachesPage() {
                     </div>
                     <div className="flex items-center text-sm text-muted-foreground">
                       <Star className="w-4 h-4 mr-2 text-yellow-500" />
-                      평점 {coach.rating}
+                      평점 {coach.rating.toFixed(1)}
                     </div>
                   </div>
 
