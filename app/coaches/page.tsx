@@ -6,6 +6,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Star, Users, Trophy, Clock } from "lucide-react"
+import Link from "next/link"
 
 // 예시 코치 데이터
 const coaches = [
@@ -46,8 +47,9 @@ export default function CoachesPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {coaches.map((coach) => (
-              <Card key={coach.id} className="overflow-hidden hover:shadow-lg transition-shadow">
-                <CardContent className="p-6">
+              <Link href={`/coaches/${coach.id}`} key={coach.id} className="block">
+                <Card className="overflow-hidden hover:shadow-lg transition-shadow cursor-pointer h-full">
+                  <CardContent className="p-6">
                   {/* 코치 프로필 */}
                   <div className="flex items-center mb-4">
                     <div className="w-16 h-16 bg-primary/20 rounded-full flex items-center justify-center mr-4">
@@ -109,6 +111,7 @@ export default function CoachesPage() {
                   </div>
                 </CardContent>
               </Card>
+            </Link>
             ))}
           </div>
         </div>
