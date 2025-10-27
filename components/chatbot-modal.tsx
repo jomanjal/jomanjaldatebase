@@ -1,12 +1,13 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useRef, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent } from "@/components/ui/card"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { X, Bot, User, Loader2 } from "lucide-react"
+import { X, Bot, User, Loader2, Star } from "lucide-react"
 import { submitWaitlist } from "@/actions/notion"
+import { findInstructorByGame } from "@/lib/instructors"
 
 interface ChatMessage {
   type: "bot" | "user" | "loading"
@@ -38,6 +39,16 @@ export function ChatbotModal({ isOpen, onClose }: ChatbotModalProps) {
   const [isSelectingGame, setIsSelectingGame] = useState(false)
   const [isSelectingTier, setIsSelectingTier] = useState(false)
   const [isProcessingAI, setIsProcessingAI] = useState(false)
+  const [showInstructorCard, setShowInstructorCard] = useState(false)
+  const [matchedInstructor, setMatchedInstructor] = useState<any>(null)
+  
+  // 메시지 스크롤을 위한 ref
+  const messagesEndRef = useRef<HTMLDivElement>(null)
+
+  // 메시지가 변경될 때마다 스크롤을 맨 아래로 이동
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
+  }, [messages])
 
   const games = [
     "리그 오브 레전드",
@@ -232,13 +243,40 @@ export function ChatbotModal({ isOpen, onClose }: ChatbotModalProps) {
         // 로딩 메시지 제거
         setMessages((prev) => prev.filter(msg => msg.type !== "loading"))
         
-        setMessages((prev) => [
-          ...prev,
-          {
-            type: "bot",
-            message: "🎉 웨이팅 리스트 등록 완료! 출시되면 가장 먼저 알려드릴게요. 감사합니다!",
-          },
-        ])
+        // 선택한 게임에 맞는 강사 찾기
+        const instructor = findInstructorByGame(selectedGame)
+        
+        if (instructor) {
+          setMatchedInstructor(instructor)
+          
+          setMessages((prev) => [
+            ...prev,
+            {
+              type: "bot",
+              message: "🎉 AI가 강사님을 찾았습니다!",
+            },
+          ])
+          
+          // 강사 카드 표시
+          setShowInstructorCard(true)
+          setIsProcessingAI(false)
+        } else {
+          // 강사를 찾지 못했을 경우
+          setMessages((prev) => [
+            ...prev,
+            {
+              type: "bot",
+              message: "AI가 강사님을 찾지 못했습니다. 😔",
+            },
+          ])
+          
+          setIsProcessingAI(false)
+          
+          // 2초 후 자동으로 닫기
+          setTimeout(() => {
+            handleClose()
+          }, 2000)
+        }
       } else {
         setMessages((prev) => prev.filter(msg => msg.type !== "loading"))
         setMessages((prev) => [
@@ -267,22 +305,14 @@ export function ChatbotModal({ isOpen, onClose }: ChatbotModalProps) {
       return
     }
 
-    setIsProcessingAI(false)
-    
-    setTimeout(() => {
-      onClose()
-      // Reset state
-      setCurrentStep(0)
-      setMessages([{ type: "bot", message: "안녕하세요! 먼저 이름과 이메일을 알려주세요." }])
-      setUserInfo({ name: "", email: "" })
-      setUserAnswers([])
-      setSelectedGame("")
-      setSelectedTier("")
-      setIsCompleted(false)
-      setIsCollectingInfo(true)
-      setIsSelectingGame(false)
-      setIsSelectingTier(false)
-    }, 3000)
+    // 자동으로 닫히지 않음 - 사용자가 강사 카드를 확인하고 닫을 수 있게 함
+  }
+  
+  const handleInstructorSelect = () => {
+    // 강사 선택 시 동작 (예: 강사 상세 페이지로 이동 또는 정보 저장)
+    if (matchedInstructor) {
+      window.location.href = `/coaches/${matchedInstructor.id}`
+    }
   }
 
   const handleClose = () => {
@@ -290,14 +320,16 @@ export function ChatbotModal({ isOpen, onClose }: ChatbotModalProps) {
     setCurrentStep(0)
     setMessages([{ type: "bot", message: "안녕하세요! 먼저 이름과 이메일을 알려주세요." }])
     setUserInfo({ name: "", email: "" })
-    setUserAnswers([])
-    setSelectedGame("")
-    setSelectedTier("")
-    setIsCompleted(false)
-    setIsCollectingInfo(true)
-    setIsSelectingGame(false)
-    setIsSelectingTier(false)
-    setIsProcessingAI(false)
+      setUserAnswers([])
+      setSelectedGame("")
+      setSelectedTier("")
+      setIsCompleted(false)
+      setIsCollectingInfo(true)
+      setIsSelectingGame(false)
+      setIsSelectingTier(false)
+      setIsProcessingAI(false)
+      setShowInstructorCard(false)
+      setMatchedInstructor(null)
     
     // 모달 닫기
     onClose()
@@ -350,6 +382,8 @@ export function ChatbotModal({ isOpen, onClose }: ChatbotModalProps) {
                 )}
               </div>
             ))}
+            {/* 스크롤 자동 이동을 위한 요소 */}
+            <div ref={messagesEndRef} />
           </div>
 
           {/* Input area */}
@@ -366,6 +400,7 @@ export function ChatbotModal({ isOpen, onClose }: ChatbotModalProps) {
                   <Input
                     value={userInfo.email}
                     onChange={(e) => setUserInfo(prev => ({ ...prev, email: e.target.value }))}
+                    onKeyPress={(e) => e.key === "Enter" && userInfo.name.trim() && userInfo.email.trim() && handleInfoSubmit()}
                     placeholder="이메일을 입력하세요"
                     type="email"
                     className="border-gray-300 focus:border-primary"
@@ -420,6 +455,48 @@ export function ChatbotModal({ isOpen, onClose }: ChatbotModalProps) {
                 />
                 <Button onClick={handleSubmit} disabled={!userInput.trim()} className="bg-primary hover:bg-primary/90">
                   전송
+                </Button>
+              </div>
+            ) : showInstructorCard && matchedInstructor ? (
+              <div className="space-y-3">
+                <div className="border-2 border-primary rounded-lg p-4 bg-gradient-to-br from-primary/5 to-primary/10">
+                  <div className="flex items-start gap-3">
+                    <div className="w-16 h-16 bg-primary rounded-full flex items-center justify-center flex-shrink-0 overflow-hidden border-2 border-primary/20">
+                      <img 
+                        src={matchedInstructor.image} 
+                        alt={matchedInstructor.name}
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="font-bold text-lg text-foreground">{matchedInstructor.name} 강사</h3>
+                      <p className="text-sm text-muted-foreground mt-1">{matchedInstructor.description}</p>
+                      <div className="flex flex-wrap gap-2 mt-2">
+                        {matchedInstructor.games.map((game: string) => (
+                          <span key={game} className="text-xs bg-primary/20 text-primary px-2 py-1 rounded">{game}</span>
+                        ))}
+                      </div>
+                      <div className="flex items-center gap-2 mt-2">
+                        <Star className="w-3 h-3 fill-yellow-400 text-yellow-400" />
+                        <span className="text-xs font-medium">{matchedInstructor.rating.toFixed(1)}</span>
+                        <span className="text-xs text-muted-foreground">({matchedInstructor.reviews}개 리뷰)</span>
+                      </div>
+                      <p className="text-xs text-muted-foreground mt-2">✨ {matchedInstructor.tier} 티어 · {matchedInstructor.style}</p>
+                    </div>
+                  </div>
+                </div>
+                <Button 
+                  onClick={handleInstructorSelect} 
+                  className="w-full bg-primary hover:bg-primary/90"
+                >
+                  강사 프로필 보기
+                </Button>
+                <Button 
+                  variant="outline" 
+                  onClick={handleClose} 
+                  className="w-full border-gray-300"
+                >
+                  닫기
                 </Button>
               </div>
             ) : (
