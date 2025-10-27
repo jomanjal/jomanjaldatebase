@@ -5,40 +5,13 @@ import { Star } from "lucide-react"
 
 const instructors = [
   {
-    name: "김프로",
-    image: "/professional-gamer-avatar.png",
-    tier: "그랜드마스터",
-    style: "공격적 플레이",
-    rating: 4.9,
-    reviews: 127,
-    specialty: "LoL 미드라이너",
-  },
-  {
-    name: "박코치",
+    name: "발로마스터",
     image: "/esports-coach-avatar.jpg",
-    tier: "챌린저",
-    style: "전략적 분석",
+    tier: "레디언트",
+    style: "듀얼리스트 전략",
     rating: 4.8,
-    reviews: 89,
-    specialty: "발로란트 IGL",
-  },
-  {
-    name: "이선생",
-    image: "/gaming-instructor-avatar.jpg",
-    tier: "다이아몬드",
-    style: "친근한 설명",
-    rating: 4.7,
-    reviews: 156,
-    specialty: "오버워치 서포터",
-  },
-  {
-    name: "최마스터",
-    image: "/game-master-avatar.jpg",
-    tier: "마스터",
-    style: "체계적 훈련",
-    rating: 4.9,
-    reviews: 203,
-    specialty: "스타크래프트2",
+    reviews: 85,
+    specialty: "발로란트",
   },
 ]
 
@@ -55,8 +28,9 @@ export function InstructorProfileSection() {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
-          {instructors.map((instructor, index) => (
+        <div className="flex justify-center mb-12">
+          <div className="grid grid-cols-1 gap-6 max-w-md">
+            {instructors.map((instructor, index) => (
             <Card key={index} className="bg-card border-border hover:border-primary/50 transition-colors">
               <CardContent className="p-6">
                 <div className="text-center mb-4">
