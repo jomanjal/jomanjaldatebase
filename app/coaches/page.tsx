@@ -11,19 +11,6 @@ import { Star, Users, Trophy, Clock } from "lucide-react"
 const coaches = [
   {
     id: 1,
-    name: "김프로",
-    game: "리그 오브 레전드",
-    tier: "챌린저",
-    experience: "5년",
-    rating: 4.9,
-    students: 120,
-    price: "50,000원/시간",
-    specialties: ["정글", "미드", "라인전"],
-    description: "프로팀 코치 출신으로 정글과 미드 라인 전문가입니다.",
-    image: "/api/placeholder/150/150"
-  },
-  {
-    id: 2,
     name: "발로마스터",
     game: "발로란트",
     tier: "레디언트",
@@ -33,58 +20,6 @@ const coaches = [
     price: "45,000원/시간",
     specialties: ["듀얼리스트", "전략", "에이밍"],
     description: "발로란트 베타부터 플레이한 베테랑 코치입니다.",
-    image: "/api/placeholder/150/150"
-  },
-  {
-    id: 3,
-    name: "오버워치킹",
-    game: "오버워치 2",
-    tier: "그랜드마스터",
-    experience: "4년",
-    rating: 4.7,
-    students: 95,
-    price: "40,000원/시간",
-    specialties: ["딜러", "탱커", "팀워크"],
-    description: "오버워치 1부터 2까지 모든 메타를 경험한 전문가입니다.",
-    image: "/api/placeholder/150/150"
-  },
-  {
-    id: 4,
-    name: "배그고수",
-    game: "배틀그라운드",
-    tier: "다이아몬드",
-    experience: "6년",
-    rating: 4.6,
-    students: 110,
-    price: "35,000원/시간",
-    specialties: ["사격", "위치선정", "생존"],
-    description: "배틀그라운드의 모든 맵과 무기를 완벽히 숙지한 코치입니다.",
-    image: "/api/placeholder/150/150"
-  },
-  {
-    id: 5,
-    name: "롤천재",
-    game: "리그 오브 레전드",
-    tier: "그랜드마스터",
-    experience: "7년",
-    rating: 4.9,
-    students: 150,
-    price: "55,000원/시간",
-    specialties: ["탑", "서포터", "매크로"],
-    description: "롤드컵 관전 경험과 다수의 프로 선수 지도 경험이 있습니다.",
-    image: "/api/placeholder/150/150"
-  },
-  {
-    id: 6,
-    name: "발로여신",
-    game: "발로란트",
-    tier: "이모탈",
-    experience: "2년",
-    rating: 4.8,
-    students: 70,
-    price: "42,000원/시간",
-    specialties: ["센티넬", "컨트롤러", "정보수집"],
-    description: "여성 코치로서 다양한 관점에서 게임을 분석합니다.",
     image: "/api/placeholder/150/150"
   }
 ]
