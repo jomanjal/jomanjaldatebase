@@ -2,15 +2,16 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Star } from "lucide-react"
+import Link from "next/link"
 
 const instructors = [
   {
-    name: "발로마스터",
-    image: "/esports-coach-avatar.jpg",
+    name: "Jomanjal",
+    image: "/asd.jpg",
     tier: "레디언트",
-    style: "듀얼리스트 전략",
-    rating: 4.8,
-    reviews: 85,
+    style: "전략, 에이밍",
+    rating: 5.0,
+    reviews: 200,
     specialty: "발로란트",
   },
 ]
@@ -31,34 +32,36 @@ export function InstructorProfileSection() {
         <div className="flex justify-center mb-12">
           <div className="grid grid-cols-1 gap-6 max-w-md">
             {instructors.map((instructor, index) => (
-              <Card key={index} className="bg-card border-border hover:border-primary/50 transition-colors">
-                <CardContent className="p-6">
-                  <div className="text-center mb-4">
-                    <img
-                      src={instructor.image || "/placeholder.svg"}
-                      alt={instructor.name}
-                      className="w-20 h-20 rounded-full mx-auto mb-3 border-2 border-primary/20"
-                    />
-                    <h3 className="text-lg font-semibold">{instructor.name}</h3>
-                    <p className="text-sm text-muted-foreground">{instructor.specialty}</p>
-                  </div>
+              <Link href="/coaches/1" key={index} className="block">
+                <Card className="bg-card border-border hover:border-primary/50 transition-colors cursor-pointer">
+                  <CardContent className="p-6">
+                    <div className="text-center mb-4">
+                      <img
+                        src={instructor.image || "/placeholder.svg"}
+                        alt={instructor.name}
+                        className="w-40 h-40 object-cover rounded-full mx-auto mb-3 border-2 border-primary/20"
+                      />
+                      <h3 className="text-lg font-semibold">{instructor.name}</h3>
+                      <p className="text-sm text-muted-foreground">{instructor.specialty}</p>
+                    </div>
 
-                  <div className="space-y-2 mb-4">
-                    <Badge variant="secondary" className="text-xs">
-                      {instructor.tier}
-                    </Badge>
-                    <Badge variant="outline" className="text-xs ml-2">
-                      {instructor.style}
-                    </Badge>
-                  </div>
+                    <div className="space-y-2 mb-4">
+                      <Badge variant="secondary" className="text-xs">
+                        {instructor.tier}
+                      </Badge>
+                      <Badge variant="outline" className="text-xs ml-2">
+                        {instructor.style}
+                      </Badge>
+                    </div>
 
-                  <div className="flex items-center justify-center gap-1 text-sm">
-                    <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-                    <span className="font-medium">{instructor.rating}</span>
-                    <span className="text-muted-foreground">({instructor.reviews})</span>
-                  </div>
-                </CardContent>
-              </Card>
+                    <div className="flex items-center justify-center gap-1 text-sm">
+                      <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+                      <span className="font-medium">{instructor.rating.toFixed(1)}</span>
+                      <span className="text-muted-foreground">({instructor.reviews})</span>
+                    </div>
+                  </CardContent>
+                </Card>
+              </Link>
             ))}
           </div>
         </div>
