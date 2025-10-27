@@ -72,7 +72,7 @@ export default function CoachDetailPage({ params }: { params: { id: string } }) 
 
                 {/* 강의 소개 탭 */}
                 <TabsContent value="intro" className="space-y-6">
-                  {/* 소개이미지 */}
+                  {/* 소개이미지 - Introduction.png */}
                   <img 
                     src="/Introduction.png" 
                     alt="강의 소개 이미지" 
@@ -232,6 +232,13 @@ export default function CoachDetailPage({ params }: { params: { id: string } }) 
             {/* 우측: 사이드바 (sticky) */}
             <div className="lg:col-span-1">
               <div className="sticky top-24 space-y-4">
+                {/* asd.jpg 이미지 */}
+                <img 
+                  src="/asd.jpg" 
+                  alt="사이드바 이미지" 
+                  className="w-full rounded-lg max-h-64 object-cover" 
+                />
+
                 {/* 할인 배너 */}
                 <div className="bg-blue-500 text-white p-4 rounded-lg flex items-center gap-2">
                   <Gift className="w-5 h-5 flex-shrink-0" />
