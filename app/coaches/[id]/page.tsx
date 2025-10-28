@@ -87,55 +87,69 @@ export default function CoachDetailPage({ params }: { params: { id: string } }) 
                   {/* 강의 소개 */}
                   <Card>
                     <CardContent className="p-6">
-                      <h2 className="text-xl font-bold mb-4">강의 소개</h2>
-                      <p className="text-muted-foreground leading-relaxed mb-4">
-                        저의 에임강의는 다른 강사님들과는 많이 다른 독자적인 커리큘럼입니다! 
-                        수준 높은 강의이며 초보자부터 프로 레벨까지 누구에게나 도움 될 수 있는 구성입니다.
-                      </p>
-                      <ul className="space-y-2 text-sm text-muted-foreground">
-                        <li>• Aim Lab을 활용한 루틴과 과제</li>
-                        <li>• 10가지 시나리오</li>
-                        <li>• 약 2500자의 설명</li>
-                        <li>• 목표 점수 제공</li>
-                        <li>• 무제한 소장 가능한 글로 된 자료</li>
-                        <li>• 마이크 및 디스코드 불필요</li>
-                      </ul>
-                    </CardContent>
-                  </Card>
+                      <h2 className="text-xl font-bold mb-6">강의 소개</h2>
+                      <div className="space-y-4 text-muted-foreground">
+                        <div className="flex items-start gap-2">
+                          <Check className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" />
+                          <div>
+                            <span className="font-semibold">독자적 커리큘럼:</span> 타 강사와 차별화된 수준 높은 독자적인 커리큘럼 제공.
+                          </div>
+                        </div>
 
-                  {/* 강의 대상 */}
-                  <Card>
-                    <CardContent className="p-6">
-                      <h2 className="text-xl font-bold mb-4">강의 대상은 누가 될까요?</h2>
-                      <ul className="space-y-3">
-                        <li className="flex items-start gap-2">
+                        <div className="flex items-start gap-2">
                           <Check className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" />
-                          <span className="text-muted-foreground">나는 분명 뇌지컬은 좋은거 같은데 에임이 안좋다.</span>
-                        </li>
-                        <li className="flex items-start gap-2">
-                          <Check className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" />
-                          <span className="text-muted-foreground">왜 게임을 못 이기는지 모르겠다.</span>
-                        </li>
-                        <li className="flex items-start gap-2">
-                          <Check className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" />
-                          <span className="text-muted-foreground">내 에임 수준을 알고싶다.</span>
-                        </li>
-                      </ul>
-                    </CardContent>
-                  </Card>
+                          <div>
+                            <span className="font-semibold">대상:</span> 초보자부터 프로 레벨까지 모든 수준에 도움되는 구성.
+                          </div>
+                        </div>
 
-                  {/* 강의 효과 */}
-                  <Card>
-                    <CardContent className="p-6">
-                      <h2 className="text-xl font-bold mb-4">강의 효과는 얼마나 될까요?</h2>
-                      <ul className="space-y-3">
-                        <li className="flex items-start gap-2">
+                        <div className="flex items-start gap-2">
                           <Check className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" />
-                          <span className="text-muted-foreground">
-                            제 수업을 들었던 200명이 넘는 수강생분들이 에임상승과 랭크상승을 경험하셨습니다, 고민 하지 마세요!
-                          </span>
-                        </li>
-                      </ul>
+                          <div className="flex-1">
+                            <span className="font-semibold">진행 방식:</span>
+                            <ul className="mt-2 ml-4 space-y-1 text-sm">
+                              <li>ㆍ <strong>Aim Lab(스팀 설치)</strong>을 활용.</li>
+                              <li>ㆍ 강사가 직접 구성한 루틴 및 과제로 진행.</li>
+                              <li>ㆍ 10가지 시나리오로 구성된 루틴 제공.</li>
+                            </ul>
+                          </div>
+                        </div>
+
+                        <div className="flex items-start gap-2">
+                          <Check className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" />
+                          <div className="flex-1">
+                            <span className="font-semibold">콘텐츠 제공:</span>
+                            <ul className="mt-2 ml-4 space-y-1 text-sm">
+                              <li>ㆍ 약 2,500자 분량의 알찬 설명 제공.</li>
+                              <li>ㆍ 명확한 목표 점수 제시 및 변화 체감 가능.</li>
+                              <li>ㆍ 천천히 진행 가능한 루틴 설계.</li>
+                            </ul>
+                          </div>
+                        </div>
+
+                        <div className="flex items-start gap-2">
+                          <Check className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" />
+                          <div className="flex-1">
+                            <span className="font-semibold">장점 (무제한 소장):</span>
+                            <ul className="mt-2 ml-4 space-y-1 text-sm">
+                              <li>ㆍ 글로 모두 작성되어 언제든지 복습 가능.</li>
+                              <li>ㆍ 콘텐츠 무제한 소장 가능.</li>
+                            </ul>
+                          </div>
+                        </div>
+
+                        <div className="flex items-start gap-2">
+                          <Check className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" />
+                          <div className="flex-1">
+                            <span className="font-semibold">강의 환경:</span>
+                            <ul className="mt-2 ml-4 space-y-1 text-sm">
+                              <li>ㆍ 마이크 사용 불필요 (시간대 상관없이 진행 가능).</li>
+                              <li>ㆍ 디스코드 미사용.</li>
+                              <li>ㆍ 더 자세한 내용은 강의에서 확인 가능.</li>
+                            </ul>
+                          </div>
+                        </div>
+                      </div>
                     </CardContent>
                   </Card>
 
@@ -318,7 +332,7 @@ export default function CoachDetailPage({ params }: { params: { id: string } }) 
 
                     <div className="space-y-2 text-sm">
                       <div className="flex items-center gap-2">
-                        <Star className="w-4 h-4 fill-purple-500 text-purple-500" />
+                        <Star className="w-4 h-4 fill-purple-500 textati-purple-500" />
                         <span>5.0 (8)</span>
                       </div>
                       <div>👑 2개의 경력</div>
