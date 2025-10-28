@@ -1,7 +1,8 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { ChatbotModal } from "@/components/chatbot-modal"
 import {
@@ -9,10 +10,25 @@ import {
   HoverCardContent,
   HoverCardTrigger,
 } from "@/components/ui/hover-card"
-import { ChevronDown } from "lucide-react"
+import { isAuthenticated, getCurrentUser, logout } from "@/lib/auth"
 
 export function Header() {
   const [isChatbotOpen, setIsChatbotOpen] = useState(false)
+  const [authenticated, setAuthenticated] = useState(false)
+  const [currentUser, setCurrentUser] = useState<{ username: string } | null>(null)
+  const router = useRouter()
+
+  useEffect(() => {
+    setAuthenticated(isAuthenticated())
+    setCurrentUser(getCurrentUser())
+  }, [])
+
+  const handleLogout = () => {
+    logout()
+    setAuthenticated(false)
+    setCurrentUser(null)
+    router.push("/")
+  }
 
   return (
     <>
@@ -69,14 +85,27 @@ export function Header() {
               >
                 AI 매칭
               </Button>
-              <Link href="/login">
-                <Button
-                  variant="ghost"
-                  className="text-foreground hover:text-primary"
-                >
-                  로그인
-                </Button>
-              </Link>
+              {authenticated ? (
+                <div className="flex items-center space-x-3">
+                  <span className="text-sm text-muted-foreground">{currentUser?.username}</span>
+                  <Button
+                    onClick={handleLogout}
+                    variant="ghost"
+                    className="text-foreground hover:text-primary"
+                  >
+                    로그아웃
+                  </Button>
+                </div>
+              ) : (
+                <Link href="/login">
+                  <Button
+                    variant="ghost"
+                    className="text-foreground hover:text-primary"
+                  >
+                    로그인
+                  </Button>
+                </Link>
+              )}
             </div>
           </div>
         </div>

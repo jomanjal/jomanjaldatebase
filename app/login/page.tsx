@@ -1,28 +1,33 @@
 "use client"
 
 import { useState } from "react"
+import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import Link from "next/link"
+import { login } from "@/lib/auth"
 
 export default function LoginPage() {
-  const [email, setEmail] = useState("")
+  const [username, setUsername] = useState("")
   const [password, setPassword] = useState("")
   const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState("")
+  const router = useRouter()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsLoading(true)
+    setError("")
+    const response = await login(username, password)
     
-    // TODO: 실제 로그인 로직 구현
-    console.log("로그인 시도:", { email, password })
-    
-    // 임시로 2초 후 로딩 해제
-    setTimeout(() => {
+    if (response.success) {
+      router.push("/")
+    } else {
+      setError(response.message || "아이디 또는 비밀번호가 올바르지 않습니다.")
       setIsLoading(false)
-    }, 2000)
+    }
   }
 
   return (
@@ -42,14 +47,19 @@ export default function LoginPage() {
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
+            {error && (
+              <div className="bg-red-50 text-red-600 text-sm p-3 rounded-md border border-red-200">
+                {error}
+              </div>
+            )}
             <div className="space-y-2">
-              <Label htmlFor="email">이메일</Label>
+              <Label htmlFor="username">아이디</Label>
               <Input
-                id="email"
-                type="email"
-                placeholder="이메일을 입력하세요"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                id="username"
+                type="text"
+                placeholder="아이디를 입력하세요"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
                 required
               />
             </div>
@@ -70,12 +80,6 @@ export default function LoginPage() {
           </form>
           
           <div className="mt-6 text-center space-y-2">
-            <p className="text-sm text-muted-foreground">
-              계정이 없으신가요?{" "}
-              <Link href="/signup" className="text-primary hover:underline">
-                회원가입
-              </Link>
-            </p>
             <Link href="/" className="text-sm text-muted-foreground hover:underline">
               홈으로 돌아가기
             </Link>
@@ -85,5 +89,3 @@ export default function LoginPage() {
     </div>
   )
 }
-
-
