@@ -290,10 +290,10 @@ export default function CoachDetailPage({ params }: { params: { id: string } }) 
 
                     <div className="mb-4">
                       <div className="flex items-center gap-2 mb-1">
-                        <span className="text-sm text-muted-foreground line-through">60,000</span>
+                        <span className="text-sm text-muted-foreground line-through">50,000</span>
                         <Badge variant="destructive" className="text-xs">50%</Badge>
                       </div>
-                      <div className="text-3xl font-bold text-green-600">30,000</div>
+                      <div className="text-3xl font-bold text-green-600">25,000</div>
                     </div>
 
                     <Button 
