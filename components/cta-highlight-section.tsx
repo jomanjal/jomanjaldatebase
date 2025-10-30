@@ -23,7 +23,7 @@ export function CTAHighlightSection() {
           className="bg-primary hover:bg-primary/90 text-primary-foreground px-12 py-6 text-xl font-semibold rounded-xl glow-animation"
           onClick={() => setIsChatbotOpen(true)}
         >
-          웨이팅 리스트 등록하기
+          AI 매칭 시작하기
         </Button>
 
         <p className="text-sm text-muted-foreground mt-4">출시 알림을 가장 먼저 받아보세요</p>
