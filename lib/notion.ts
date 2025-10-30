@@ -9,13 +9,17 @@ console.log('NOTION_API_KEY starts with ntn_:', process.env.NOTION_API_KEY?.star
 console.log('DATABASE_ID exists:', !!process.env.NOTION_DATABASE_ID)
 console.log('DATABASE_ID length:', process.env.NOTION_DATABASE_ID?.length || 0)
 
+// 환경 변수 전처리: 개행/공백 제거
+const NOTION_API_KEY = (process.env.NOTION_API_KEY || '').trim()
+let DATABASE_ID_RAW = (process.env.NOTION_DATABASE_ID || '').trim()
+
 // Notion 클라이언트 초기화
 export const notion = new Client({
-  auth: process.env.NOTION_API_KEY,
+  auth: NOTION_API_KEY,
 })
 
-// 데이터베이스 ID
-export const DATABASE_ID = process.env.NOTION_DATABASE_ID
+// 데이터베이스 ID (하이픈 보정 전 원본)
+export const DATABASE_ID = DATABASE_ID_RAW
 
 // 웨이팅 리스트 데이터 타입
 export interface WaitlistData {
@@ -33,14 +37,14 @@ export async function addToWaitlist(data: WaitlistData) {
   console.log('API Key check:', process.env.NOTION_API_KEY ? 'Present' : 'Missing')
   
   // API 키 확인
-  if (!process.env.NOTION_API_KEY) {
+  if (!NOTION_API_KEY) {
     return { 
       success: false, 
       error: 'NOTION_API_KEY가 설정되지 않았습니다. .env.local 파일을 확인하세요.' 
     }
   }
   
-  if (!process.env.NOTION_DATABASE_ID) {
+  if (!DATABASE_ID_RAW) {
     return { 
       success: false, 
       error: 'NOTION_DATABASE_ID가 설정되지 않았습니다. .env.local 파일을 확인하세요.' 
@@ -49,7 +53,7 @@ export async function addToWaitlist(data: WaitlistData) {
   
   try {
     // Database ID 형식 확인 및 변환
-    let databaseId = DATABASE_ID!
+    let databaseId = DATABASE_ID_RAW!
     
     // 하이픈이 없으면 추가 (UUID 형식으로)
     if (databaseId && !databaseId.includes('-') && databaseId.length === 32) {
