@@ -12,7 +12,8 @@ import {
   ListChecks,
   LogOut,
   Shield,
-  UserCircle
+  UserCircle,
+  Home
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 
@@ -129,6 +130,22 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                       <Link href="/admin/waitlist">
                         <ListChecks className="w-5 h-5" />
                         <span>웨이팅 리스트</span>
+                      </Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                </SidebarMenu>
+              </SidebarGroupContent>
+            </SidebarGroup>
+
+            {/* 홈으로 이동 링크 */}
+            <SidebarGroup>
+              <SidebarGroupContent>
+                <SidebarMenu>
+                  <SidebarMenuItem>
+                    <SidebarMenuButton asChild>
+                      <Link href="/">
+                        <Home className="w-5 h-5" />
+                        <span>홈으로</span>
                       </Link>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
