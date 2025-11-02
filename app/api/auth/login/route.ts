@@ -70,11 +70,25 @@ export async function POST(request: NextRequest) {
     })
 
     return response
-  } catch (error) {
+  } catch (error: any) {
     console.error('Login error:', error)
+    console.error('Error details:', {
+      message: error.message,
+      code: error.code,
+      stack: error.stack,
+    })
+
+    // 데이터베이스 연결 오류
+    if (error.code === 'ECONNREFUSED' || error.code === 'ENOTFOUND' || error.message?.includes('connect')) {
+      return NextResponse.json({ 
+        success: false, 
+        message: '데이터베이스 연결에 실패했습니다. 잠시 후 다시 시도해주세요.'
+      }, { status: 503 })
+    }
+
     return NextResponse.json({ 
       success: false, 
-      message: '로그인 중 오류가 발생했습니다.' 
+      message: error.message || '로그인 중 오류가 발생했습니다.'
     }, { status: 500 })
   }
 }
