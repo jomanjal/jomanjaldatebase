@@ -32,10 +32,33 @@ export async function GET(
       }, { status: 404 })
     }
 
-    // specialties 파싱
+    // specialties, curriculumItems 파싱
+    let curriculumItemsParsed: Array<{ title: string; duration: string }> = []
+    if (coach.curriculumItems) {
+      try {
+        const parsed = JSON.parse(coach.curriculumItems)
+        // 문자열 배열 형식 ("title|duration")인 경우 객체 배열로 변환
+        if (Array.isArray(parsed)) {
+          if (typeof parsed[0] === 'string') {
+            // "title|duration" 형식
+            curriculumItemsParsed = parsed.map((item: string) => {
+              const [title, duration] = item.split('|')
+              return { title: title || '', duration: duration || '' }
+            })
+          } else {
+            // 이미 객체 배열 형식
+            curriculumItemsParsed = parsed
+          }
+        }
+      } catch {
+        curriculumItemsParsed = []
+      }
+    }
+    
     const formattedCoach = {
       ...coach,
       specialties: coach.specialties ? JSON.parse(coach.specialties) : [],
+      curriculumItems: curriculumItemsParsed,
     }
 
     return NextResponse.json({
@@ -53,7 +76,7 @@ export async function GET(
 
 /**
  * 코치 수정 (PUT)
- * 관리자 권한 필요
+ * 관리자 권한 또는 코치 본인만 수정 가능
  */
 export async function PUT(
   request: NextRequest,
@@ -62,11 +85,11 @@ export async function PUT(
   try {
     // 인증 확인
     const user = await getAuthenticatedUser(request)
-    if (!user || !user.isAdmin) {
+    if (!user) {
       return NextResponse.json({
         success: false,
-        message: '관리자 권한이 필요합니다.'
-      }, { status: 403 })
+        message: '인증이 필요합니다.'
+      }, { status: 401 })
     }
 
     const id = parseInt(params.id)
@@ -75,6 +98,28 @@ export async function PUT(
         success: false,
         message: '유효하지 않은 ID입니다.'
       }, { status: 400 })
+    }
+
+    // 코치 정보 조회
+    const [coach] = await db.select()
+      .from(coaches)
+      .where(eq(coaches.id, id))
+      .limit(1)
+
+    if (!coach) {
+      return NextResponse.json({
+        success: false,
+        message: '코치를 찾을 수 없습니다.'
+      }, { status: 404 })
+    }
+
+    // 권한 확인: 관리자이거나 본인 코치 프로필만 수정 가능
+    const isOwnProfile = user.role === 'coach' && coach.userId === user.userId
+    if (!user.isAdmin && !isOwnProfile) {
+      return NextResponse.json({
+        success: false,
+        message: '수정 권한이 없습니다.'
+      }, { status: 403 })
     }
 
     const body = await request.json()
@@ -86,7 +131,11 @@ export async function PUT(
       price,
       specialties,
       description,
-      verified,
+      introductionImage,
+      introductionContent,
+      curriculumItems,
+      totalCourseTime,
+      verified, // 코치는 verified 수정 불가 (관리자만 가능)
     } = body
 
     // 업데이트할 데이터 구성
@@ -98,7 +147,14 @@ export async function PUT(
     if (price !== undefined) updateData.price = price
     if (specialties !== undefined) updateData.specialties = JSON.stringify(specialties)
     if (description !== undefined) updateData.description = description
-    if (verified !== undefined) updateData.verified = verified
+    if (introductionImage !== undefined) updateData.introductionImage = introductionImage
+    if (introductionContent !== undefined) updateData.introductionContent = introductionContent
+    if (curriculumItems !== undefined) updateData.curriculumItems = JSON.stringify(curriculumItems)
+    if (totalCourseTime !== undefined) updateData.totalCourseTime = totalCourseTime
+    // verified는 관리자만 수정 가능
+    if (verified !== undefined && user.isAdmin) {
+      updateData.verified = verified
+    }
     updateData.updatedAt = new Date()
 
     // 업데이트
@@ -114,10 +170,11 @@ export async function PUT(
       }, { status: 404 })
     }
 
-    // specialties 파싱
+    // specialties, curriculumItems 파싱
     const formattedCoach = {
       ...updated,
       specialties: updated.specialties ? JSON.parse(updated.specialties) : [],
+      curriculumItems: updated.curriculumItems ? JSON.parse(updated.curriculumItems) : [],
     }
 
     return NextResponse.json({

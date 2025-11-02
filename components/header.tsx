@@ -105,6 +105,16 @@ export function Header() {
                   </Button>
                 </Link>
               )}
+              {authenticated && currentUser?.role === 'coach' && (
+                <Link href="/my">
+                  <Button
+                    variant="outline"
+                    className="border-primary text-primary hover:bg-primary/10"
+                  >
+                    마이페이지
+                  </Button>
+                </Link>
+              )}
               {authenticated ? (
                 <div className="flex items-center space-x-3">
                   <span className="text-sm text-muted-foreground">{currentUser?.username}</span>

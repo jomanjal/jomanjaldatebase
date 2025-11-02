@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import { coaches } from '@/lib/db/schema'
-import { eq, like, desc } from 'drizzle-orm'
+import { eq, like, desc, and } from 'drizzle-orm'
 import { getAuthenticatedUser } from '@/lib/auth-server'
 
 /**
@@ -35,16 +35,28 @@ export async function GET(request: NextRequest) {
     }
 
     // 쿼리 빌드
-    let query = db.select().from(coaches)
+    const conditions = []
 
     // 검색 필터
     if (search) {
-      query = query.where(like(coaches.name, `%${search}%`)) as any
+      conditions.push(like(coaches.name, `%${search}%`))
     }
 
     // 전문 분야 필터
     if (specialty !== 'all') {
-      query = query.where(eq(coaches.specialty, specialty)) as any
+      conditions.push(eq(coaches.specialty, specialty))
+    }
+
+    // 일반 사용자는 verified되고 active인 코치만 보기
+    if (!isAdmin) {
+      conditions.push(eq(coaches.verified, true))
+      conditions.push(eq(coaches.active, true))
+    }
+
+    // 조건 적용
+    let query = db.select().from(coaches)
+    if (conditions.length > 0) {
+      query = query.where(and(...conditions)) as any
     }
 
     // 최신순 정렬
