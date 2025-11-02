@@ -48,7 +48,20 @@ export default function CoachesManagementPage() {
   })
   
   const games = ["all", "리그 오브 레전드", "발로란트", "오버워치 2", "배틀그라운드"]
-  const tierOptions = ["언랭크", "아이언", "브론즈", "실버", "골드", "플래티넘", "다이아", "마스터", "그랜드마스터", "챌린저"]
+  
+  // 게임별 티어 옵션 (강의관리와 동일)
+  const gameTiers: Record<string, string[]> = {
+    "리그 오브 레전드": ["아이언", "브론즈", "실버", "골드", "플래티넘", "에메랄드", "다이아", "마스터", "그랜드마스터", "챌린저"],
+    "발로란트": ["아이언", "브론즈", "실버", "골드", "플래티넘", "다이아", "초월자", "불멸", "레디언트"],
+    "오버워치 2": ["브론즈", "실버", "골드", "플래티넘", "다이아", "마스터", "그랜드마스터"],
+    "배틀그라운드": ["브론즈", "실버", "골드", "플래티넘", "다이아", "마스터"],
+  }
+  
+  // 현재 선택한 게임에 해당하는 티어 옵션 가져오기
+  const getTierOptions = () => {
+    if (!formData.specialty) return []
+    return gameTiers[formData.specialty] || []
+  }
 
   // 코치 목록 조회
   const fetchCoaches = async () => {
@@ -92,6 +105,14 @@ export default function CoachesManagementPage() {
       verified: false,
     })
     setIsAddDialogOpen(true)
+  }
+  
+  // 게임 변경 시 티어 처리
+  const handleSpecialtyChange = (value: string) => {
+    const newTierOptions = gameTiers[value] || []
+    // 현재 티어가 새 게임의 티어 목록에 없으면 빈 문자열로 설정
+    const newTier = formData.tier && newTierOptions.includes(formData.tier) ? formData.tier : ""
+    setFormData({ ...formData, specialty: value, tier: newTier })
   }
 
   const handleEditCoach = (coach: Coach) => {
@@ -399,7 +420,7 @@ export default function CoachesManagementPage() {
               </div>
               <div className="grid gap-2">
                 <Label htmlFor="specialty">전문 분야 *</Label>
-                <Select value={formData.specialty} onValueChange={(value) => setFormData({ ...formData, specialty: value })}>
+                <Select value={formData.specialty} onValueChange={handleSpecialtyChange}>
                   <SelectTrigger>
                     <SelectValue placeholder="게임 선택" />
                   </SelectTrigger>
@@ -414,12 +435,12 @@ export default function CoachesManagementPage() {
             <div className="grid grid-cols-2 gap-4">
               <div className="grid gap-2">
                 <Label htmlFor="tier">티어 *</Label>
-                <Select value={formData.tier} onValueChange={(value) => setFormData({ ...formData, tier: value })}>
+                <Select value={formData.tier} onValueChange={(value) => setFormData({ ...formData, tier: value })} disabled={!formData.specialty}>
                   <SelectTrigger>
-                    <SelectValue placeholder="티어 선택" />
+                    <SelectValue placeholder={formData.specialty ? "티어 선택" : "게임을 먼저 선택하세요"} />
                   </SelectTrigger>
                   <SelectContent>
-                    {tierOptions.map(tier => (
+                    {getTierOptions().map(tier => (
                       <SelectItem key={tier} value={tier}>{tier}</SelectItem>
                     ))}
                   </SelectContent>
@@ -507,7 +528,7 @@ export default function CoachesManagementPage() {
               </div>
               <div className="grid gap-2">
                 <Label htmlFor="edit-specialty">전문 분야 *</Label>
-                <Select value={formData.specialty} onValueChange={(value) => setFormData({ ...formData, specialty: value })}>
+                <Select value={formData.specialty} onValueChange={handleSpecialtyChange}>
                   <SelectTrigger>
                     <SelectValue placeholder="게임 선택" />
                   </SelectTrigger>
@@ -522,12 +543,12 @@ export default function CoachesManagementPage() {
             <div className="grid grid-cols-2 gap-4">
               <div className="grid gap-2">
                 <Label htmlFor="edit-tier">티어 *</Label>
-                <Select value={formData.tier} onValueChange={(value) => setFormData({ ...formData, tier: value })}>
+                <Select value={formData.tier} onValueChange={(value) => setFormData({ ...formData, tier: value })} disabled={!formData.specialty}>
                   <SelectTrigger>
-                    <SelectValue placeholder="티어 선택" />
+                    <SelectValue placeholder={formData.specialty ? "티어 선택" : "게임을 먼저 선택하세요"} />
                   </SelectTrigger>
                   <SelectContent>
-                    {tierOptions.map(tier => (
+                    {getTierOptions().map(tier => (
                       <SelectItem key={tier} value={tier}>{tier}</SelectItem>
                     ))}
                   </SelectContent>
