@@ -4,8 +4,27 @@ import { users } from '@/lib/db/schema'
 import { eq } from 'drizzle-orm'
 import bcrypt from 'bcryptjs'
 import { generateToken } from '@/lib/jwt'
+import { rateLimit, getClientIp } from '@/lib/rate-limit'
 
 export async function POST(request: NextRequest) {
+  // Rate Limiting: IP당 5회/분
+  const ip = getClientIp(request)
+  const rateLimitResult = rateLimit(5, 60000)(request) // 5회/1분
+  
+  if (!rateLimitResult.allowed) {
+    return NextResponse.json({
+      success: false,
+      message: '너무 많은 요청이 발생했습니다. 잠시 후 다시 시도해주세요.',
+    }, {
+      status: 429,
+      headers: {
+        'X-RateLimit-Limit': '5',
+        'X-RateLimit-Remaining': rateLimitResult.remaining.toString(),
+        'X-RateLimit-Reset': new Date(rateLimitResult.resetTime).toISOString(),
+      },
+    })
+  }
+
   try {
     const { email, password } = await request.json()
 
@@ -88,7 +107,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ 
       success: false, 
-      message: error.message || '로그인 중 오류가 발생했습니다.'
+      message: '로그인 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.'
     }, { status: 500 })
   }
 }

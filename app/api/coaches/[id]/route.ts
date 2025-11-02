@@ -46,7 +46,7 @@ export async function GET(
     console.error('Coach GET error:', error)
     return NextResponse.json({
       success: false,
-      message: '코치 조회 중 오류가 발생했습니다.'
+      message: '코치 조회 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.'
     }, { status: 500 })
   }
 }
@@ -129,7 +129,7 @@ export async function PUT(
     console.error('Coach PUT error:', error)
     return NextResponse.json({
       success: false,
-      message: '코치 수정 중 오류가 발생했습니다.'
+      message: '코치 수정 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.'
     }, { status: 500 })
   }
 }
@@ -189,7 +189,7 @@ export async function DELETE(
 
     return NextResponse.json({
       success: false,
-      message: '코치 삭제 중 오류가 발생했습니다.'
+      message: '코치 삭제 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.'
     }, { status: 500 })
   }
 }

@@ -3,6 +3,7 @@ import { db } from '@/lib/db'
 import { users } from '@/lib/db/schema'
 import { eq } from 'drizzle-orm'
 import { requireAdmin } from '@/lib/auth-server'
+import { rateLimit } from '@/lib/rate-limit'
 
 /**
  * 유저 상세 조회 (GET)
@@ -12,6 +13,22 @@ export async function GET(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
+  // Rate Limiting: IP당 30회/분
+  const rateLimitResult = rateLimit(30, 60000)(request)
+  if (!rateLimitResult.allowed) {
+    return NextResponse.json({
+      success: false,
+      message: '너무 많은 요청이 발생했습니다. 잠시 후 다시 시도해주세요.',
+    }, {
+      status: 429,
+      headers: {
+        'X-RateLimit-Limit': '30',
+        'X-RateLimit-Remaining': rateLimitResult.remaining.toString(),
+        'X-RateLimit-Reset': new Date(rateLimitResult.resetTime).toISOString(),
+      },
+    })
+  }
+
   try {
     // 관리자 권한 확인
     await requireAdmin(request)
@@ -56,7 +73,7 @@ export async function GET(
     
     return NextResponse.json({
       success: false,
-      message: '유저 조회 중 오류가 발생했습니다.'
+      message: '유저 조회 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.'
     }, { status: 500 })
   }
 }
@@ -70,6 +87,22 @@ export async function PATCH(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
+  // Rate Limiting: IP당 20회/분
+  const rateLimitResult = rateLimit(20, 60000)(request)
+  if (!rateLimitResult.allowed) {
+    return NextResponse.json({
+      success: false,
+      message: '너무 많은 요청이 발생했습니다. 잠시 후 다시 시도해주세요.',
+    }, {
+      status: 429,
+      headers: {
+        'X-RateLimit-Limit': '20',
+        'X-RateLimit-Remaining': rateLimitResult.remaining.toString(),
+        'X-RateLimit-Reset': new Date(rateLimitResult.resetTime).toISOString(),
+      },
+    })
+  }
+
   try {
     // 관리자 권한 확인
     const adminUser = await requireAdmin(request)
@@ -174,7 +207,7 @@ export async function PATCH(
 
     return NextResponse.json({
       success: false,
-      message: '유저 수정 중 오류가 발생했습니다.'
+      message: '유저 수정 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.'
     }, { status: 500 })
   }
 }
@@ -187,6 +220,22 @@ export async function DELETE(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
+  // Rate Limiting: IP당 10회/분 (삭제는 더 엄격하게)
+  const rateLimitResult = rateLimit(10, 60000)(request)
+  if (!rateLimitResult.allowed) {
+    return NextResponse.json({
+      success: false,
+      message: '너무 많은 요청이 발생했습니다. 잠시 후 다시 시도해주세요.',
+    }, {
+      status: 429,
+      headers: {
+        'X-RateLimit-Limit': '10',
+        'X-RateLimit-Remaining': rateLimitResult.remaining.toString(),
+        'X-RateLimit-Reset': new Date(rateLimitResult.resetTime).toISOString(),
+      },
+    })
+  }
+
   try {
     // 관리자 권한 확인
     const adminUser = await requireAdmin(request)
@@ -241,7 +290,7 @@ export async function DELETE(
     
     return NextResponse.json({
       success: false,
-      message: '유저 삭제 중 오류가 발생했습니다.'
+      message: '유저 삭제 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.'
     }, { status: 500 })
   }
 }

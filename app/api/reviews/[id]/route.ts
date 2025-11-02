@@ -53,7 +53,7 @@ export async function GET(
     console.error('Review GET error:', error)
     return NextResponse.json({
       success: false,
-      message: '리뷰 조회 중 오류가 발생했습니다.'
+      message: '리뷰 조회 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.'
     }, { status: 500 })
   }
 }
@@ -140,7 +140,7 @@ export async function PATCH(
     console.error('Review PATCH error:', error)
     return NextResponse.json({
       success: false,
-      message: '리뷰 수정 중 오류가 발생했습니다.'
+      message: '리뷰 수정 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.'
     }, { status: 500 })
   }
 }
@@ -217,7 +217,7 @@ export async function DELETE(
     console.error('Review DELETE error:', error)
     return NextResponse.json({
       success: false,
-      message: '리뷰 삭제 중 오류가 발생했습니다.'
+      message: '리뷰 삭제 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.'
     }, { status: 500 })
   }
 }

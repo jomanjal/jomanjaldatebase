@@ -124,12 +124,17 @@ export default function WaitlistManagementPage() {
             <div className="flex flex-col md:flex-row gap-4">
               <div className="flex-1 relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
-                <Input
-                  placeholder="이름 또는 이메일로 검색..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-10"
-                />
+                            <Input
+                              placeholder="이름 또는 이메일로 검색... (최대 100자)"
+                              value={searchQuery}
+                              onChange={(e) => {
+                                if (e.target.value.length <= 100) {
+                                  setSearchQuery(e.target.value)
+                                }
+                              }}
+                              className="pl-10"
+                              maxLength={100}
+                            />
               </div>
               <Button
                 variant="outline"

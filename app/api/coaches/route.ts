@@ -14,6 +14,14 @@ export async function GET(request: NextRequest) {
     const specialty = searchParams.get('specialty') || 'all'
     const isAdmin = searchParams.get('admin') === 'true'
 
+    // 검색어 길이 제한
+    if (search.length > 100) {
+      return NextResponse.json({
+        success: false,
+        message: '검색어는 100자를 초과할 수 없습니다.'
+      }, { status: 400 })
+    }
+
     // 관리자 권한 확인 (필요시)
     let user = null
     if (isAdmin) {
@@ -57,7 +65,7 @@ export async function GET(request: NextRequest) {
     console.error('Coaches GET error:', error)
     return NextResponse.json({
       success: false,
-      message: '코치 조회 중 오류가 발생했습니다.'
+      message: '코치 조회 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.'
     }, { status: 500 })
   }
 }
@@ -139,7 +147,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       success: false,
-      message: '코치 추가 중 오류가 발생했습니다.'
+      message: '코치 추가 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.'
     }, { status: 500 })
   }
 }

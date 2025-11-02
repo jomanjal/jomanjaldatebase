@@ -3,8 +3,27 @@ import { db } from '@/lib/db'
 import { users } from '@/lib/db/schema'
 import { eq } from 'drizzle-orm'
 import bcrypt from 'bcryptjs'
+import { rateLimit, getClientIp } from '@/lib/rate-limit'
 
 export async function POST(request: NextRequest) {
+  // Rate Limiting: IP당 3회/시간
+  const ip = getClientIp(request)
+  const rateLimitResult = rateLimit(3, 3600000)(request) // 3회/1시간
+  
+  if (!rateLimitResult.allowed) {
+    return NextResponse.json({
+      success: false,
+      message: '너무 많은 요청이 발생했습니다. 1시간 후 다시 시도해주세요.',
+    }, {
+      status: 429,
+      headers: {
+        'X-RateLimit-Limit': '3',
+        'X-RateLimit-Remaining': rateLimitResult.remaining.toString(),
+        'X-RateLimit-Reset': new Date(rateLimitResult.resetTime).toISOString(),
+      },
+    })
+  }
+
   try {
     const { email, nickname, password, game, level } = await request.json()
 
@@ -13,6 +32,14 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({
         success: false,
         message: '이메일, 닉네임, 비밀번호는 필수 입력 항목입니다.'
+      }, { status: 400 })
+    }
+
+    // 이메일 길이 검증
+    if (email.length > 255) {
+      return NextResponse.json({
+        success: false,
+        message: '이메일은 255자를 초과할 수 없습니다.'
       }, { status: 400 })
     }
 
@@ -127,7 +154,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       success: false,
-      message: error.message || '회원가입 중 오류가 발생했습니다.'
+      message: '회원가입 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.'
     }, { status: 500 })
   }
 }

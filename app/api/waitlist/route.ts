@@ -25,6 +25,14 @@ export async function GET(request: NextRequest) {
     const game = searchParams.get('game') || 'all'
     const contacted = searchParams.get('contacted') // 'true', 'false', 또는 null
 
+    // 검색어 길이 제한
+    if (search.length > 100) {
+      return NextResponse.json({
+        success: false,
+        message: '검색어는 100자를 초과할 수 없습니다.'
+      }, { status: 400 })
+    }
+
     // 쿼리 빌드
     let query = db.select().from(waitlist)
 
@@ -62,7 +70,7 @@ export async function GET(request: NextRequest) {
     console.error('Waitlist GET error:', error)
     return NextResponse.json({ 
       success: false, 
-      message: '웨이팅 리스트 조회 중 오류가 발생했습니다.' 
+      message: '웨이팅 리스트 조회 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.' 
     }, { status: 500 })
   }
 }

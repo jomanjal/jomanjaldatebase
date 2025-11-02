@@ -54,7 +54,7 @@ export async function PATCH(
     console.error('Waitlist PATCH error:', error)
     return NextResponse.json({ 
       success: false, 
-      message: '업데이트 중 오류가 발생했습니다.' 
+      message: '업데이트 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.' 
     }, { status: 500 })
   }
 }
@@ -105,7 +105,7 @@ export async function DELETE(
     console.error('Waitlist DELETE error:', error)
     return NextResponse.json({ 
       success: false, 
-      message: '삭제 중 오류가 발생했습니다.' 
+      message: '삭제 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.' 
     }, { status: 500 })
   }
 }

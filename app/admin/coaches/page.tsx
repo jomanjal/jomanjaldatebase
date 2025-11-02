@@ -222,10 +222,15 @@ export default function CoachesManagementPage() {
             <div className="flex-1 relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
               <Input
-                placeholder="코치 이름 또는 게임으로 검색..."
+                placeholder="코치 이름 또는 게임으로 검색... (최대 100자)"
                 value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
+                onChange={(e) => {
+                  if (e.target.value.length <= 100) {
+                    setSearchQuery(e.target.value)
+                  }
+                }}
                 className="pl-10"
+                maxLength={100}
               />
             </div>
             <div className="flex gap-2 flex-wrap">
