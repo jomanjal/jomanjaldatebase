@@ -105,10 +105,10 @@ export default function CoachDetailPage({ params }: { params: { id: string } }) 
               ...result.data,
               introductionItems,
             })
-          } else if (coachId === 0) {
-            // 참고용 하드코딩 데이터 (ID가 0인 경우)
+          } else if (coachId === 0 || coachId === 1) {
+            // 참고용 하드코딩 데이터 (ID가 0 또는 1인 경우 - Jomanjal)
             const referenceCoach: Coach = {
-              id: 0,
+              id: coachId,
               userId: null,
     name: "Jomanjal",
               specialty: "발로란트",
@@ -176,8 +176,8 @@ export default function CoachDetailPage({ params }: { params: { id: string } }) 
     async function fetchReviews() {
       setReviewsLoading(true)
       try {
-        // 하드코딩된 Jomanjal 코치(ID: 0)의 경우 하드코딩된 후기 사용
-        if (coachId === 0) {
+        // 하드코딩된 Jomanjal 코치(ID: 0 또는 1)의 경우 하드코딩된 후기 사용
+        if (coachId === 0 || coachId === 1) {
           // 즉시 하드코딩된 후기 설정 (비동기 없이)
           const referenceReviews: Review[] = [
             {
