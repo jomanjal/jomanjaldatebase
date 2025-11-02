@@ -11,7 +11,8 @@ import {
   MessageSquare, 
   ListChecks,
   LogOut,
-  Shield
+  Shield,
+  UserCircle
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 
@@ -96,6 +97,14 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                       <Link href="/admin">
                         <LayoutDashboard className="w-5 h-5" />
                         <span>대시보드</span>
+                      </Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                  <SidebarMenuItem>
+                    <SidebarMenuButton asChild>
+                      <Link href="/admin/users">
+                        <UserCircle className="w-5 h-5" />
+                        <span>유저 관리</span>
                       </Link>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
