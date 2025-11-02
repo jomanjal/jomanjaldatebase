@@ -11,7 +11,8 @@
     "db:migrate": "drizzle-kit migrate",
     "db:push": "drizzle-kit push",
     "db:studio": "drizzle-kit studio",
-    "create-admin": "tsx scripts/create-admin.ts"
+    "create-admin": "tsx scripts/create-admin.ts",
+    "postbuild": "tsx scripts/deploy-schema.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",
