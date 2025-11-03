@@ -30,7 +30,7 @@ export const coaches = pgTable('coaches', {
   rating: real('rating').default(0).notNull(),
   reviews: integer('reviews').default(0).notNull(),
   students: integer('students').default(0).notNull(),
-  price: varchar('price', { length: 100 }),
+  price: integer('price'), // 가격 (원 단위 숫자)
   discount: integer('discount'), // 할인율 (10, 30, 50)
   specialties: text('specialties').default('[]'), // JSON 배열 형태
   description: text('description'), // 코치 카드 설명 (제목)

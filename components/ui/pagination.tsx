@@ -27,7 +27,7 @@ function PaginationContent({
   return (
     <ul
       data-slot="pagination-content"
-      className={cn('flex flex-row items-center gap-1', className)}
+      className={cn('flex flex-row items-center gap-2', className)}
       {...props}
     />
   )
@@ -45,7 +45,7 @@ type PaginationLinkProps = {
 function PaginationLink({
   className,
   isActive,
-  size = 'icon',
+  size = 'default',
   ...props
 }: PaginationLinkProps) {
   return (
@@ -54,10 +54,11 @@ function PaginationLink({
       data-slot="pagination-link"
       data-active={isActive}
       className={cn(
-        buttonVariants({
-          variant: isActive ? 'outline' : 'ghost',
-          size,
-        }),
+        'h-10 min-w-[2.5rem] rounded-full px-4 py-2 text-sm font-medium transition-all',
+        'flex items-center justify-center',
+        isActive 
+          ? 'bg-primary/20 text-primary font-semibold hover:bg-primary/30 dark:bg-primary/30 dark:hover:bg-primary/40' 
+          : 'text-muted-foreground hover:bg-accent/50 hover:text-foreground',
         className,
       )}
       {...props}
@@ -71,13 +72,12 @@ function PaginationPrevious({
 }: React.ComponentProps<typeof PaginationLink>) {
   return (
     <PaginationLink
-      aria-label="Go to previous page"
+      aria-label="이전 페이지로 이동"
       size="default"
-      className={cn('gap-1 px-2.5 sm:pl-2.5', className)}
+      className={cn('px-3 rounded-full', className)}
       {...props}
     >
       <ChevronLeftIcon />
-      <span className="hidden sm:block">Previous</span>
     </PaginationLink>
   )
 }
@@ -88,12 +88,11 @@ function PaginationNext({
 }: React.ComponentProps<typeof PaginationLink>) {
   return (
     <PaginationLink
-      aria-label="Go to next page"
+      aria-label="다음 페이지로 이동"
       size="default"
-      className={cn('gap-1 px-2.5 sm:pr-2.5', className)}
+      className={cn('px-3 rounded-full', className)}
       {...props}
     >
-      <span className="hidden sm:block">Next</span>
       <ChevronRightIcon />
     </PaginationLink>
   )
@@ -107,11 +106,11 @@ function PaginationEllipsis({
     <span
       aria-hidden
       data-slot="pagination-ellipsis"
-      className={cn('flex size-9 items-center justify-center', className)}
+      className={cn('flex h-10 w-10 items-center justify-center text-muted-foreground', className)}
       {...props}
     >
       <MoreHorizontalIcon className="size-4" />
-      <span className="sr-only">More pages</span>
+      <span className="sr-only">더 많은 페이지</span>
     </span>
   )
 }

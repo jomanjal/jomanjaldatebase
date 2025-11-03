@@ -22,7 +22,7 @@ interface Coach {
   rating: number
   reviews: number
   students: number
-  price: string | null
+  price: number | null // 숫자로 변경
   discount?: number | null
   originalPrice?: number | null
   specialties: string[]
@@ -259,16 +259,13 @@ export default function CoachDetailPage({ params }: { params: { id: string } }) 
     window.open(chatUrl, '_blank', 'noopener,noreferrer')
   }
 
-  // 가격 파싱
-  const parsePrice = (price: string | null): { value: number | null; unit: string } => {
-    if (!price) return { value: null, unit: '' }
-    // 쉼표를 제거한 후 모든 숫자 추출
-    const priceWithoutCommas = price.replace(/,/g, '')
-    const match = priceWithoutCommas.match(/(\d+)/)
-    const value = match ? parseInt(match[0]) : null
-    const unitMatch = price.match(/\/시간|원/)
-    const unit = unitMatch ? (price.includes('/시간') ? '/시간' : '원') : ''
-    return { value, unit }
+  // 가격 처리 (숫자 또는 문자열 지원)
+  const getPriceValue = (price: number | string | null): number | null => {
+    if (!price) return null
+    if (typeof price === 'number') return price
+    // 문자열인 경우 숫자 추출
+    const numbersOnly = price.toString().replace(/,/g, '').match(/\d+/)
+    return numbersOnly ? parseInt(numbersOnly[0]) : null
   }
 
   if (loading) {
@@ -299,28 +296,20 @@ export default function CoachDetailPage({ params }: { params: { id: string } }) 
     )
   }
 
-  const priceInfo = parsePrice(coach.price)
-  
   // 할인 정보 계산
   let displayPrice: number | null = null
   let originalPrice: number | null = null
   let discount: number | null = null
   
-  if (coach.originalPrice !== undefined && coach.discount !== undefined && coach.originalPrice !== null && coach.discount !== null) {
-    // 하드코딩 데이터: originalPrice와 discount가 직접 지정됨
-    originalPrice = coach.originalPrice
-    discount = coach.discount
-    displayPrice = priceInfo.value || Math.round(originalPrice * (1 - discount / 100))
-  } else if (coach.discount && coach.discount > 0 && priceInfo.value) {
-    // DB 데이터: price는 원가, discount는 할인율
-    originalPrice = priceInfo.value
-    discount = coach.discount
+  // DB 데이터: price는 숫자(원가), discount는 할인율
+  originalPrice = getPriceValue(coach.price)
+  discount = coach.discount || null
+  
+  // 할인가 계산
+  if (discount && originalPrice) {
     displayPrice = Math.round(originalPrice * (1 - discount / 100))
   } else {
-    // 할인 없음
-    displayPrice = priceInfo.value
-    originalPrice = null
-    discount = null
+    displayPrice = originalPrice
   }
 
   // introductionItems 분리: 강의 대상, 강의 효과, 나머지
@@ -765,7 +754,6 @@ export default function CoachDetailPage({ params }: { params: { id: string } }) 
                     <div className="mb-4">
                         <div className="text-3xl font-bold text-green-600 mb-1">
                           ₩{displayPrice.toLocaleString()}
-                          {priceInfo.unit && <span className="text-base font-normal text-muted-foreground">{priceInfo.unit}</span>}
                         </div>
                         {discount && discount > 0 && originalPrice && (
                           <div className="flex items-center gap-2">

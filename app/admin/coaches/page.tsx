@@ -22,7 +22,7 @@ interface Coach {
   rating: number
   reviews: number
   students: number
-  price: string | null
+  price: number | null // 숫자로 변경
   specialties: string[]
   description: string | null
   verified: boolean
@@ -41,7 +41,8 @@ export default function CoachesManagementPage() {
     specialty: "",
     tier: "",
     experience: "",
-    price: "",
+    price: null as number | null,
+    priceDisplay: "", // 입력 필드용 포맷팅된 문자열
     specialtyInput: "",
     description: "",
     verified: false,
@@ -99,7 +100,8 @@ export default function CoachesManagementPage() {
       specialty: "",
       tier: "",
       experience: "",
-      price: "",
+      price: null,
+      priceDisplay: "",
       specialtyInput: "",
       description: "",
       verified: false,
@@ -117,12 +119,17 @@ export default function CoachesManagementPage() {
 
   const handleEditCoach = (coach: Coach) => {
     setEditingCoach(coach)
+    // 가격을 숫자로 파싱 (문자열이면 숫자로 변환)
+    const priceNum = typeof coach.price === 'number' 
+      ? coach.price 
+      : (coach.price ? parseInt(coach.price.toString().replace(/,/g, '')) : null)
     setFormData({
       name: coach.name,
       specialty: coach.specialty,
       tier: coach.tier,
       experience: coach.experience,
-      price: coach.price || "",
+      price: priceNum,
+      priceDisplay: priceNum ? priceNum.toLocaleString() : "",
       specialtyInput: coach.specialties.join(', '),
       description: coach.description || "",
       verified: coach.verified,
@@ -464,10 +471,23 @@ export default function CoachesManagementPage() {
               <Label htmlFor="price">가격</Label>
               <Input
                 id="price"
-                value={formData.price}
-                onChange={(e) => setFormData({ ...formData, price: e.target.value })}
-                placeholder="예: 50,000원/시간"
+                type="text"
+                value={formData.priceDisplay}
+                onChange={(e) => {
+                  // 숫자만 추출
+                  const numericValue = e.target.value.replace(/[^0-9]/g, '')
+                  const num = numericValue ? parseInt(numericValue) : null
+                  setFormData({ 
+                    ...formData, 
+                    price: num,
+                    priceDisplay: num ? num.toLocaleString() : ""
+                  })
+                }}
+                placeholder="50000"
               />
+              <p className="text-xs text-muted-foreground mt-1">
+                원가를 숫자로 입력하세요 (예: 50000). 자동으로 포맷팅됩니다.
+              </p>
             </div>
             <div className="grid gap-2">
               <Label htmlFor="specialtyInput">전문 기술 (쉼표로 구분)</Label>
@@ -572,10 +592,23 @@ export default function CoachesManagementPage() {
               <Label htmlFor="edit-price">가격</Label>
               <Input
                 id="edit-price"
-                value={formData.price}
-                onChange={(e) => setFormData({ ...formData, price: e.target.value })}
-                placeholder="예: 50,000원/시간"
+                type="text"
+                value={formData.priceDisplay}
+                onChange={(e) => {
+                  // 숫자만 추출
+                  const numericValue = e.target.value.replace(/[^0-9]/g, '')
+                  const num = numericValue ? parseInt(numericValue) : null
+                  setFormData({ 
+                    ...formData, 
+                    price: num,
+                    priceDisplay: num ? num.toLocaleString() : ""
+                  })
+                }}
+                placeholder="50000"
               />
+              <p className="text-xs text-muted-foreground mt-1">
+                원가를 숫자로 입력하세요 (예: 50000). 자동으로 포맷팅됩니다.
+              </p>
             </div>
             <div className="grid gap-2">
               <Label htmlFor="edit-specialtyInput">전문 기술 (쉼표로 구분)</Label>

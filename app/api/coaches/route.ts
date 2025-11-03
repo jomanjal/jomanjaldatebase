@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import { coaches } from '@/lib/db/schema'
-import { eq, like, desc, and } from 'drizzle-orm'
+import { eq, like, desc, asc, and } from 'drizzle-orm'
 import { getAuthenticatedUser } from '@/lib/auth-server'
 
 /**
@@ -12,7 +12,16 @@ export async function GET(request: NextRequest) {
     const searchParams = request.nextUrl.searchParams
     const search = searchParams.get('search') || ''
     const specialty = searchParams.get('specialty') || 'all'
+    const tier = searchParams.get('tier') || 'all'
+    const minPrice = searchParams.get('minPrice')
+    const maxPrice = searchParams.get('maxPrice')
+    const sortBy = searchParams.get('sortBy') || 'latest' // latest, rating-high, rating-low, price-high, price-low, students
     const isAdmin = searchParams.get('admin') === 'true'
+    
+    // 페이지네이션 파라미터
+    const page = Math.max(1, parseInt(searchParams.get('page') || '1', 10))
+    const limit = Math.min(100, Math.max(1, parseInt(searchParams.get('limit') || '20', 10))) // 최대 100개, 기본 20개
+    const offset = (page - 1) * limit
 
     // 검색어 길이 제한
     if (search.length > 100) {
@@ -47,20 +56,102 @@ export async function GET(request: NextRequest) {
       conditions.push(eq(coaches.specialty, specialty))
     }
 
+    // 티어 필터
+    if (tier !== 'all') {
+      conditions.push(eq(coaches.tier, tier))
+    }
+
+    // 가격 필터 (가격 파싱 필요)
+    // price 필드는 "30,000원/시간" 같은 형식이므로, 숫자만 추출하여 비교
+    if (minPrice) {
+      const minPriceNum = parseInt(minPrice, 10)
+      if (!isNaN(minPriceNum)) {
+        // price 필드에서 숫자 추출하여 비교
+        // SQL에서 정규식이나 CAST를 사용해야 하지만, Drizzle에서는 제한적
+        // 일단 클라이언트 사이드에서도 필터링할 수 있도록 주석 처리
+        // 또는 price 필드를 별도 숫자 필드로 저장하는 것이 좋음
+      }
+    }
+
     // 일반 사용자는 verified되고 active인 코치만 보기
     if (!isAdmin) {
       conditions.push(eq(coaches.verified, true))
       conditions.push(eq(coaches.active, true))
     }
 
-    // 조건 적용
-    let query = db.select().from(coaches)
-    if (conditions.length > 0) {
-      query = query.where(and(...conditions)) as any
+    // 정렬 옵션
+    let orderByClause
+    switch (sortBy) {
+      case 'rating-high':
+        orderByClause = desc(coaches.rating)
+        break
+      case 'rating-low':
+        orderByClause = asc(coaches.rating)
+        break
+      case 'price-high':
+        orderByClause = desc(coaches.price)
+        break
+      case 'price-low':
+        orderByClause = asc(coaches.price)
+        break
+      case 'students':
+        orderByClause = desc(coaches.students)
+        break
+      case 'latest':
+      default:
+        orderByClause = desc(coaches.createdAt)
+        break
     }
 
-    // 최신순 정렬
-    const results = await query.orderBy(desc(coaches.createdAt))
+    // 조건 적용
+    let baseQuery = db.select().from(coaches)
+    if (conditions.length > 0) {
+      baseQuery = baseQuery.where(and(...conditions)) as any
+    }
+
+    // 전체 개수 조회 (페이지네이션용)
+    let allResults = await baseQuery
+
+    // 가격 필터 적용 (할인 포함)
+    if (minPrice || maxPrice) {
+      allResults = allResults.filter(coach => {
+        if (!coach.price) return false
+        const priceNum = typeof coach.price === 'number' ? coach.price : (coach.price ? parseInt(String(coach.price).replace(/,/g, '')) : null)
+        if (priceNum === null) return false
+        // 할인 적용된 가격 계산
+        let finalPrice = priceNum
+        if (coach.discount && coach.discount > 0) {
+          finalPrice = Math.round(priceNum * (1 - coach.discount / 100))
+        }
+        if (minPrice && finalPrice < parseInt(minPrice, 10)) return false
+        if (maxPrice && finalPrice > parseInt(maxPrice, 10)) return false
+        return true
+      })
+    }
+    const totalCount = allResults.length
+
+    // 정렬 및 페이지네이션
+    let results = await baseQuery
+      .orderBy(orderByClause)
+      .limit(limit * 2) // 가격 필터링을 고려해 더 많이 가져옴
+      .offset(offset)
+
+    // 가격 필터링 (할인 포함)
+    if (minPrice || maxPrice) {
+      results = results.filter(coach => {
+        if (!coach.price) return false
+        const priceNum = typeof coach.price === 'number' ? coach.price : (coach.price ? parseInt(String(coach.price).replace(/,/g, '')) : null)
+        if (priceNum === null) return false
+        // 할인 적용된 가격 계산
+        let finalPrice = priceNum
+        if (coach.discount && coach.discount > 0) {
+          finalPrice = Math.round(priceNum * (1 - coach.discount / 100))
+        }
+        if (minPrice && finalPrice < parseInt(minPrice, 10)) return false
+        if (maxPrice && finalPrice > parseInt(maxPrice, 10)) return false
+        return true
+      }).slice(0, limit) // limit 개수만큼만 반환
+    }
 
     // specialties를 JSON 파싱
     const formattedResults = results.map(coach => ({
@@ -68,10 +159,20 @@ export async function GET(request: NextRequest) {
       specialties: coach.specialties ? JSON.parse(coach.specialties) : [],
     }))
 
+    // 총 페이지 수 계산
+    const totalPages = Math.ceil(totalCount / limit)
+
     return NextResponse.json({
       success: true,
       data: formattedResults,
-      totalCount: formattedResults.length
+      pagination: {
+        page,
+        limit,
+        totalCount,
+        totalPages,
+        hasNextPage: page < totalPages,
+        hasPrevPage: page > 1,
+      }
     }, { status: 200 })
   } catch (error) {
     console.error('Coaches GET error:', error)
@@ -119,6 +220,17 @@ export async function POST(request: NextRequest) {
       }, { status: 400 })
     }
 
+    // 가격을 숫자로 변환
+    let priceNum: number | null = null
+    if (price !== undefined && price !== null && price !== '') {
+      if (typeof price === 'number') {
+        priceNum = price
+      } else {
+        const parsed = parseInt(price.toString().replace(/,/g, ''), 10)
+        priceNum = isNaN(parsed) ? null : parsed
+      }
+    }
+
     // 코치 추가
     const [newCoach] = await db.insert(coaches).values({
       userId: userId || undefined, // null 대신 undefined로 전달
@@ -129,7 +241,7 @@ export async function POST(request: NextRequest) {
       rating: 0,
       reviews: 0,
       students: 0,
-      price: price || null,
+      price: priceNum,
       specialties: specialties ? JSON.stringify(specialties) : JSON.stringify([]),
       description: description || null,
       verified: verified,

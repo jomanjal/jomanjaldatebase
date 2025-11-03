@@ -146,7 +146,17 @@ export async function PUT(
     if (specialty !== undefined) updateData.specialty = specialty
     if (tier !== undefined) updateData.tier = tier
     if (experience !== undefined) updateData.experience = experience
-    if (price !== undefined) updateData.price = price
+    if (price !== undefined) {
+      // 가격을 숫자로 변환
+      if (price === null || price === '') {
+        updateData.price = null
+      } else if (typeof price === 'number') {
+        updateData.price = price
+      } else {
+        const parsed = parseInt(price.toString().replace(/,/g, ''), 10)
+        updateData.price = isNaN(parsed) ? null : parsed
+      }
+    }
     if (specialties !== undefined) updateData.specialties = JSON.stringify(specialties)
     if (description !== undefined) updateData.description = description
     if (headline !== undefined) updateData.headline = headline

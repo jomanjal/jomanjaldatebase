@@ -18,7 +18,7 @@ interface Coach {
   rating: number
   reviews: number
   students: number
-  price: string | null
+  price: number | null // 숫자로 변경
   specialties: string[]
   description: string | null
   verified: boolean
@@ -152,7 +152,9 @@ export default function MyPage() {
                   </div>
                   <div>
                     <p className="text-sm text-muted-foreground mb-1">가격</p>
-                    <p className="text-2xl font-bold">{coach.price || "미설정"}</p>
+                    <p className="text-2xl font-bold">
+                      {coach.price ? `₩${coach.price.toLocaleString()}` : "미설정"}
+                    </p>
                   </div>
                 </div>
 

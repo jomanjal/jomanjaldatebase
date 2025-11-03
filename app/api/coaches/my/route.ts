@@ -139,6 +139,17 @@ export async function POST(request: NextRequest) {
       .where(eq(coaches.userId, user.userId))
       .limit(1)
 
+    // 가격을 숫자로 변환
+    let priceNum: number | null = null
+    if (price !== undefined && price !== null && price !== '') {
+      if (typeof price === 'number') {
+        priceNum = price
+      } else {
+        const parsed = parseInt(price.toString().replace(/,/g, ''), 10)
+        priceNum = isNaN(parsed) ? null : parsed
+      }
+    }
+
     if (existingCoach) {
       // 수정
       const [updated] = await db.update(coaches)
@@ -147,7 +158,7 @@ export async function POST(request: NextRequest) {
           specialty,
           tier,
           experience,
-          price: price || null,
+          price: priceNum,
           discount: discount || null,
           specialties: specialties ? JSON.stringify(specialties) : JSON.stringify([]),
           description: description || null,
@@ -204,7 +215,7 @@ export async function POST(request: NextRequest) {
         rating: 0,
         reviews: 0,
         students: 0,
-        price: price || null,
+        price: priceNum,
         discount: discount || null,
         specialties: specialties ? JSON.stringify(specialties) : JSON.stringify([]),
         description: description || null,

@@ -109,7 +109,8 @@ export default function CourseSettingsPage() {
   
   // 강의 상세
   const [courseDetail, setCourseDetail] = useState({
-    price: "",
+    price: null as number | null, // 숫자로 저장
+    priceDisplay: "", // 입력 필드용 포맷팅된 문자열
     discount: null as number | null, // 10, 30, 50 또는 null
     title: "",
     content: "",
@@ -224,8 +225,12 @@ export default function CourseSettingsPage() {
           setCurriculum(curriculumItems.length > 0 ? curriculumItems : [{ title: "[소장] 마이크를 사용하지 않고도 배울 수 있는 과제 형식의 독보적 커리큘럼", duration: "1시간" }])
           
           // 강의 상세
+          const priceNum = typeof result.data.price === 'number' 
+            ? result.data.price 
+            : (result.data.price ? parseInt(result.data.price.toString().replace(/,/g, '')) : null)
           setCourseDetail({
-            price: result.data.price || "",
+            price: priceNum,
+            priceDisplay: priceNum ? priceNum.toLocaleString() : "",
             discount: result.data.discount || null,
             title: result.data.description || "",
             content: courseIntroItem?.content || "",
@@ -1000,19 +1005,25 @@ export default function CourseSettingsPage() {
           {activeTab === "course-detail" && (
             <div className="space-y-6">
               <div>
-                <Label htmlFor="price">원가 (캐시) *</Label>
+                <Label htmlFor="price">원가 (원) *</Label>
                 <Input
                   id="price"
-                  type="number"
-                  value={courseDetail.price.replace(/[^0-9]/g, '')}
+                  type="text"
+                  value={courseDetail.priceDisplay}
                   onChange={(e) => {
-                    const value = e.target.value.replace(/[^0-9]/g, '')
-                    setCourseDetail({ ...courseDetail, price: value ? parseInt(value).toLocaleString() : "" })
+                    // 숫자만 추출
+                    const numericValue = e.target.value.replace(/[^0-9]/g, '')
+                    const num = numericValue ? parseInt(numericValue) : null
+                    setCourseDetail({ 
+                      ...courseDetail, 
+                      price: num,
+                      priceDisplay: num ? num.toLocaleString() : ""
+                    })
                   }}
                   placeholder="50000"
                 />
                 <p className="text-xs text-muted-foreground mt-1">
-                  1,000캐시 단위로 강의 등록 가능합니다. 원가를 입력해주세요.
+                  원가를 숫자로 입력하세요 (예: 50000). 자동으로 포맷팅됩니다.
                 </p>
               </div>
 
@@ -1055,18 +1066,18 @@ export default function CourseSettingsPage() {
                     <div className="flex items-center gap-2">
                       <span className="text-sm font-medium">원가:</span>
                       <span className="text-xs line-through text-muted-foreground">
-                        ₩{parseInt(courseDetail.price.replace(/,/g, '')).toLocaleString()}
+                        ₩{courseDetail.price.toLocaleString()}
                       </span>
                       <span className="text-sm font-medium">할인가:</span>
                       <span className="text-lg font-bold text-green-600">
-                        ₩{Math.round(parseInt(courseDetail.price.replace(/,/g, '')) * (1 - courseDetail.discount / 100)).toLocaleString()}
+                        ₩{Math.round(courseDetail.price * (1 - courseDetail.discount / 100)).toLocaleString()}
                       </span>
                       <Badge variant="destructive" className="text-xs">
                         {courseDetail.discount}% 할인
                       </Badge>
                     </div>
                     <p className="text-xs text-muted-foreground mt-2">
-                      할인가 ₩{Math.round(parseInt(courseDetail.price.replace(/,/g, '')) * (1 - courseDetail.discount / 100)).toLocaleString()}가 코치 목록에 표시됩니다.
+                      할인가 ₩{Math.round(courseDetail.price * (1 - courseDetail.discount / 100)).toLocaleString()}가 코치 목록에 표시됩니다.
                     </p>
                   </div>
                 )}
