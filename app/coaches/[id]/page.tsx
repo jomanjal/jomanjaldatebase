@@ -27,6 +27,8 @@ interface Coach {
   originalPrice?: number | null
   specialties: string[]
   description: string | null
+  headline: string | null
+  thumbnailImage: string | null
   introductionImage: string | null
   introductionContent: string | null
   introductionItems?: IntroductionItem[]
@@ -101,51 +103,21 @@ export default function CoachDetailPage({ params }: { params: { id: string } }) 
                 introductionItems = []
               }
             }
-            setCoach({
-              ...result.data,
-              introductionItems,
-            })
-          } else if (coachId === 0 || coachId === 1) {
-            // 참고용 하드코딩 데이터 (ID가 0 또는 1인 경우 - Jomanjal)
-            const referenceCoach: Coach = {
-              id: coachId,
-              userId: null,
-    name: "Jomanjal",
-              specialty: "발로란트",
-    tier: "레디언트",
-    experience: "3년",
-    rating: 5.0,
-              reviews: 8,
-    students: 200,
-              price: "25,000원/시간",
-              originalPrice: 50000,
-              discount: 50,
-    specialties: ["전략", "에이밍"],
-              description: "수강생 200+ 이 경험한 에임실력 상승 🔥",
-              introductionImage: "/Introduction.png",
-              introductionContent: JSON.stringify([
-                { title: "독자적 커리큘럼", content: "타 강사와 차별화된 수준 높은 독자적인 커리큘럼 제공." },
-                { title: "대상", content: "초보자부터 프로 레벨까지 모든 수준에 도움되는 구성." },
-                { title: "진행 방식", content: "", items: ["Aim Lab(스팀 설치)을 활용.", "강사가 직접 구성한 루틴 및 과제로 진행.", "10가지 시나리오로 구성된 루틴 제공."] },
-                { title: "콘텐츠 제공", content: "", items: ["약 2,500자 분량의 알찬 설명 제공.", "명확한 목표 점수 제시 및 변화 체감 가능.", "천천히 진행 가능한 루틴 설계."] },
-                { title: "장점 (무제한 소장)", content: "", items: ["글로 모두 작성되어 언제든지 복습 가능.", "콘텐츠 무제한 소장 가능."] },
-                { title: "강의 환경", content: "", items: ["마이크 사용 불필요 (시간대 상관없이 진행 가능).", "디스코드 미사용.", "더 자세한 내용은 강의에서 확인 가능."] },
-              ]),
-              introductionItems: [
-                { title: "독자적 커리큘럼", content: "타 강사와 차별화된 수준 높은 독자적인 커리큘럼 제공." },
-                { title: "대상", content: "초보자부터 프로 레벨까지 모든 수준에 도움되는 구성." },
-                { title: "진행 방식", content: "", items: ["Aim Lab(스팀 설치)을 활용.", "강사가 직접 구성한 루틴 및 과제로 진행.", "10가지 시나리오로 구성된 루틴 제공."] },
-                { title: "콘텐츠 제공", content: "", items: ["약 2,500자 분량의 알찬 설명 제공.", "명확한 목표 점수 제시 및 변화 체감 가능.", "천천히 진행 가능한 루틴 설계."] },
-                { title: "장점 (무제한 소장)", content: "", items: ["글로 모두 작성되어 언제든지 복습 가능.", "콘텐츠 무제한 소장 가능."] },
-                { title: "강의 환경", content: "", items: ["마이크 사용 불필요 (시간대 상관없이 진행 가능).", "디스코드 미사용.", "더 자세한 내용은 강의에서 확인 가능."] },
-              ],
-              curriculumItems: [
-                { title: "[소장] 마이크를 사용하지 않고도 배울 수 있는 과제 형식의 독보적 커리큘럼", duration: "1시간" }
-              ],
-              totalCourseTime: "1시간",
-              verified: true,
-            }
-            setCoach(referenceCoach)
+            // 코치 ID 5 (Jomanjal)인 경우 하드코딩 데이터 오버라이드
+            // 주: introductionImage, introductionContent, curriculumItems, totalCourseTime은 DB에 저장됨
+            //     평점, 수강생, 후기는 아직 DB에 반영되지 않았으므로 임시로 오버라이드
+            //     가격 관련 필드(price, discount)는 DB에서 가져옴
+            const coachData = coachId === 5 
+              ? { 
+                  ...result.data, 
+                  rating: 5.0,
+                  reviews: 8,
+                  students: 200,
+                  introductionItems 
+                }
+              : { ...result.data, introductionItems }
+            
+            setCoach(coachData)
           } else {
             setCoach(null)
           }
@@ -176,8 +148,8 @@ export default function CoachDetailPage({ params }: { params: { id: string } }) 
     async function fetchReviews() {
       setReviewsLoading(true)
       try {
-        // 하드코딩된 Jomanjal 코치(ID: 0 또는 1)의 경우 하드코딩된 후기 사용
-        if (coachId === 0 || coachId === 1) {
+        // 코치 ID 5 (Jomanjal)인 경우 하드코딩된 후기 사용
+        if (coachId === 5) {
           // 즉시 하드코딩된 후기 설정 (비동기 없이)
           const referenceReviews: Review[] = [
             {
@@ -359,8 +331,24 @@ export default function CoachDetailPage({ params }: { params: { id: string } }) 
   // 포지션과 요원 정보 파싱
   const positionsItem = coach.introductionItems?.find(item => item.title === "__positions__")
   const agentsItem = coach.introductionItems?.find(item => item.title === "__agents__")
+  const courseTypeItem = coach.introductionItems?.find(item => item.title === "__courseType__")
   let positions: string[] = []
   let agents: string[] = []
+  let courseType = "온라인" // 기본값
+  
+  // 강의 유형 파싱
+  if (courseTypeItem?.content) {
+    try {
+      const courseTypeData = JSON.parse(courseTypeItem.content)
+      if (courseTypeData.type === "온라인 강의") {
+        courseType = "온라인"
+      } else if (courseTypeData.type === "오프라인 강의") {
+        courseType = "오프라인"
+      }
+    } catch {
+      // 파싱 실패 시 기본값 사용
+    }
+  }
   
   if (positionsItem?.content) {
     try {
@@ -400,7 +388,7 @@ export default function CoachDetailPage({ params }: { params: { id: string } }) 
       <section className="py-8">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between mb-8">
-            <h1 className="text-3xl font-bold">에임, 피지컬 강의 국내 No.1</h1>
+            <h1 className="text-3xl font-bold">{coach.headline || "에임, 피지컬 강의 국내 No.1"}</h1>
             {isOwner && (
               <Button asChild variant="outline">
                 <Link href="/my/course">
@@ -436,7 +424,7 @@ export default function CoachDetailPage({ params }: { params: { id: string } }) 
                   {otherItems.length > 0 && (
                   <Card>
                     <CardContent className="p-6">
-                        <h2 className="text-xl font-bold mb-6">이 강의는 온라인 강의로, 에임, 피지컬 강의 국내 No.1</h2>
+                        <h2 className="text-xl font-bold mb-6">이 강의는 {courseType} 강의로, {coach.headline || "에임, 피지컬 강의 국내 No.1"}</h2>
                       <div className="space-y-4 text-muted-foreground">
                           {otherItems.map((item, index) => (
                             <div key={index}>
@@ -733,9 +721,9 @@ export default function CoachDetailPage({ params }: { params: { id: string } }) 
             {/* 우측: 사이드바 (sticky) */}
             <div className="lg:col-span-1">
               <div className="sticky top-24 space-y-4">
-                {/* asd.jpg 이미지 */}
+                {/* 섬네일 이미지 */}
                 <img 
-                  src="/asd.jpg" 
+                  src={coach.thumbnailImage || coach.introductionImage || "/asd.jpg"} 
                   alt="사이드바 이미지" 
                   className="w-full rounded-lg max-h-64 object-cover" 
                 />

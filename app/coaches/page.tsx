@@ -19,22 +19,14 @@ const gameCategories = [
   { id: "배틀그라운드", name: "배틀그라운드" },
 ]
 
-// 참고용 하드코딩 데이터 (추후 삭제 예정)
-const referenceCoach: Coach & { originalPrice?: number; discount?: number } = {
-  id: 0, // DB ID와 구분하기 위해 0 사용
-  name: "Jomanjal",
-  specialty: "발로란트",
-  tier: "레디언트",
-  experience: "3년",
+// 하드코딩된 오버라이드 데이터 (나중에 DB 연동 시 제거)
+// 코치 ID 5 (Jomanjal)에 적용할 오버라이드 데이터
+// 주: 평점, 수강생, 후기는 아직 DB에 반영되지 않았으므로 임시로 오버라이드
+//     가격 관련 필드(price, discount)는 DB에서 가져옴
+const jomanjalOverrides = {
   rating: 5.0,
   reviews: 8,
   students: 200,
-  price: "25,000원/시간",
-  specialties: ["전략", "에이밍"],
-  description: "수강생 200+ 이 경험한 에임실력 상승 🔥",
-  verified: true,
-  originalPrice: 50000,
-  discount: 50,
 }
 
 interface Coach {
@@ -50,6 +42,7 @@ interface Coach {
   discount: number | null
   specialties: string[]
   description: string | null
+  thumbnailImage: string | null
   introductionImage: string | null
   verified: boolean
 }
@@ -75,9 +68,23 @@ export default function CoachesPage() {
         const result = await response.json()
 
         if (isMounted && result.success) {
-          // 참고용 하드코딩 데이터를 맨 앞에 추가
           const dbCoaches = result.data || []
-          setCoaches([referenceCoach, ...dbCoaches])
+          
+          // 코치 ID 5 (Jomanjal)를 찾아서 오버라이드 적용하고 맨 앞으로 이동
+          const jomanjalIndex = dbCoaches.findIndex((c: Coach) => c.id === 5)
+          
+          if (jomanjalIndex !== -1) {
+            // ID 5 코치를 오버라이드하고 맨 앞으로 이동
+            const jomanjal = {
+              ...dbCoaches[jomanjalIndex],
+              ...jomanjalOverrides,
+            } as Coach & { originalPrice?: number; discount?: number }
+            const otherCoaches = dbCoaches.filter((c: Coach) => c.id !== 5)
+            setCoaches([jomanjal, ...otherCoaches])
+          } else {
+            // ID 5가 없으면 기존 순서 유지
+            setCoaches(dbCoaches)
+          }
         }
       } catch (error) {
         console.error('코치 데이터 로드 실패:', error)
@@ -238,7 +245,7 @@ export default function CoachesPage() {
                       {/* 헤더 이미지 영역 */}
                       <div className="relative h-32 overflow-hidden">
                         <img 
-                          src={coach.introductionImage || "/asd.jpg"} 
+                          src={coach.thumbnailImage || coach.introductionImage || "/asd.jpg"} 
                           alt={coach.name}
                           className="w-full h-full object-cover"
                         />

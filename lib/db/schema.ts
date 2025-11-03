@@ -33,9 +33,11 @@ export const coaches = pgTable('coaches', {
   price: varchar('price', { length: 100 }),
   discount: integer('discount'), // 할인율 (10, 30, 50)
   specialties: text('specialties').default('[]'), // JSON 배열 형태
-  description: text('description'),
+  description: text('description'), // 코치 카드 설명 (제목)
+  headline: text('headline'), // 한문장 표현 (상세 페이지 상단 표시)
   // 상세 페이지 구성 정보
-  introductionImage: text('introduction_image'), // 소개 이미지 URL
+  thumbnailImage: text('thumbnail_image'), // 섬네일 이미지 URL (코치 카드, 사이드바용)
+  introductionImage: text('introduction_image'), // 강의 소개 이미지 URL
   introductionContent: text('introduction_content'), // 강의 소개 내용 (JSON)
   curriculumItems: text('curriculum_items').default('[]'), // 커리큘럼 항목들 (JSON 배열)
   totalCourseTime: varchar('total_course_time', { length: 50 }), // 총 강의 시간 (예: "1시간")

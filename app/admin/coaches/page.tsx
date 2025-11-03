@@ -324,6 +324,7 @@ export default function CoachesManagementPage() {
               <Table>
                 <TableHeader>
                   <TableRow>
+                    <TableHead>ID</TableHead>
                     <TableHead>코치</TableHead>
                     <TableHead>전문 분야</TableHead>
                     <TableHead>티어</TableHead>
@@ -337,6 +338,9 @@ export default function CoachesManagementPage() {
                 <TableBody>
                   {filteredCoaches.map(coach => (
                     <TableRow key={coach.id}>
+                      <TableCell>
+                        <div className="font-medium">{coach.id}</div>
+                      </TableCell>
                       <TableCell>
                         <div className="flex items-center gap-3">
                           <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">

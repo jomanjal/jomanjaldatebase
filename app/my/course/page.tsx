@@ -26,6 +26,8 @@ interface Coach {
   price: string | null
   specialties: string[]
   description: string | null
+  headline: string | null
+  thumbnailImage: string | null
   introductionImage: string | null
   introductionContent: string | null
   curriculumItems: string[]
@@ -192,7 +194,7 @@ export default function CourseSettingsPage() {
             game: result.data.specialty || "",
             tier: result.data.tier || "",
             experience: result.data.experience || "",
-            thumbnails: result.data.introductionImage ? [result.data.introductionImage] : [],
+            thumbnails: result.data.thumbnailImage ? [result.data.thumbnailImage] : [],
             positions: positions,
             agents: agents,
           })
@@ -204,7 +206,7 @@ export default function CourseSettingsPage() {
           
           // 강의 요약 기본값
           setCourseSummary({
-            headline: result.data.description || "",
+            headline: result.data.headline || "",
             targets: courseTargets.length > 0 ? courseTargets : [""],
             effects: courseEffects.length > 0 ? courseEffects : [""],
           })
@@ -418,8 +420,10 @@ export default function CourseSettingsPage() {
           price: courseDetail.price || null,
           discount: courseDetail.discount || null,
           specialties: courseDetail.keywords,
-          description: courseSummary.headline || courseDetail.title || null,
-          introductionImage: gameInfo.thumbnails[0] || courseDetail.image || null,
+          description: courseDetail.title || null, // 코치 카드 설명 (제목)
+          headline: courseSummary.headline || null, // 한문장 표현 (상세 페이지 상단)
+          thumbnailImage: gameInfo.thumbnails[0] || null, // 섬네일 (코치 카드, 사이드바용)
+          introductionImage: courseDetail.image || null, // 강의 소개 이미지
           introductionContent: JSON.stringify(introductionItems),
           curriculumItems: curriculumItems,
           totalCourseTime: curriculum.reduce((total, item) => {
