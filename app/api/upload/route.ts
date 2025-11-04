@@ -172,9 +172,6 @@ export async function POST(request: NextRequest) {
 
     // 처리된 이미지의 SHA256 해시 계산 (중복 체크용)
     const fileHash = createHash('sha256').update(processedBuffer).digest('hex')
-    
-    // 디버깅: 해시값 출력
-    console.log('[Image Upload] File hash:', fileHash.substring(0, 16) + '...')
 
     // DB에서 중복 이미지 확인
     const existingImage = await db
@@ -182,13 +179,6 @@ export async function POST(request: NextRequest) {
       .from(uploadedImages)
       .where(eq(uploadedImages.fileHash, fileHash))
       .limit(1)
-
-    // 디버깅: 중복 체크 결과
-    if (existingImage.length > 0) {
-      console.log('[Image Upload] ✅ Duplicate found! Reusing:', existingImage[0].blobUrl)
-    } else {
-      console.log('[Image Upload] ❌ No duplicate, uploading new image')
-    }
 
     // 중복 이미지가 있으면 기존 URL 반환
     if (existingImage.length > 0) {
@@ -228,7 +218,6 @@ export async function POST(request: NextRequest) {
         fileHash,
         blobUrl,
       })
-      console.log('[Image Upload] ✅ Hash saved to DB:', fileHash.substring(0, 16) + '...')
     } catch (error: any) {
       // DB 저장 실패 시 상세 에러 로깅
       console.error('[Image Upload] ❌ Failed to save image hash to DB:', error)
@@ -305,7 +294,6 @@ export async function DELETE(request: NextRequest) {
     // Vercel Blob Storage에서 파일 삭제
     try {
       await del(url)
-      console.log('[Image Delete] ✅ Blob deleted:', url)
     } catch (error: any) {
       console.error('[Image Delete] ❌ Failed to delete blob:', error)
       // Blob 삭제 실패해도 DB 레코드는 삭제 시도
@@ -317,7 +305,6 @@ export async function DELETE(request: NextRequest) {
         await db
           .delete(uploadedImages)
           .where(eq(uploadedImages.fileHash, imageRecord[0].fileHash))
-        console.log('[Image Delete] ✅ Hash record deleted from DB:', imageRecord[0].fileHash.substring(0, 16) + '...')
       } catch (error: any) {
         console.error('[Image Delete] ❌ Failed to delete hash record from DB:', error)
         // DB 삭제 실패는 치명적이지 않지만, 중복 체크에 영향을 줄 수 있음

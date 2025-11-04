@@ -1,6 +1,7 @@
 "use client"
 
 import React, { useState, useEffect, useMemo } from "react"
+import Image from "next/image"
 import { Header } from "@/components/header"
 import { FooterSection } from "@/components/footer-section"
 import { Card, CardContent } from "@/components/ui/card"
@@ -10,6 +11,7 @@ import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Heart, MapPin, Star, User, Search, Loader2, Percent, SlidersHorizontal } from "lucide-react"
 import Link from "next/link"
+import { ErrorDisplay } from "@/components/error-display"
 import {
   Pagination,
   PaginationContent,
@@ -91,6 +93,7 @@ interface Coach {
 export default function CoachesPage() {
   const [coaches, setCoaches] = useState<Coach[]>([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<Error | null>(null) // 에러 상태 추가
   const [searching, setSearching] = useState(false) // 검색 중 상태 추가
   const [searchQuery, setSearchQuery] = useState("")
   const [selectedGame, setSelectedGame] = useState("all")
@@ -115,6 +118,8 @@ export default function CoachesPage() {
         setSearching(true) // 검색 중일 때만 searching 상태 활성화
       }
       setLoading(true)
+      setError(null) // 에러 초기화
+      
       try {
         const params = new URLSearchParams()
         if (searchQuery) params.append('search', searchQuery)
@@ -131,21 +136,33 @@ export default function CoachesPage() {
         params.append('limit', '20')
 
         const response = await fetch(`/api/coaches?${params.toString()}`)
+        
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`)
+        }
+        
         const result = await response.json()
 
-        if (isMounted && result.success) {
-          const dbCoaches = result.data || []
-          
-          // 페이지네이션 정보 저장
-          if (result.pagination) {
-            setPagination(result.pagination)
+        if (isMounted) {
+          if (result.success) {
+            const dbCoaches = result.data || []
+            
+            // 페이지네이션 정보 저장
+            if (result.pagination) {
+              setPagination(result.pagination)
+            }
+            
+            // DB에서 받은 코치 목록 그대로 사용
+            setCoaches(dbCoaches)
+          } else {
+            throw new Error(result.message || '코치 데이터를 불러오는데 실패했습니다.')
           }
-          
-          // DB에서 받은 코치 목록 그대로 사용
-          setCoaches(dbCoaches)
         }
       } catch (error) {
         console.error('코치 데이터 로드 실패:', error)
+        if (isMounted) {
+          setError(error instanceof Error ? error : new Error('알 수 없는 오류가 발생했습니다.'))
+        }
       } finally {
         if (isMounted) {
           setLoading(false)
@@ -362,7 +379,16 @@ export default function CoachesPage() {
       {/* 코치 목록 */}
       <section className="py-16">
         <div className="max-w-7xl mx-auto px-2 sm:px-3 lg:px-4">
-          {loading ? (
+          {error ? (
+            <ErrorDisplay 
+              error={error} 
+              onRetry={() => {
+                setError(null)
+                // fetchCoaches는 useEffect의 의존성 배열에 의해 자동으로 재실행됨
+                window.location.reload()
+              }} 
+            />
+          ) : loading ? (
             <div className="flex justify-center items-center py-20">
               <Loader2 className="w-8 h-8 animate-spin text-primary" />
             </div>
@@ -386,10 +412,12 @@ export default function CoachesPage() {
                     <Card className="overflow-hidden hover:shadow-lg transition-shadow cursor-pointer h-full bg-card border-0 py-0">
                       {/* 헤더 이미지 영역 */}
                       <div className="relative h-32 overflow-hidden">
-                        <img 
-                          src={coach.thumbnailImage || "/uploads/coaches/1762077719977_qq.jpg"} 
+                        <Image
+                          src={coach.thumbnailImage || "/uploads/coaches/1762077719977_qq.jpg"}
                           alt={coach.name}
-                          className="w-full h-full object-cover"
+                          fill
+                          className="object-cover"
+                          sizes="(max-width: 768px) 100vw, (max-width: 1024px) 33vw, (max-width: 1280px) 25vw, (max-width: 1536px) 20vw, 16vw"
                         />
                       </div>
 

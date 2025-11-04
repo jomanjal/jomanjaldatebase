@@ -1,8 +1,10 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import Image from "next/image"
 import { Header } from "@/components/header"
 import { FooterSection } from "@/components/footer-section"
+import { ErrorDisplay } from "@/components/error-display"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -66,7 +68,9 @@ export default function CoachDetailPage({ params }: { params: { id: string } }) 
   const [coach, setCoach] = useState<Coach | null>(null)
   const [reviews, setReviews] = useState<Review[]>([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<Error | null>(null) // 에러 상태 추가
   const [reviewsLoading, setReviewsLoading] = useState(true)
+  const [reviewsError, setReviewsError] = useState<Error | null>(null) // 리뷰 에러 상태 추가
   const [sortBy, setSortBy] = useState<"latest" | "high" | "low">("latest")
   const [currentUser, setCurrentUser] = useState<User | null>(null)
   const [isOwner, setIsOwner] = useState(false)
@@ -106,8 +110,15 @@ export default function CoachDetailPage({ params }: { params: { id: string } }) 
 
     async function fetchCoach() {
       setLoading(true)
+      setError(null) // 에러 초기화
+      
       try {
         const response = await fetch(`/api/coaches/${coachId}`)
+        
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`)
+        }
+        
         const result = await response.json()
 
         if (isMounted) {
@@ -167,12 +178,13 @@ export default function CoachDetailPage({ params }: { params: { id: string } }) 
             
             setCoach(coachData)
           } else {
-            setCoach(null)
+            throw new Error(result.message || '코치를 찾을 수 없습니다.')
           }
         }
       } catch (error) {
         console.error('코치 데이터 로드 실패:', error)
         if (isMounted) {
+          setError(error instanceof Error ? error : new Error('알 수 없는 오류가 발생했습니다.'))
           setCoach(null)
         }
       } finally {
@@ -195,6 +207,8 @@ export default function CoachDetailPage({ params }: { params: { id: string } }) 
 
     async function fetchReviews() {
       setReviewsLoading(true)
+      setReviewsError(null) // 에러 초기화
+      
       try {
         const params = new URLSearchParams()
         params.append('coachId', coachId.toString())
@@ -203,16 +217,28 @@ export default function CoachDetailPage({ params }: { params: { id: string } }) 
         params.append('limit', '10') // 상세 페이지에서는 10개씩 표시
 
         const response = await fetch(`/api/reviews?${params.toString()}`)
+        
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`)
+        }
+        
         const result = await response.json()
 
-        if (isMounted && result.success) {
-          setReviews(result.data || [])
-          if (result.pagination) {
-            setReviewsPagination(result.pagination)
+        if (isMounted) {
+          if (result.success) {
+            setReviews(result.data || [])
+            if (result.pagination) {
+              setReviewsPagination(result.pagination)
+            }
+          } else {
+            throw new Error(result.message || '리뷰 데이터를 불러오는데 실패했습니다.')
           }
         }
       } catch (error) {
         console.error('리뷰 데이터 로드 실패:', error)
+        if (isMounted) {
+          setReviewsError(error instanceof Error ? error : new Error('알 수 없는 오류가 발생했습니다.'))
+        }
       } finally {
         if (isMounted) {
           setReviewsLoading(false)
@@ -296,6 +322,22 @@ export default function CoachDetailPage({ params }: { params: { id: string } }) 
     // 문자열인 경우 숫자 추출
     const numbersOnly = price.toString().replace(/,/g, '').match(/\d+/)
     return numbersOnly ? parseInt(numbersOnly[0]) : null
+  }
+
+  if (error) {
+    return (
+      <main className="min-h-screen bg-background">
+        <Header />
+        <ErrorDisplay 
+          error={error} 
+          onRetry={() => {
+            setError(null)
+            window.location.reload()
+          }} 
+        />
+        <FooterSection />
+      </main>
+    )
   }
 
   if (loading) {
@@ -431,11 +473,17 @@ export default function CoachDetailPage({ params }: { params: { id: string } }) 
                 {/* 강의 소개 탭 */}
                 <TabsContent value="intro" className="space-y-6">
                   {/* 소개이미지 */}
-                  <img 
-                    src={coach.introductionImage || "/uploads/coaches/1762077719977_qq.jpg"} 
-                    alt="강의 소개 이미지" 
-                    className="w-full rounded-lg" 
-                  />
+                  <div className="w-full rounded-lg overflow-hidden">
+                    <Image
+                      src={coach.introductionImage || "/uploads/coaches/1762077719977_qq.jpg"}
+                      alt="강의 소개 이미지"
+                      width={1200}
+                      height={0}
+                      className="w-full h-auto rounded-lg"
+                      sizes="(max-width: 768px) 100vw, 66vw"
+                      priority
+                    />
+                  </div>
 
                   {/* 강의 소개 */}
                   {otherItems.length > 0 && (
@@ -718,7 +766,17 @@ export default function CoachDetailPage({ params }: { params: { id: string } }) 
                       </div>
 
                       {/* 후기 목록 */}
-                      {reviewsLoading ? (
+                      {reviewsError ? (
+                        <ErrorDisplay 
+                          error={reviewsError} 
+                          message="리뷰를 불러오는 중 오류가 발생했습니다."
+                          onRetry={() => {
+                            setReviewsError(null)
+                            window.location.reload()
+                          }}
+                          className="py-10"
+                        />
+                      ) : reviewsLoading ? (
                         <div className="flex justify-center items-center py-10">
                           <Loader2 className="w-6 h-6 animate-spin text-primary" />
                         </div>
@@ -827,11 +885,15 @@ export default function CoachDetailPage({ params }: { params: { id: string } }) 
             <div className="lg:col-span-1">
               <div className="sticky top-24 space-y-4">
                 {/* 섬네일 이미지 */}
-                <img 
-                  src={coach.thumbnailImage || "/uploads/coaches/1762077719977_qq.jpg"} 
-                  alt="사이드바 이미지" 
-                  className="w-full rounded-lg max-h-64 object-cover" 
-                />
+                <div className="relative w-full aspect-video rounded-lg overflow-hidden max-h-64">
+                  <Image
+                    src={coach.thumbnailImage || "/uploads/coaches/1762077719977_qq.jpg"}
+                    alt="사이드바 이미지"
+                    fill
+                    className="object-cover"
+                    sizes="(max-width: 1024px) 100vw, 33vw"
+                  />
+                </div>
 
                 {/* 할인 배너 */}
                 <div className="bg-blue-500 text-white p-4 rounded-lg flex items-center gap-2">

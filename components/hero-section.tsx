@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import Image from "next/image"
 import { Button } from "@/components/ui/button"
 import { ChevronLeft, ChevronRight } from "lucide-react"
 import { ChatbotModal } from "@/components/chatbot-modal"
@@ -62,7 +63,14 @@ export function HeroSection() {
             >
               {/* Background Image */}
               <div className="absolute inset-0">
-                <img src={slide.image || "/placeholder.svg"} alt={slide.title} className="w-full h-full object-cover" />
+                <Image
+                  src={slide.image || "/placeholder.svg"}
+                  alt={slide.title}
+                  fill
+                  priority={index === 0}
+                  className="object-cover"
+                  sizes="100vw"
+                />
                 <div className="absolute inset-0 bg-black/40" />
               </div>
 

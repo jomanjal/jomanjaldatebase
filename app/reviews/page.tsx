@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge"
 import { Star, Clock, ChevronRight, Loader2, SlidersHorizontal } from "lucide-react"
 import { useState, useEffect, useMemo } from "react"
 import Link from "next/link"
+import { ErrorDisplay } from "@/components/error-display"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import {
   Pagination,
@@ -55,6 +56,7 @@ export default function ReviewsPage() {
   const [sortBy, setSortBy] = useState<"latest" | "rating-high" | "rating-low">("latest")
   const [reviews, setReviews] = useState<Review[]>([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<Error | null>(null) // 에러 상태 추가
   const [totalCount, setTotalCount] = useState(0)
   const [currentPage, setCurrentPage] = useState(1)
   const [pagination, setPagination] = useState({
@@ -70,6 +72,8 @@ export default function ReviewsPage() {
   useEffect(() => {
     async function fetchReviews() {
       setLoading(true)
+      setError(null) // 에러 초기화
+      
       try {
         const params = new URLSearchParams()
         params.append('verified', 'true')
@@ -77,6 +81,11 @@ export default function ReviewsPage() {
         params.append('limit', '20')
         
         const response = await fetch(`/api/reviews?${params.toString()}`)
+        
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`)
+        }
+        
         const data = await response.json()
         if (data.success) {
           setReviews(data.data || [])
@@ -84,9 +93,12 @@ export default function ReviewsPage() {
           if (data.pagination) {
             setPagination(data.pagination)
           }
+        } else {
+          throw new Error(data.message || '리뷰 데이터를 불러오는데 실패했습니다.')
         }
       } catch (error) {
         console.error('리뷰 데이터 로드 실패:', error)
+        setError(error instanceof Error ? error : new Error('알 수 없는 오류가 발생했습니다.'))
       } finally {
         setLoading(false)
       }
@@ -260,7 +272,15 @@ export default function ReviewsPage() {
       {/* 수업후기 목록 */}
       <section className="py-8">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          {loading ? (
+          {error ? (
+            <ErrorDisplay 
+              error={error} 
+              onRetry={() => {
+                setError(null)
+                window.location.reload()
+              }} 
+            />
+          ) : loading ? (
             <div className="text-center py-20">
               <Loader2 className="w-8 h-8 animate-spin text-primary mx-auto mb-4" />
               <p className="text-muted-foreground">리뷰를 불러오는 중...</p>
