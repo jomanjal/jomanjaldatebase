@@ -349,6 +349,34 @@ export default function CourseSettingsPage() {
     }
   }
 
+  const handleImageDelete = async (imageUrl: string) => {
+    // Vercel Blob Storage URL이 아닌 경우 (정적 파일 등) 삭제하지 않음
+    if (!imageUrl || !imageUrl.includes('blob.vercel-storage.com')) {
+      return
+    }
+
+    try {
+      const response = await fetch('/api/upload', {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify({ url: imageUrl }),
+      })
+
+      const result = await response.json()
+
+      if (!result.success) {
+        console.error('이미지 삭제 실패:', result.message)
+        // 삭제 실패해도 UI에서는 제거 (이미 로컬 상태에서 제거됨)
+      }
+    } catch (error) {
+      console.error('이미지 삭제 중 오류:', error)
+      // 삭제 실패해도 UI에서는 제거 (이미 로컬 상태에서 제거됨)
+    }
+  }
+
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file) return
@@ -742,9 +770,14 @@ export default function CourseSettingsPage() {
                           </div>
                           <button
                             type="button"
-                            onClick={(e) => {
+                            onClick={async (e) => {
                               e.preventDefault()
+                              const thumbnailUrl = gameInfo.thumbnails[0]
                               setGameInfo({ ...gameInfo, thumbnails: [] })
+                              // Vercel Blob Storage에서 이미지 삭제
+                              if (thumbnailUrl) {
+                                await handleImageDelete(thumbnailUrl)
+                              }
                             }}
                             className="absolute top-2 right-2 bg-destructive text-white rounded-full p-1 hover:bg-destructive/80"
                           >
@@ -1269,7 +1302,14 @@ export default function CourseSettingsPage() {
                         <img src={courseDetail.image} alt="미리보기" className="w-full h-full object-cover rounded-lg" />
                         <button
                           type="button"
-                          onClick={() => setCourseDetail({ ...courseDetail, image: "" })}
+                          onClick={async () => {
+                            const introductionImageUrl = courseDetail.image
+                            setCourseDetail({ ...courseDetail, image: "" })
+                            // Vercel Blob Storage에서 이미지 삭제
+                            if (introductionImageUrl) {
+                              await handleImageDelete(introductionImageUrl)
+                            }
+                          }}
                           className="absolute top-1 right-1 bg-destructive text-white rounded-full p-1 hover:bg-destructive/80"
                         >
                           <X className="w-3 h-3" />

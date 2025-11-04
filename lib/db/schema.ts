@@ -71,6 +71,14 @@ export const reviews = pgTable('reviews', {
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 })
 
+// 업로드된 이미지 해시 테이블 (중복 체크용)
+export const uploadedImages = pgTable('uploaded_images', {
+  id: serial('id').primaryKey(),
+  fileHash: varchar('file_hash', { length: 64 }).notNull().unique(), // SHA256 해시 (64자)
+  blobUrl: text('blob_url').notNull(), // Vercel Blob Storage URL
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+})
+
 // 타입 추출
 export type User = typeof users.$inferSelect
 export type NewUser = typeof users.$inferInsert
@@ -82,4 +90,6 @@ export type Waitlist = typeof waitlist.$inferSelect
 export type NewWaitlist = typeof waitlist.$inferInsert
 export type Review = typeof reviews.$inferSelect
 export type NewReview = typeof reviews.$inferInsert
+export type UploadedImage = typeof uploadedImages.$inferSelect
+export type NewUploadedImage = typeof uploadedImages.$inferInsert
 

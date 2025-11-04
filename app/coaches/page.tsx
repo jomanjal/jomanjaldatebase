@@ -172,7 +172,7 @@ export default function CoachesPage() {
               specialties: ["발로란트", "에이밍", "전략"],
               description: "전문 코치",
               headline: "에임, 피지컬 강의 국내 No.1",
-              thumbnailImage: "/asd.jpg",
+              thumbnailImage: null, // DB 값과 동기화를 위해 null로 설정
               introductionImage: null,
               verified: true,
               active: true,
@@ -404,7 +404,7 @@ export default function CoachesPage() {
                       {/* 헤더 이미지 영역 */}
                       <div className="relative h-32 overflow-hidden">
                         <img 
-                          src={coach.thumbnailImage || coach.introductionImage || "/asd.jpg"} 
+                          src={coach.thumbnailImage || "/uploads/coaches/1762077719977_qq.jpg"} 
                           alt={coach.name}
                           className="w-full h-full object-cover"
                         />

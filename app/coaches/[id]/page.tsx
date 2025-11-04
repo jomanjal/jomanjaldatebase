@@ -440,13 +440,11 @@ export default function CoachDetailPage({ params }: { params: { id: string } }) 
                 {/* 강의 소개 탭 */}
                 <TabsContent value="intro" className="space-y-6">
                   {/* 소개이미지 */}
-                  {coach.introductionImage && (
                   <img 
-                      src={coach.introductionImage} 
+                    src={coach.introductionImage || "/uploads/coaches/1762077719977_qq.jpg"} 
                     alt="강의 소개 이미지" 
                     className="w-full rounded-lg" 
                   />
-                  )}
 
                   {/* 강의 소개 */}
                   {otherItems.length > 0 && (
@@ -773,7 +771,7 @@ export default function CoachDetailPage({ params }: { params: { id: string } }) 
               <div className="sticky top-24 space-y-4">
                 {/* 섬네일 이미지 */}
                 <img 
-                  src={coach.thumbnailImage || coach.introductionImage || "/asd.jpg"} 
+                  src={coach.thumbnailImage || "/uploads/coaches/1762077719977_qq.jpg"} 
                   alt="사이드바 이미지" 
                   className="w-full rounded-lg max-h-64 object-cover" 
                 />

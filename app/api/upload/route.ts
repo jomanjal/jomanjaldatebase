@@ -1,7 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { put } from '@vercel/blob'
+import { put, del } from '@vercel/blob'
 import sharp from 'sharp'
 import { getAuthenticatedUser } from '@/lib/auth-server'
+import { db } from '@/lib/db'
+import { uploadedImages } from '@/lib/db/schema'
+import { eq } from 'drizzle-orm'
+import { createHash } from 'crypto'
 
 // 허용된 이미지 MIME 타입
 const ALLOWED_MIME_TYPES = [
@@ -166,6 +170,35 @@ export async function POST(request: NextRequest) {
       }, { status: 400 })
     }
 
+    // 처리된 이미지의 SHA256 해시 계산 (중복 체크용)
+    const fileHash = createHash('sha256').update(processedBuffer).digest('hex')
+    
+    // 디버깅: 해시값 출력
+    console.log('[Image Upload] File hash:', fileHash.substring(0, 16) + '...')
+
+    // DB에서 중복 이미지 확인
+    const existingImage = await db
+      .select()
+      .from(uploadedImages)
+      .where(eq(uploadedImages.fileHash, fileHash))
+      .limit(1)
+
+    // 디버깅: 중복 체크 결과
+    if (existingImage.length > 0) {
+      console.log('[Image Upload] ✅ Duplicate found! Reusing:', existingImage[0].blobUrl)
+    } else {
+      console.log('[Image Upload] ❌ No duplicate, uploading new image')
+    }
+
+    // 중복 이미지가 있으면 기존 URL 반환
+    if (existingImage.length > 0) {
+      return NextResponse.json({
+        success: true,
+        path: existingImage[0].blobUrl,
+        message: '이미지가 업로드되었습니다. (기존 이미지 재사용)'
+      }, { status: 200 })
+    }
+
     // 파일명 생성 (타임스탬프 + 랜덤 문자열 + 확장자)
     const timestamp = Date.now()
     const randomStr = Math.random().toString(36).substring(2, 8)
@@ -189,6 +222,24 @@ export async function POST(request: NextRequest) {
       }, { status: 500 })
     }
 
+    // DB에 이미지 해시 및 URL 저장
+    try {
+      await db.insert(uploadedImages).values({
+        fileHash,
+        blobUrl,
+      })
+      console.log('[Image Upload] ✅ Hash saved to DB:', fileHash.substring(0, 16) + '...')
+    } catch (error: any) {
+      // DB 저장 실패 시 상세 에러 로깅
+      console.error('[Image Upload] ❌ Failed to save image hash to DB:', error)
+      console.error('[Image Upload] Error details:', {
+        fileHash: fileHash.substring(0, 16) + '...',
+        blobUrl,
+        errorMessage: error.message,
+      })
+      // DB 저장 실패는 치명적이지 않지만, 다음 중복 체크가 작동하지 않을 수 있음
+    }
+
     return NextResponse.json({
       success: true,
       path: blobUrl, // Vercel Blob URL 반환
@@ -199,6 +250,89 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       success: false,
       message: '파일 업로드 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.'
+    }, { status: 500 })
+  }
+}
+
+/**
+ * 이미지 파일 삭제 (DELETE)
+ * 코치 권한 필요
+ */
+export async function DELETE(request: NextRequest) {
+  try {
+    // 인증 확인
+    const user = await getAuthenticatedUser(request)
+    if (!user) {
+      return NextResponse.json({
+        success: false,
+        message: '인증이 필요합니다.'
+      }, { status: 401 })
+    }
+
+    // 코치 권한 확인
+    if (user.role !== 'coach') {
+      return NextResponse.json({
+        success: false,
+        message: '코치 권한이 필요합니다.'
+      }, { status: 403 })
+    }
+
+    const body = await request.json()
+    const { url } = body
+
+    if (!url || typeof url !== 'string') {
+      return NextResponse.json({
+        success: false,
+        message: '이미지 URL이 필요합니다.'
+      }, { status: 400 })
+    }
+
+    // Vercel Blob Storage URL인지 확인
+    if (!url.includes('blob.vercel-storage.com')) {
+      return NextResponse.json({
+        success: false,
+        message: '유효하지 않은 이미지 URL입니다.'
+      }, { status: 400 })
+    }
+
+    // DB에서 해당 URL의 해시 레코드 찾기
+    const imageRecord = await db
+      .select()
+      .from(uploadedImages)
+      .where(eq(uploadedImages.blobUrl, url))
+      .limit(1)
+
+    // Vercel Blob Storage에서 파일 삭제
+    try {
+      await del(url)
+      console.log('[Image Delete] ✅ Blob deleted:', url)
+    } catch (error: any) {
+      console.error('[Image Delete] ❌ Failed to delete blob:', error)
+      // Blob 삭제 실패해도 DB 레코드는 삭제 시도
+    }
+
+    // DB에서 해시 레코드 삭제 (존재하는 경우)
+    if (imageRecord.length > 0) {
+      try {
+        await db
+          .delete(uploadedImages)
+          .where(eq(uploadedImages.fileHash, imageRecord[0].fileHash))
+        console.log('[Image Delete] ✅ Hash record deleted from DB:', imageRecord[0].fileHash.substring(0, 16) + '...')
+      } catch (error: any) {
+        console.error('[Image Delete] ❌ Failed to delete hash record from DB:', error)
+        // DB 삭제 실패는 치명적이지 않지만, 중복 체크에 영향을 줄 수 있음
+      }
+    }
+
+    return NextResponse.json({
+      success: true,
+      message: '이미지가 삭제되었습니다.'
+    }, { status: 200 })
+  } catch (error: any) {
+    console.error('Image delete error:', error)
+    return NextResponse.json({
+      success: false,
+      message: '이미지 삭제 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.'
     }, { status: 500 })
   }
 }
