@@ -648,16 +648,11 @@ export default function CoachDetailPage({ params }: { params: { id: string } }) 
                               
                               {/* 키워드 */}
                               {coach.specialties && coach.specialties.length > 0 && (
-                                <div>
-                                  {coach.specialty === "발로란트" && (positions.length > 0 || agents.length > 0) && (
-                                    <p className="text-sm text-muted-foreground mb-4">{coach.specialties.join(', ')}</p>
-                                  )}
-                                  <div className="flex flex-wrap gap-2">
-                                    {coach.specialties.map((specialty, idx) => (
-                                      <Badge key={idx} variant="outline">{specialty}</Badge>
-                                    ))}
-                        </div>
-                      </div>
+                                <div className="flex flex-wrap gap-2">
+                                  {coach.specialties.map((specialty, idx) => (
+                                    <Badge key={idx} variant="outline">{specialty}</Badge>
+                                  ))}
+                                </div>
                               )}
                             </AccordionContent>
                           </AccordionItem>
