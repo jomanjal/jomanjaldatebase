@@ -109,8 +109,8 @@ export async function GET(request: NextRequest) {
       baseQuery = baseQuery.where(and(...conditions)) as any
     }
 
-    // 전체 개수 조회 (페이지네이션용)
-    let allResults = await baseQuery
+    // 전체 개수 조회 (페이지네이션용) 및 가격 필터 적용
+    let allResults = await baseQuery.orderBy(orderByClause)
 
     // 가격 필터 적용 (할인 포함)
     if (minPrice || maxPrice) {
@@ -130,28 +130,10 @@ export async function GET(request: NextRequest) {
     }
     const totalCount = allResults.length
 
-    // 정렬 및 페이지네이션
-    let results = await baseQuery
-      .orderBy(orderByClause)
-      .limit(limit * 2) // 가격 필터링을 고려해 더 많이 가져옴
-      .offset(offset)
-
-    // 가격 필터링 (할인 포함)
-    if (minPrice || maxPrice) {
-      results = results.filter(coach => {
-        if (!coach.price) return false
-        const priceNum = typeof coach.price === 'number' ? coach.price : (coach.price ? parseInt(String(coach.price).replace(/,/g, '')) : null)
-        if (priceNum === null) return false
-        // 할인 적용된 가격 계산
-        let finalPrice = priceNum
-        if (coach.discount && coach.discount > 0) {
-          finalPrice = Math.round(priceNum * (1 - coach.discount / 100))
-        }
-        if (minPrice && finalPrice < parseInt(minPrice, 10)) return false
-        if (maxPrice && finalPrice > parseInt(maxPrice, 10)) return false
-        return true
-      }).slice(0, limit) // limit 개수만큼만 반환
-    }
+    // 정렬 및 페이지네이션 적용
+    // 가격 필터가 있는 경우 이미 필터링된 결과에서 정렬 적용
+    let results = allResults
+      .slice(offset, offset + limit)
 
     // specialties를 JSON 파싱
     const formattedResults = results.map(coach => ({

@@ -9,6 +9,15 @@ import { Star, Clock, ChevronRight, Loader2, SlidersHorizontal } from "lucide-re
 import { useState, useEffect, useMemo } from "react"
 import Link from "next/link"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import {
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination"
 
 // 게임 카테고리 데이터 (API의 coachSpecialty와 매핑)
 const gameCategories = [
@@ -47,18 +56,34 @@ export default function ReviewsPage() {
   const [reviews, setReviews] = useState<Review[]>([])
   const [loading, setLoading] = useState(true)
   const [totalCount, setTotalCount] = useState(0)
+  const [currentPage, setCurrentPage] = useState(1)
+  const [pagination, setPagination] = useState({
+    page: 1,
+    limit: 20,
+    totalCount: 0,
+    totalPages: 1,
+    hasNextPage: false,
+    hasPrevPage: false,
+  })
 
   // 서버에서 데이터 가져오기
   useEffect(() => {
     async function fetchReviews() {
       setLoading(true)
       try {
-        // 승인된 리뷰만 가져오기
-        const response = await fetch('/api/reviews?verified=true')
+        const params = new URLSearchParams()
+        params.append('verified', 'true')
+        params.append('page', currentPage.toString())
+        params.append('limit', '20')
+        
+        const response = await fetch(`/api/reviews?${params.toString()}`)
         const data = await response.json()
         if (data.success) {
           setReviews(data.data || [])
           setTotalCount(data.totalCount || 0)
+          if (data.pagination) {
+            setPagination(data.pagination)
+          }
         }
       } catch (error) {
         console.error('리뷰 데이터 로드 실패:', error)
@@ -67,9 +92,17 @@ export default function ReviewsPage() {
       }
     }
     fetchReviews()
-  }, [])
+  }, [currentPage])
+  
+  // 카테고리나 필터 변경 시 첫 페이지로 리셋
+  useEffect(() => {
+    setCurrentPage(1)
+  }, [selectedCategory, showPerformanceOnly, sortBy])
 
   // 게임 카테고리 필터링 및 정렬
+  // 주의: 현재는 서버에서 페이지네이션된 데이터를 받지만,
+  // 클라이언트 사이드 필터링/정렬도 필요하므로 유지
+  // 향후 서버 사이드 정렬로 전환 가능
   const filteredAndSortedReviews = useMemo(() => {
     let filtered = [...reviews]
 
@@ -113,6 +146,44 @@ export default function ReviewsPage() {
 
     return sorted
   }, [reviews, selectedCategory, showPerformanceOnly, sortBy])
+  
+  // 페이지네이션 페이지 번호 생성
+  const getPageNumbers = () => {
+    const pages: (number | 'ellipsis')[] = []
+    const totalPages = pagination.totalPages
+    const current = pagination.page
+
+    if (totalPages <= 7) {
+      // 7페이지 이하면 모두 표시
+      for (let i = 1; i <= totalPages; i++) {
+        pages.push(i)
+      }
+    } else {
+      // 첫 페이지
+      pages.push(1)
+
+      if (current > 3) {
+        pages.push('ellipsis')
+      }
+
+      // 현재 페이지 주변
+      const start = Math.max(2, current - 1)
+      const end = Math.min(totalPages - 1, current + 1)
+
+      for (let i = start; i <= end; i++) {
+        pages.push(i)
+      }
+
+      if (current < totalPages - 2) {
+        pages.push('ellipsis')
+      }
+
+      // 마지막 페이지
+      pages.push(totalPages)
+    }
+
+    return pages
+  }
 
   return (
     <main className="min-h-screen bg-background">
@@ -278,8 +349,72 @@ export default function ReviewsPage() {
               {filteredAndSortedReviews.length > 0 && (
                 <div className="text-center mt-8">
                   <p className="text-sm text-muted-foreground">
-                    총 {filteredAndSortedReviews.length}개의 리뷰가 표시되고 있습니다.
+                    총 {totalCount.toLocaleString()}개 중 {filteredAndSortedReviews.length}개의 리뷰가 표시되고 있습니다.
                   </p>
+                </div>
+              )}
+              
+              {/* 페이지네이션 */}
+              {!loading && pagination.totalPages >= 1 && pagination.totalCount > 0 && (
+                <div className="mt-12">
+                  <Pagination className="w-full">
+                    <PaginationContent className="flex-wrap justify-center">
+                      <PaginationItem>
+                        <PaginationPrevious
+                          href="#"
+                          onClick={(e) => {
+                            e.preventDefault()
+                            if (pagination.hasPrevPage) {
+                              setCurrentPage(pagination.page - 1)
+                              window.scrollTo({ top: 0, behavior: 'smooth' })
+                            }
+                          }}
+                          className={!pagination.hasPrevPage ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
+                        />
+                      </PaginationItem>
+
+                      {getPageNumbers().map((pageNum, index) => {
+                        if (pageNum === 'ellipsis') {
+                          return (
+                            <PaginationItem key={`ellipsis-${index}`}>
+                              <PaginationEllipsis />
+                            </PaginationItem>
+                          )
+                        }
+
+                        return (
+                          <PaginationItem key={pageNum}>
+                            <PaginationLink
+                              href="#"
+                              onClick={(e) => {
+                                e.preventDefault()
+                                setCurrentPage(pageNum)
+                                window.scrollTo({ top: 0, behavior: 'smooth' })
+                              }}
+                              isActive={pageNum === pagination.page}
+                              className="cursor-pointer"
+                            >
+                              {pageNum}
+                            </PaginationLink>
+                          </PaginationItem>
+                        )
+                      })}
+
+                      <PaginationItem>
+                        <PaginationNext
+                          href="#"
+                          onClick={(e) => {
+                            e.preventDefault()
+                            if (pagination.hasNextPage) {
+                              setCurrentPage(pagination.page + 1)
+                              window.scrollTo({ top: 0, behavior: 'smooth' })
+                            }
+                          }}
+                          className={!pagination.hasNextPage ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
+                        />
+                      </PaginationItem>
+                    </PaginationContent>
+                  </Pagination>
                 </div>
               )}
             </>

@@ -121,6 +121,9 @@ export default function CourseSettingsPage() {
     image: "",
     keywords: [] as string[],
   })
+  
+  // 키워드 입력 필드용 state
+  const [keywordInput, setKeywordInput] = useState("")
 
   // 인증 확인 및 코치 프로필 조회
   useEffect(() => {
@@ -1345,9 +1348,19 @@ export default function CourseSettingsPage() {
                 <div className="flex gap-2 mb-2">
                   <Input
                     id="keywords"
-                    value={courseDetail.keywords.join('')}
+                    value={keywordInput}
                     onChange={(e) => {
-                      // 키워드 입력 로직 (실제로는 개별 입력)
+                      setKeywordInput(e.target.value)
+                    }}
+                    onKeyPress={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault()
+                        const keyword = keywordInput.trim()
+                        if (keyword && courseDetail.keywords.length < 6 && !courseDetail.keywords.includes(keyword)) {
+                          setCourseDetail({ ...courseDetail, keywords: [...courseDetail.keywords, keyword] })
+                          setKeywordInput('')
+                        }
+                      }
                     }}
                     placeholder="키워드를 입력해 주세요."
                     maxLength={6}
@@ -1356,11 +1369,10 @@ export default function CourseSettingsPage() {
                     type="button"
                     variant="outline"
                     onClick={() => {
-                      const input = document.getElementById('keywords') as HTMLInputElement
-                      const keyword = input.value.trim()
+                      const keyword = keywordInput.trim()
                       if (keyword && courseDetail.keywords.length < 6 && !courseDetail.keywords.includes(keyword)) {
                         setCourseDetail({ ...courseDetail, keywords: [...courseDetail.keywords, keyword] })
-                        input.value = ''
+                        setKeywordInput('')
                       }
                     }}
                   >

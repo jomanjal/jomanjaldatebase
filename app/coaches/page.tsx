@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useMemo } from "react"
+import React, { useState, useEffect, useMemo } from "react"
 import { Header } from "@/components/header"
 import { FooterSection } from "@/components/footer-section"
 import { Card, CardContent } from "@/components/ui/card"
@@ -67,15 +67,7 @@ const sortOptions = [
   { id: "students", name: "수강생 많은순" },
 ]
 
-// 하드코딩된 오버라이드 데이터 (나중에 DB 연동 시 제거)
-// 코치 ID 1 또는 5 (Jomanjal)에 적용할 오버라이드 데이터
-// 주: 평점, 수강생, 후기는 아직 DB에 반영되지 않았으므로 임시로 오버라이드
-//     가격 관련 필드(price, discount)는 DB에서 가져옴
-const jomanjalOverrides = {
-  rating: 5.0,
-  reviews: 8,
-  students: 200,
-}
+
 
 interface Coach {
   id: number
@@ -99,6 +91,7 @@ interface Coach {
 export default function CoachesPage() {
   const [coaches, setCoaches] = useState<Coach[]>([])
   const [loading, setLoading] = useState(true)
+  const [searching, setSearching] = useState(false) // 검색 중 상태 추가
   const [searchQuery, setSearchQuery] = useState("")
   const [selectedGame, setSelectedGame] = useState("all")
   const [selectedPriceRange, setSelectedPriceRange] = useState("all")
@@ -118,6 +111,9 @@ export default function CoachesPage() {
     let isMounted = true
 
     async function fetchCoaches() {
+      if (searchQuery) {
+        setSearching(true) // 검색 중일 때만 searching 상태 활성화
+      }
       setLoading(true)
       try {
         const params = new URLSearchParams()
@@ -145,54 +141,20 @@ export default function CoachesPage() {
             setPagination(result.pagination)
           }
           
-          // ID 1 또는 5 (Jomanjal) 코치 찾기
-          let jomanjalIndex = dbCoaches.findIndex((c: Coach) => c.id === 5 || c.id === 1)
-          let jomanjal: Coach | null = null
-          
-          if (jomanjalIndex !== -1) {
-            // DB에서 찾은 경우 오버라이드
-            jomanjal = {
-              ...dbCoaches[jomanjalIndex],
-              ...jomanjalOverrides,
-            } as Coach & { originalPrice?: number; discount?: number }
-          } else {
-            // DB에서 찾지 못한 경우 하드코딩된 Jomanjal 코치 생성
-            // (API에서 verified=false이거나 active=false인 경우 등)
-            jomanjal = {
-              id: 5,
-              name: "Jomanjal",
-              specialty: "발로란트",
-              tier: "레디언트",
-              experience: "3년",
-              rating: jomanjalOverrides.rating,
-              reviews: jomanjalOverrides.reviews,
-              students: jomanjalOverrides.students,
-              price: null,
-              discount: null,
-              specialties: ["발로란트", "에이밍", "전략"],
-              description: "전문 코치",
-              headline: "에임, 피지컬 강의 국내 No.1",
-              thumbnailImage: null, // DB 값과 동기화를 위해 null로 설정
-              introductionImage: null,
-              verified: true,
-              active: true,
-            } as unknown as Coach & { originalPrice?: number; discount?: number }
-          }
-          
-          // Jomanjal 코치를 맨 앞으로 이동
-          const otherCoaches = dbCoaches.filter((c: Coach) => c.id !== 5 && c.id !== 1)
-          setCoaches([jomanjal, ...otherCoaches])
+          // DB에서 받은 코치 목록 그대로 사용
+          setCoaches(dbCoaches)
         }
       } catch (error) {
         console.error('코치 데이터 로드 실패:', error)
       } finally {
         if (isMounted) {
           setLoading(false)
+          setSearching(false)
         }
       }
     }
 
-    // 검색어 debounce
+    // 검색어 debounce (300ms로 개선)
     const timer = setTimeout(() => {
       // 검색이나 필터 변경 시 첫 페이지로 리셋
       if (currentPage === 1) {
@@ -200,7 +162,7 @@ export default function CoachesPage() {
       } else {
         setCurrentPage(1)
       }
-    }, searchQuery ? 500 : 0)
+    }, searchQuery ? 300 : 0)
 
     return () => {
       isMounted = false
@@ -212,6 +174,24 @@ export default function CoachesPage() {
   useEffect(() => {
     setCurrentPage(1)
   }, [searchQuery, selectedGame, selectedPriceRange, sortBy])
+
+  // 검색어 하이라이팅 함수
+  const highlightSearchTerm = (text: string, searchTerm: string): React.ReactNode => {
+    if (!searchTerm || !text) return text
+    
+    const regex = new RegExp(`(${searchTerm.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi')
+    const parts = text.split(regex)
+    
+    return parts.map((part, index) => 
+      regex.test(part) ? (
+        <mark key={index} className="bg-yellow-200 dark:bg-yellow-900 px-1 rounded">
+          {part}
+        </mark>
+      ) : (
+        part
+      )
+    )
+  }
 
   // 가격 파싱 (숫자 또는 문자열 지원)
   const parsePrice = (price: number | string | null): number | null => {
@@ -312,6 +292,9 @@ export default function CoachesPage() {
           <div className="flex flex-col md:flex-row gap-4 mb-6">
             <div className="flex-1 relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
+              {searching && (
+                <Loader2 className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4 animate-spin" />
+              )}
               <Input
                 placeholder="코치 이름으로 검색... (최대 100자)"
                 value={searchQuery}
@@ -320,7 +303,7 @@ export default function CoachesPage() {
                     setSearchQuery(e.target.value)
                   }
                 }}
-                className="pl-10"
+                className={searching ? "pl-10 pr-10" : "pl-10"}
                 maxLength={100}
               />
             </div>
@@ -427,7 +410,10 @@ export default function CoachesPage() {
 
                         {/* 제목 */}
                         <h3 className="text-base font-bold text-foreground mb-2.5 leading-tight line-clamp-2">
-                          {coach.description || `${coach.name} 코치`}
+                          {searchQuery 
+                            ? highlightSearchTerm(coach.description || `${coach.name} 코치`, searchQuery)
+                            : (coach.description || `${coach.name} 코치`)
+                          }
                         </h3>
 
                         {/* 평점과 인원수 */}
@@ -443,7 +429,9 @@ export default function CoachesPage() {
                         </div>
 
                         {/* 코치 이름 */}
-                        <p className="text-sm text-muted-foreground mb-3 truncate">{coach.name}</p>
+                        <p className="text-sm text-muted-foreground mb-3 truncate">
+                          {searchQuery ? highlightSearchTerm(coach.name, searchQuery) : coach.name}
+                        </p>
 
                         {/* 가격 정보 */}
                         {price && (

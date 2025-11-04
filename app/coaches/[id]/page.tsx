@@ -11,6 +11,15 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 import { Star, Users, Clock, MapPin, Trophy, Check, Gift, Loader2, Edit, Rocket } from "lucide-react"
 import Link from "next/link"
 import { checkAuth, type User } from "@/lib/auth"
+import {
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination"
 
 interface Coach {
   id: number
@@ -62,6 +71,15 @@ export default function CoachDetailPage({ params }: { params: { id: string } }) 
   const [currentUser, setCurrentUser] = useState<User | null>(null)
   const [isOwner, setIsOwner] = useState(false)
   const [showAllAgents, setShowAllAgents] = useState(false)
+  const [reviewsPage, setReviewsPage] = useState(1)
+  const [reviewsPagination, setReviewsPagination] = useState({
+    page: 1,
+    limit: 10,
+    totalCount: 0,
+    totalPages: 1,
+    hasNextPage: false,
+    hasPrevPage: false,
+  })
   const coachId = parseInt(params.id, 10)
 
   // 현재 사용자 확인 및 소유자 확인
@@ -140,21 +158,12 @@ export default function CoachDetailPage({ params }: { params: { id: string } }) 
               }
             }
             
-            // 코치 ID 1 또는 5 (Jomanjal)인 경우 하드코딩 데이터 오버라이드
-            const coachData = (coachId === 5 || coachId === 1)
-              ? { 
-                  ...result.data, 
-                  rating: 5.0,
-                  reviews: 8,
-                  students: 200,
-                  introductionItems,
-                  totalCourseTime: calculatedTotalTime || result.data.totalCourseTime
-                }
-              : { 
-                  ...result.data, 
-                  introductionItems,
-                  totalCourseTime: calculatedTotalTime || result.data.totalCourseTime
-                }
+            // DB에서 받은 코치 데이터 그대로 사용
+            const coachData = { 
+              ...result.data, 
+              introductionItems,
+              totalCourseTime: calculatedTotalTime || result.data.totalCourseTime
+            }
             
             setCoach(coachData)
           } else {
@@ -187,84 +196,20 @@ export default function CoachDetailPage({ params }: { params: { id: string } }) 
     async function fetchReviews() {
       setReviewsLoading(true)
       try {
-        // 코치 ID 1 또는 5 (Jomanjal)인 경우 하드코딩된 후기 사용
-        if (coachId === 5 || coachId === 1) {
-          // 즉시 하드코딩된 후기 설정 (비동기 없이)
-          const referenceReviews: Review[] = [
-            {
-              id: 1,
-              rating: 5,
-              comment: "에임루틴이 완벽합니다. 믿고 받아보세여!",
-              userName: "수강생1",
-              createdAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
-            },
-            {
-              id: 2,
-              rating: 5,
-              comment: "천천히 에임 연습할수 있구 장기적으로 할 분들은 추천드립니다! 한번 레슨에 주기적으로 할수있는 기본 무 친절하게 잘안내해주시고 감사합니다",
-              userName: "수강생2",
-              createdAt: new Date(Date.now() - 14 * 24 * 60 * 60 * 1000),
-            },
-            {
-              id: 3,
-              rating: 5,
-              comment: "발로란트 게임을 처음 시작하는 사람들을 위한 강의 내용(조합, 캐릭, 돈관리, 심리전 등)과 에임 코칭 경험이 정말 도움이 됐어요!",
-              userName: "수강생3",
-              createdAt: new Date(Date.now() - 21 * 24 * 60 * 60 * 1000),
-            },
-            {
-              id: 4,
-              rating: 5,
-              comment: "나는 분명 뇌지컬은 좋은거 같은데 예임이 안좋았는데 이 강의 듣고 정말 많이 향상됐어요!",
-              userName: "수강생4",
-              createdAt: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
-            },
-            {
-              id: 5,
-              rating: 5,
-              comment: "왜 게임을 못 이기는지 모르겠었는데 이 강의 듣고 이해가 되기 시작했어요. 추천합니다!",
-              userName: "수강생5",
-              createdAt: new Date(Date.now() - 45 * 24 * 60 * 60 * 1000),
-            },
-            {
-              id: 6,
-              rating: 5,
-              comment: "내 예임 수준을 알고싶었는데 정확하게 피드백 해주셔서 정말 도움됐습니다!",
-              userName: "수강생6",
-              createdAt: new Date(Date.now() - 60 * 24 * 60 * 60 * 1000),
-            },
-            {
-              id: 7,
-              rating: 5,
-              comment: "제 수업을 들었던 200명이 넘는 수강생분들이 예임상승과 탱크상승을 경험하셨다는 말에 믿고 신청했는데 정말 만족스러워요!",
-              userName: "수강생7",
-              createdAt: new Date(Date.now() - 75 * 24 * 60 * 60 * 1000),
-            },
-            {
-              id: 8,
-              rating: 5,
-              comment: "에임 강의 패키지가 정말 좋아요. 기본부터 차근차근 알려주셔서 이해하기 쉬웠습니다!",
-              userName: "수강생8",
-              createdAt: new Date(Date.now() - 90 * 24 * 60 * 60 * 1000),
-            }
-          ]
-          
-          if (isMounted) {
-            setReviews(referenceReviews)
-            setReviewsLoading(false)
-          }
-          return
-        }
-
         const params = new URLSearchParams()
         params.append('coachId', coachId.toString())
         params.append('verified', 'true') // 승인된 리뷰만 표시
+        params.append('page', reviewsPage.toString())
+        params.append('limit', '10') // 상세 페이지에서는 10개씩 표시
 
         const response = await fetch(`/api/reviews?${params.toString()}`)
         const result = await response.json()
 
         if (isMounted && result.success) {
           setReviews(result.data || [])
+          if (result.pagination) {
+            setReviewsPagination(result.pagination)
+          }
         }
       } catch (error) {
         console.error('리뷰 데이터 로드 실패:', error)
@@ -280,9 +225,17 @@ export default function CoachDetailPage({ params }: { params: { id: string } }) 
     return () => {
       isMounted = false
     }
-  }, [coachId])
+  }, [coachId, reviewsPage])
+  
+  // 정렬 변경 시 첫 페이지로 리셋
+  useEffect(() => {
+    setReviewsPage(1)
+  }, [sortBy])
 
   // 리뷰 정렬
+  // 주의: 현재는 서버에서 페이지네이션된 데이터를 받지만,
+  // 클라이언트 사이드 정렬도 필요하므로 유지
+  // 향후 서버 사이드 정렬로 전환 가능
   const sortedReviews = [...reviews].sort((a, b) => {
     if (sortBy === "latest") {
       return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
@@ -292,6 +245,44 @@ export default function CoachDetailPage({ params }: { params: { id: string } }) 
       return a.rating - b.rating
     }
   })
+  
+  // 페이지네이션 페이지 번호 생성
+  const getReviewPageNumbers = () => {
+    const pages: (number | 'ellipsis')[] = []
+    const totalPages = reviewsPagination.totalPages
+    const current = reviewsPagination.page
+
+    if (totalPages <= 7) {
+      // 7페이지 이하면 모두 표시
+      for (let i = 1; i <= totalPages; i++) {
+        pages.push(i)
+      }
+    } else {
+      // 첫 페이지
+      pages.push(1)
+
+      if (current > 3) {
+        pages.push('ellipsis')
+      }
+
+      // 현재 페이지 주변
+      const start = Math.max(2, current - 1)
+      const end = Math.min(totalPages - 1, current + 1)
+
+      for (let i = start; i <= end; i++) {
+        pages.push(i)
+      }
+
+      if (current < totalPages - 2) {
+        pages.push('ellipsis')
+      }
+
+      // 마지막 페이지
+      pages.push(totalPages)
+    }
+
+    return pages
+  }
   
   const handleKakaoChat = () => {
     const chatUrl = process.env.NEXT_PUBLIC_KAKAO_CHAT_URL || 'https://open.kakao.com/o/s6kCFbZh'
@@ -736,29 +727,95 @@ export default function CoachDetailPage({ params }: { params: { id: string } }) 
                           <p className="text-muted-foreground">아직 등록된 후기가 없습니다.</p>
                         </div>
                       ) : (
-                      <div className="space-y-6">
+                      <>
+                        <div className="space-y-6">
                           {sortedReviews.map((review) => {
                             const reviewDate = new Date(review.createdAt)
                             const formattedDate = `${reviewDate.getFullYear()}-${String(reviewDate.getMonth() + 1).padStart(2, '0')}-${String(reviewDate.getDate()).padStart(2, '0')}`
                             
                             return (
                               <div key={review.id} className="border-b pb-6 last:border-0">
-                            <div className="flex items-center gap-2 mb-2">
-                              <div className="flex gap-1">
-                                {[...Array(review.rating)].map((_, i) => (
-                                  <Star key={i} className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-                                ))}
-                              </div>
+                                <div className="flex items-center gap-2 mb-2">
+                                  <div className="flex gap-1">
+                                    {[...Array(review.rating)].map((_, i) => (
+                                      <Star key={i} className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+                                    ))}
+                                  </div>
                                   <span className="font-semibold">{review.userName}</span>
                                   <span className="text-sm text-muted-foreground">{formattedDate}</span>
-                            </div>
+                                </div>
                                 {review.comment && (
                                   <p className="text-muted-foreground">{review.comment}</p>
                                 )}
-                          </div>
+                              </div>
                             )
                           })}
-                      </div>
+                        </div>
+                        
+                        {/* 페이지네이션 */}
+                        {reviewsPagination.totalPages >= 1 && reviewsPagination.totalCount > 0 && (
+                          <div className="mt-8">
+                            <Pagination className="w-full">
+                              <PaginationContent className="flex-wrap justify-center">
+                                <PaginationItem>
+                                  <PaginationPrevious
+                                    href="#"
+                                    onClick={(e) => {
+                                      e.preventDefault()
+                                      if (reviewsPagination.hasPrevPage) {
+                                        setReviewsPage(reviewsPagination.page - 1)
+                                        window.scrollTo({ top: 0, behavior: 'smooth' })
+                                      }
+                                    }}
+                                    className={!reviewsPagination.hasPrevPage ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
+                                  />
+                                </PaginationItem>
+
+                                {getReviewPageNumbers().map((pageNum, index) => {
+                                  if (pageNum === 'ellipsis') {
+                                    return (
+                                      <PaginationItem key={`ellipsis-${index}`}>
+                                        <PaginationEllipsis />
+                                      </PaginationItem>
+                                    )
+                                  }
+
+                                  return (
+                                    <PaginationItem key={pageNum}>
+                                      <PaginationLink
+                                        href="#"
+                                        onClick={(e) => {
+                                          e.preventDefault()
+                                          setReviewsPage(pageNum)
+                                          window.scrollTo({ top: 0, behavior: 'smooth' })
+                                        }}
+                                        isActive={pageNum === reviewsPagination.page}
+                                        className="cursor-pointer"
+                                      >
+                                        {pageNum}
+                                      </PaginationLink>
+                                    </PaginationItem>
+                                  )
+                                })}
+
+                                <PaginationItem>
+                                  <PaginationNext
+                                    href="#"
+                                    onClick={(e) => {
+                                      e.preventDefault()
+                                      if (reviewsPagination.hasNextPage) {
+                                        setReviewsPage(reviewsPagination.page + 1)
+                                        window.scrollTo({ top: 0, behavior: 'smooth' })
+                                      }
+                                    }}
+                                    className={!reviewsPagination.hasNextPage ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
+                                  />
+                                </PaginationItem>
+                              </PaginationContent>
+                            </Pagination>
+                          </div>
+                        )}
+                      </>
                       )}
                     </CardContent>
                   </Card>

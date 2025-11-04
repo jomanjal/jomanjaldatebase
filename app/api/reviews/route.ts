@@ -16,6 +16,11 @@ export async function GET(request: NextRequest) {
     const coachId = searchParams.get('coachId')
     const verified = searchParams.get('verified') // 'true', 'false', 또는 null
     const isAdmin = searchParams.get('admin') === 'true'
+    
+    // 페이지네이션 파라미터
+    const page = Math.max(1, parseInt(searchParams.get('page') || '1', 10))
+    const limit = Math.min(100, Math.max(1, parseInt(searchParams.get('limit') || '20', 10))) // 최대 100개, 기본 20개
+    const offset = (page - 1) * limit
 
     // 검색어 길이 제한
     if (search.length > 100) {
@@ -86,8 +91,15 @@ export async function GET(request: NextRequest) {
       query = query.where(and(...conditions)) as any
     }
 
-    // 최신순 정렬
-    const results = await query.orderBy(desc(reviews.createdAt))
+    // 전체 개수 조회 (페이지네이션용)
+    const allResults = await query.orderBy(desc(reviews.createdAt))
+    const totalCount = allResults.length
+
+    // 페이지네이션 적용
+    const results = await query
+      .orderBy(desc(reviews.createdAt))
+      .limit(limit)
+      .offset(offset)
 
     // 사용자 정보 마스킹 (일부만 표시)
     const formattedResults = results.map(review => ({
@@ -104,10 +116,20 @@ export async function GET(request: NextRequest) {
       timeAgo: getTimeAgo(review.createdAt),
     }))
 
+    const totalPages = Math.ceil(totalCount / limit)
+
     return NextResponse.json({
       success: true,
       data: formattedResults,
-      totalCount: formattedResults.length
+      totalCount,
+      pagination: {
+        page,
+        limit,
+        totalCount,
+        totalPages,
+        hasNextPage: page < totalPages,
+        hasPrevPage: page > 1,
+      }
     }, { status: 200 })
   } catch (error) {
     console.error('Reviews GET error:', error)
