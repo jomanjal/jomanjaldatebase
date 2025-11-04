@@ -79,6 +79,8 @@ export default function CourseSettingsPage() {
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [uploading, setUploading] = useState(false)
+  const [uploadProgress, setUploadProgress] = useState(0)
+  const [uploadPreview, setUploadPreview] = useState<string | null>(null)
   const [hasProfile, setHasProfile] = useState(false)
   const [activeTab, setActiveTab] = useState("game-info")
   
@@ -256,42 +258,93 @@ export default function CourseSettingsPage() {
     const file = e.target.files?.[0]
     if (!file) return
 
-    if (!file.type.startsWith('image/')) {
-      toast.error('이미지 파일만 업로드할 수 있습니다.')
+    // 파일 형식 검증
+    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif']
+    if (!allowedTypes.includes(file.type)) {
+      toast.error('지원하는 이미지 형식만 업로드할 수 있습니다. (JPG, PNG, WebP, GIF)')
+      e.target.value = ''
       return
     }
 
     if (file.size > 5 * 1024 * 1024) {
       toast.error('파일 크기는 5MB 이하여야 합니다.')
+      e.target.value = ''
       return
     }
 
+    // 프리뷰 생성
+    const previewUrl = URL.createObjectURL(file)
+    setUploadPreview(previewUrl)
     setUploading(true)
+    setUploadProgress(0)
 
     try {
       const uploadFormData = new FormData()
       uploadFormData.append('file', file)
 
-      const response = await fetch('/api/upload', {
-        method: 'POST',
-        body: uploadFormData,
-        credentials: 'include',
+      // XMLHttpRequest를 사용하여 진행률 추적
+      const xhr = new XMLHttpRequest()
+
+      const uploadPromise = new Promise<any>((resolve, reject) => {
+        xhr.upload.addEventListener('progress', (event) => {
+          if (event.lengthComputable) {
+            const percentComplete = (event.loaded / event.total) * 100
+            setUploadProgress(percentComplete)
+          }
+        })
+
+        xhr.addEventListener('load', () => {
+          if (xhr.status === 200) {
+            try {
+              const result = JSON.parse(xhr.responseText)
+              resolve(result)
+            } catch (error) {
+              reject(new Error('응답 파싱 실패'))
+            }
+          } else {
+            try {
+              const result = JSON.parse(xhr.responseText)
+              reject(new Error(result.message || '업로드 실패'))
+            } catch {
+              reject(new Error('업로드 실패'))
+            }
+          }
+        })
+
+        xhr.addEventListener('error', () => {
+          reject(new Error('네트워크 오류'))
+        })
+
+        xhr.open('POST', '/api/upload')
+        xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest')
+        xhr.withCredentials = true
+        xhr.send(uploadFormData)
       })
 
-      const result = await response.json()
+      const result = await uploadPromise
 
       if (result.success) {
         // 썸네일은 1개만 유지
         setGameInfo({ ...gameInfo, thumbnails: [result.path] })
         toast.success('이미지가 업로드되었습니다.')
+        // 프리뷰 제거
+        URL.revokeObjectURL(previewUrl)
+        setUploadPreview(null)
       } else {
         toast.error(result.message || '이미지 업로드에 실패했습니다.')
+        URL.revokeObjectURL(previewUrl)
+        setUploadPreview(null)
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('파일 업로드 실패:', error)
-      toast.error('이미지 업로드 중 오류가 발생했습니다.')
+      toast.error(error.message || '이미지 업로드 중 오류가 발생했습니다.')
+      if (uploadPreview) {
+        URL.revokeObjectURL(previewUrl)
+        setUploadPreview(null)
+      }
     } finally {
       setUploading(false)
+      setUploadProgress(0)
       e.target.value = ''
     }
   }
@@ -300,41 +353,92 @@ export default function CourseSettingsPage() {
     const file = e.target.files?.[0]
     if (!file) return
 
-    if (!file.type.startsWith('image/')) {
-      toast.error('이미지 파일만 업로드할 수 있습니다.')
+    // 파일 형식 검증
+    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif']
+    if (!allowedTypes.includes(file.type)) {
+      toast.error('지원하는 이미지 형식만 업로드할 수 있습니다. (JPG, PNG, WebP, GIF)')
+      e.target.value = ''
       return
     }
 
     if (file.size > 5 * 1024 * 1024) {
       toast.error('파일 크기는 5MB 이하여야 합니다.')
+      e.target.value = ''
       return
     }
 
+    // 프리뷰 생성
+    const previewUrl = URL.createObjectURL(file)
+    setUploadPreview(previewUrl)
     setUploading(true)
+    setUploadProgress(0)
 
     try {
       const uploadFormData = new FormData()
       uploadFormData.append('file', file)
 
-      const response = await fetch('/api/upload', {
-        method: 'POST',
-        body: uploadFormData,
-        credentials: 'include',
+      // XMLHttpRequest를 사용하여 진행률 추적
+      const xhr = new XMLHttpRequest()
+
+      const uploadPromise = new Promise<any>((resolve, reject) => {
+        xhr.upload.addEventListener('progress', (event) => {
+          if (event.lengthComputable) {
+            const percentComplete = (event.loaded / event.total) * 100
+            setUploadProgress(percentComplete)
+          }
+        })
+
+        xhr.addEventListener('load', () => {
+          if (xhr.status === 200) {
+            try {
+              const result = JSON.parse(xhr.responseText)
+              resolve(result)
+            } catch (error) {
+              reject(new Error('응답 파싱 실패'))
+            }
+          } else {
+            try {
+              const result = JSON.parse(xhr.responseText)
+              reject(new Error(result.message || '업로드 실패'))
+            } catch {
+              reject(new Error('업로드 실패'))
+            }
+          }
+        })
+
+        xhr.addEventListener('error', () => {
+          reject(new Error('네트워크 오류'))
+        })
+
+        xhr.open('POST', '/api/upload')
+        xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest')
+        xhr.withCredentials = true
+        xhr.send(uploadFormData)
       })
 
-      const result = await response.json()
+      const result = await uploadPromise
 
       if (result.success) {
         setCourseDetail({ ...courseDetail, image: result.path })
         toast.success('이미지가 업로드되었습니다.')
+        // 프리뷰 제거
+        URL.revokeObjectURL(previewUrl)
+        setUploadPreview(null)
       } else {
         toast.error(result.message || '이미지 업로드에 실패했습니다.')
+        URL.revokeObjectURL(previewUrl)
+        setUploadPreview(null)
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('파일 업로드 실패:', error)
-      toast.error('이미지 업로드 중 오류가 발생했습니다.')
+      toast.error(error.message || '이미지 업로드 중 오류가 발생했습니다.')
+      if (uploadPreview) {
+        URL.revokeObjectURL(previewUrl)
+        setUploadPreview(null)
+      }
     } finally {
       setUploading(false)
+      setUploadProgress(0)
       e.target.value = ''
     }
   }
@@ -615,8 +719,22 @@ export default function CourseSettingsPage() {
                 </p>
                 <div className="w-full max-w-md">
                   <div className="relative">
-                    <label className="flex items-center justify-center w-full h-48 border-2 border-dashed rounded-lg cursor-pointer hover:border-primary">
-                      {gameInfo.thumbnails[0] ? (
+                    <label className={`flex items-center justify-center w-full h-48 border-2 border-dashed rounded-lg cursor-pointer hover:border-primary ${uploading ? 'opacity-50 pointer-events-none' : ''}`}>
+                      {uploadPreview && uploading ? (
+                        <div className="relative w-full h-full">
+                          <img src={uploadPreview} alt="업로드 중" className="w-full h-full object-cover rounded-lg opacity-50" />
+                          <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/50 rounded-lg">
+                            <Loader2 className="w-8 h-8 text-white animate-spin mb-2" />
+                            <span className="text-white text-sm">{Math.round(uploadProgress)}%</span>
+                            <div className="w-3/4 h-2 bg-white/20 rounded-full mt-2">
+                              <div 
+                                className="h-full bg-primary rounded-full transition-all duration-300"
+                                style={{ width: `${uploadProgress}%` }}
+                              />
+                            </div>
+                          </div>
+                        </div>
+                      ) : gameInfo.thumbnails[0] ? (
                         <>
                           <img src={gameInfo.thumbnails[0]} alt="섬네일" className="w-full h-full object-cover rounded-lg" />
                           <div className="absolute top-2 left-2 bg-primary text-white rounded-full p-1">
@@ -641,7 +759,7 @@ export default function CourseSettingsPage() {
                       )}
                       <input
                         type="file"
-                        accept="image/*"
+                        accept="image/jpeg,image/jpg,image/png,image/webp,image/gif"
                         onChange={(e) => handleThumbnailUpload(e, 0)}
                         disabled={uploading}
                         className="hidden"
@@ -1131,16 +1249,30 @@ export default function CourseSettingsPage() {
               <div>
                 <Label>강의를 표현할 수 있는 이미지를 등록해 주세요.</Label>
                 <div className="flex gap-4">
-                  <label className="flex items-center justify-center w-32 h-32 border-2 border-dashed rounded-lg cursor-pointer hover:border-primary">
-                    {courseDetail.image ? (
+                  <label className={`relative flex items-center justify-center w-32 h-32 border-2 border-dashed rounded-lg cursor-pointer hover:border-primary ${uploading ? 'opacity-50 pointer-events-none' : ''}`}>
+                    {uploadPreview && uploading ? (
+                      <div className="relative w-full h-full">
+                        <img src={uploadPreview} alt="업로드 중" className="w-full h-full object-cover rounded-lg opacity-50" />
+                        <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/50 rounded-lg">
+                          <Loader2 className="w-6 h-6 text-white animate-spin mb-1" />
+                          <span className="text-white text-xs">{Math.round(uploadProgress)}%</span>
+                          <div className="w-2/3 h-1 bg-white/20 rounded-full mt-1">
+                            <div 
+                              className="h-full bg-primary rounded-full transition-all duration-300"
+                              style={{ width: `${uploadProgress}%` }}
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    ) : courseDetail.image ? (
                       <>
                         <img src={courseDetail.image} alt="미리보기" className="w-full h-full object-cover rounded-lg" />
                         <button
                           type="button"
                           onClick={() => setCourseDetail({ ...courseDetail, image: "" })}
-                          className="absolute bg-destructive text-white rounded-full p-1"
+                          className="absolute top-1 right-1 bg-destructive text-white rounded-full p-1 hover:bg-destructive/80"
                         >
-                          <X className="w-4 h-4" />
+                          <X className="w-3 h-3" />
                         </button>
                       </>
                     ) : (
@@ -1151,7 +1283,7 @@ export default function CourseSettingsPage() {
                     )}
                     <input
                       type="file"
-                      accept="image/*"
+                      accept="image/jpeg,image/jpg,image/png,image/webp,image/gif"
                       onChange={handleImageUpload}
                       disabled={uploading}
                       className="hidden"
