@@ -94,28 +94,67 @@ export default function CoachDetailPage({ params }: { params: { id: string } }) 
 
         if (isMounted) {
           if (result.success && result.data) {
-            // introductionContent 파싱
+            // introductionContent 파싱 (에러 처리 개선)
             let introductionItems: IntroductionItem[] = []
             if (result.data.introductionContent) {
               try {
-                introductionItems = JSON.parse(result.data.introductionContent)
-              } catch {
+                const parsed = JSON.parse(result.data.introductionContent)
+                if (Array.isArray(parsed)) {
+                  introductionItems = parsed
+                } else if (typeof parsed === 'object') {
+                  // 단일 객체인 경우 배열로 변환
+                  introductionItems = [parsed]
+                }
+              } catch (error) {
+                console.error('introductionContent 파싱 실패:', error)
                 introductionItems = []
               }
             }
-            // 코치 ID 5 (Jomanjal)인 경우 하드코딩 데이터 오버라이드
-            // 주: introductionImage, introductionContent, curriculumItems, totalCourseTime은 DB에 저장됨
-            //     평점, 수강생, 후기는 아직 DB에 반영되지 않았으므로 임시로 오버라이드
-            //     가격 관련 필드(price, discount)는 DB에서 가져옴
-            const coachData = coachId === 5 
+            
+            // 커리큘럼 시간 계산 (totalCourseTime이 없을 때)
+            let calculatedTotalTime = result.data.totalCourseTime
+            if (!calculatedTotalTime && result.data.curriculumItems && Array.isArray(result.data.curriculumItems)) {
+              // 모든 커리큘럼 항목의 duration에서 시간 추출
+              const totalMinutes = result.data.curriculumItems.reduce((acc: number, item: { title: string; duration: string }) => {
+                if (item.duration) {
+                  // "30분", "1시간", "1시간 30분" 등의 형식 파싱
+                  const hourMatch = item.duration.match(/(\d+)\s*시간/)
+                  const minuteMatch = item.duration.match(/(\d+)\s*분/)
+                  const hours = hourMatch ? parseInt(hourMatch[1]) : 0
+                  const minutes = minuteMatch ? parseInt(minuteMatch[1]) : 0
+                  return acc + (hours * 60) + minutes
+                }
+                return acc
+              }, 0)
+              
+              if (totalMinutes > 0) {
+                const hours = Math.floor(totalMinutes / 60)
+                const minutes = totalMinutes % 60
+                if (hours > 0 && minutes > 0) {
+                  calculatedTotalTime = `${hours}시간 ${minutes}분`
+                } else if (hours > 0) {
+                  calculatedTotalTime = `${hours}시간`
+                } else {
+                  calculatedTotalTime = `${minutes}분`
+                }
+              }
+            }
+            
+            // 코치 ID 1 또는 5 (Jomanjal)인 경우 하드코딩 데이터 오버라이드
+            const coachData = (coachId === 5 || coachId === 1)
               ? { 
                   ...result.data, 
                   rating: 5.0,
                   reviews: 8,
                   students: 200,
-                  introductionItems 
+                  introductionItems,
+                  totalCourseTime: calculatedTotalTime || result.data.totalCourseTime
                 }
-              : { ...result.data, introductionItems }
+              : { 
+                  ...result.data, 
+                  introductionItems,
+                  totalCourseTime: calculatedTotalTime || result.data.totalCourseTime
+                }
             
             setCoach(coachData)
           } else {
@@ -148,8 +187,8 @@ export default function CoachDetailPage({ params }: { params: { id: string } }) 
     async function fetchReviews() {
       setReviewsLoading(true)
       try {
-        // 코치 ID 5 (Jomanjal)인 경우 하드코딩된 후기 사용
-        if (coachId === 5) {
+        // 코치 ID 1 또는 5 (Jomanjal)인 경우 하드코딩된 후기 사용
+        if (coachId === 5 || coachId === 1) {
           // 즉시 하드코딩된 후기 설정 (비동기 없이)
           const referenceReviews: Review[] = [
             {
@@ -615,22 +654,44 @@ export default function CoachDetailPage({ params }: { params: { id: string } }) 
                 <TabsContent value="curriculum">
                   <Card>
                     <CardContent className="p-6">
-                      <h2 className="text-xl font-bold mb-6">
-                        커리큘럼 {coach.totalCourseTime ? `총 ${coach.totalCourseTime}` : ''}
-                      </h2>
+                      <div className="flex items-center justify-between mb-6">
+                        <h2 className="text-xl font-bold">
+                          커리큘럼 {coach.totalCourseTime ? `총 ${coach.totalCourseTime}` : ''}
+                        </h2>
+                        {coach.curriculumItems && coach.curriculumItems.length > 0 && (
+                          <Badge variant="outline" className="text-sm">
+                            {coach.curriculumItems.length}개 강의
+                          </Badge>
+                        )}
+                      </div>
                       {coach.curriculumItems && coach.curriculumItems.length > 0 ? (
-                      <div className="space-y-4">
+                        <div className="space-y-3">
                           {coach.curriculumItems.map((item, index) => (
-                            <div key={index} className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors">
-                          <span className="font-medium">
-                                {index + 1}. {item.title}
-                          </span>
-                              <span className="text-muted-foreground text-sm">{item.duration}</span>
+                            <div 
+                              key={index} 
+                              className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors gap-4"
+                            >
+                              <div className="flex items-center gap-3 flex-1 min-w-0">
+                                <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary/10 text-primary flex items-center justify-center font-semibold text-sm">
+                                  {index + 1}
+                                </div>
+                                <span className="font-medium text-base truncate">
+                                  {item.title || `강의 ${index + 1}`}
+                                </span>
+                              </div>
+                              {item.duration && (
+                                <Badge variant="secondary" className="flex-shrink-0">
+                                  <Clock className="w-3 h-3 mr-1" />
+                                  {item.duration}
+                                </Badge>
+                              )}
                             </div>
                           ))}
                         </div>
                       ) : (
-                        <p className="text-muted-foreground">등록된 커리큘럼이 없습니다.</p>
+                        <div className="text-center py-10">
+                          <p className="text-muted-foreground">등록된 커리큘럼이 없습니다.</p>
+                        </div>
                       )}
                     </CardContent>
                   </Card>
@@ -772,7 +833,7 @@ export default function CoachDetailPage({ params }: { params: { id: string } }) 
                     </Button>
 
                     <div className="space-y-2 text-sm text-muted-foreground">
-                      <div>• 총 1개의 커리큘럼 (1시간)</div>
+                      <div>• 총 {coach.curriculumItems?.length || 1}개의 커리큘럼 {coach.totalCourseTime ? `(${coach.totalCourseTime})` : '(1시간)'}</div>
                     </div>
                   </CardContent>
                 </Card>

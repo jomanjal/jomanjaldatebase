@@ -15,7 +15,7 @@ export interface Instructor {
 
 export const instructors: Instructor[] = [
   {
-    id: 1,
+    id: 5,
     name: "Jomanjal",
     image: "/asd.jpg",
     specialty: "발로란트",

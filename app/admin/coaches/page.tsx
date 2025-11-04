@@ -1,5 +1,6 @@
 "use client"
 
+import { toast } from "sonner"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -26,6 +27,7 @@ interface Coach {
   specialties: string[]
   description: string | null
   verified: boolean
+  active: boolean
 }
 
 export default function CoachesManagementPage() {
@@ -46,6 +48,7 @@ export default function CoachesManagementPage() {
     specialtyInput: "",
     description: "",
     verified: false,
+    active: true,
   })
   
   const games = ["all", "리그 오브 레전드", "발로란트", "오버워치 2", "배틀그라운드"]
@@ -105,6 +108,7 @@ export default function CoachesManagementPage() {
       specialtyInput: "",
       description: "",
       verified: false,
+      active: true,
     })
     setIsAddDialogOpen(true)
   }
@@ -119,10 +123,10 @@ export default function CoachesManagementPage() {
 
   const handleEditCoach = (coach: Coach) => {
     setEditingCoach(coach)
-    // 가격을 숫자로 파싱 (문자열이면 숫자로 변환)
-    const priceNum = typeof coach.price === 'number' 
-      ? coach.price 
-      : (coach.price ? parseInt(coach.price.toString().replace(/,/g, '')) : null)
+    // 가격을 숫자로 파싱 (Coach 인터페이스에서 price는 number | null)
+    const priceNum = coach.price !== null && coach.price !== undefined
+      ? (typeof coach.price === 'number' ? coach.price : parseInt(String(coach.price).replace(/,/g, ''), 10))
+      : null
     setFormData({
       name: coach.name,
       specialty: coach.specialty,
@@ -133,13 +137,14 @@ export default function CoachesManagementPage() {
       specialtyInput: coach.specialties.join(', '),
       description: coach.description || "",
       verified: coach.verified,
+      active: coach.active !== undefined ? coach.active : true,
     })
     setIsEditDialogOpen(true)
   }
 
   const handleSaveCoach = async () => {
     if (!formData.name || !formData.specialty || !formData.tier || !formData.experience) {
-      alert('이름, 전문 분야, 티어, 경력은 필수 입력 항목입니다.')
+      toast.error('이름, 전문 분야, 티어, 경력은 필수 입력 항목입니다.')
       return
     }
 
@@ -157,6 +162,7 @@ export default function CoachesManagementPage() {
         specialties: specialties,
         description: formData.description || null,
         verified: formData.verified,
+        active: formData.active,
       }
 
       const url = editingCoach ? `/api/coaches/${editingCoach.id}` : '/api/coaches'
@@ -178,16 +184,17 @@ export default function CoachesManagementPage() {
           setIsEditDialogOpen(false)
           setEditingCoach(null)
           fetchCoaches()
+          toast.success(editingCoach ? '코치 정보가 수정되었습니다.' : '코치가 추가되었습니다.')
         } else {
-          alert(result.message || '저장 중 오류가 발생했습니다.')
+          toast.error(result.message || '저장 중 오류가 발생했습니다.')
         }
       } else {
         const result = await response.json()
-        alert(result.message || '저장 중 오류가 발생했습니다.')
+        toast.error(result.message || '저장 중 오류가 발생했습니다.')
       }
     } catch (error) {
       console.error('Failed to save coach:', error)
-      alert('저장 중 오류가 발생했습니다.')
+      toast.error('저장 중 오류가 발생했습니다.')
     }
   }
 
@@ -206,16 +213,17 @@ export default function CoachesManagementPage() {
         const result = await response.json()
         if (result.success) {
           fetchCoaches()
+          toast.success('코치가 삭제되었습니다.')
         } else {
-          alert(result.message || '삭제 중 오류가 발생했습니다.')
+          toast.error(result.message || '삭제 중 오류가 발생했습니다.')
         }
       } else {
         const result = await response.json()
-        alert(result.message || '삭제 중 오류가 발생했습니다.')
+        toast.error(result.message || '삭제 중 오류가 발생했습니다.')
       }
     } catch (error) {
       console.error('Failed to delete coach:', error)
-      alert('삭제 중 오류가 발생했습니다.')
+      toast.error('삭제 중 오류가 발생했습니다.')
     }
   }
 
@@ -376,11 +384,20 @@ export default function CoachesManagementPage() {
                       <TableCell>{coach.students || 0}명</TableCell>
                       <TableCell>{coach.reviews}건</TableCell>
                       <TableCell>
-                        {coach.verified ? (
-                          <Badge className="bg-green-500">인증됨</Badge>
-                        ) : (
-                          <Badge variant="outline">미인증</Badge>
-                        )}
+                        <div className="flex flex-col gap-1">
+                          {coach.verified ? (
+                            <Badge className="bg-green-500">인증됨</Badge>
+                          ) : (
+                            <Badge variant="outline">미인증</Badge>
+                          )}
+                          {coach.active !== undefined && (
+                            coach.active ? (
+                              <Badge className="bg-blue-500">활성</Badge>
+                            ) : (
+                              <Badge variant="outline" className="bg-gray-100">비활성</Badge>
+                            )
+                          )}
+                        </div>
                       </TableCell>
                       <TableCell>
                         <div className="flex items-center gap-2">
@@ -508,15 +525,27 @@ export default function CoachesManagementPage() {
                 rows={4}
               />
             </div>
-            <div className="flex items-center space-x-2">
-              <Checkbox
-                id="verified"
-                checked={formData.verified}
-                onCheckedChange={(checked) => setFormData({ ...formData, verified: checked === true })}
-              />
-              <Label htmlFor="verified" className="cursor-pointer">
-                인증된 코치
-              </Label>
+            <div className="flex flex-col gap-3">
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id="verified"
+                  checked={formData.verified}
+                  onCheckedChange={(checked) => setFormData({ ...formData, verified: checked === true })}
+                />
+                <Label htmlFor="verified" className="cursor-pointer">
+                  인증된 코치
+                </Label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id="active"
+                  checked={formData.active}
+                  onCheckedChange={(checked) => setFormData({ ...formData, active: checked === true })}
+                />
+                <Label htmlFor="active" className="cursor-pointer">
+                  활성화 (코치 목록에 노출)
+                </Label>
+              </div>
             </div>
           </div>
           <DialogFooter>
@@ -629,15 +658,27 @@ export default function CoachesManagementPage() {
                 rows={4}
               />
             </div>
-            <div className="flex items-center space-x-2">
-              <Checkbox
-                id="edit-verified"
-                checked={formData.verified}
-                onCheckedChange={(checked) => setFormData({ ...formData, verified: checked === true })}
-              />
-              <Label htmlFor="edit-verified" className="cursor-pointer">
-                인증된 코치
-              </Label>
+            <div className="flex flex-col gap-3">
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id="edit-verified"
+                  checked={formData.verified}
+                  onCheckedChange={(checked) => setFormData({ ...formData, verified: checked === true })}
+                />
+                <Label htmlFor="edit-verified" className="cursor-pointer">
+                  인증된 코치
+                </Label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id="edit-active"
+                  checked={formData.active}
+                  onCheckedChange={(checked) => setFormData({ ...formData, active: checked === true })}
+                />
+                <Label htmlFor="edit-active" className="cursor-pointer">
+                  활성화 (코치 목록에 노출)
+                </Label>
+              </div>
             </div>
           </div>
           <DialogFooter>

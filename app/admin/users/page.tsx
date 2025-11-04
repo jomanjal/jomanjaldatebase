@@ -1,5 +1,6 @@
 "use client"
 
+import { toast } from "sonner"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -90,16 +91,17 @@ export default function UsersManagementPage() {
         if (result.success) {
           setIsEditDialogOpen(false)
           fetchUsers()
+          toast.success('유저 정보가 수정되었습니다.')
         } else {
-          alert(result.message || '유저 수정 중 오류가 발생했습니다.')
+          toast.error(result.message || '유저 수정 중 오류가 발생했습니다.')
         }
       } else {
         const result = await response.json()
-        alert(result.message || '유저 수정 중 오류가 발생했습니다.')
+        toast.error(result.message || '유저 수정 중 오류가 발생했습니다.')
       }
     } catch (error) {
       console.error('Failed to update user:', error)
-      alert('유저 수정 중 오류가 발생했습니다.')
+      toast.error('유저 수정 중 오류가 발생했습니다.')
     }
   }
 
@@ -118,16 +120,17 @@ export default function UsersManagementPage() {
         const result = await response.json()
         if (result.success) {
           fetchUsers()
+          toast.success('유저가 삭제되었습니다.')
         } else {
-          alert(result.message || '유저 삭제 중 오류가 발생했습니다.')
+          toast.error(result.message || '유저 삭제 중 오류가 발생했습니다.')
         }
       } else {
         const result = await response.json()
-        alert(result.message || '유저 삭제 중 오류가 발생했습니다.')
+        toast.error(result.message || '유저 삭제 중 오류가 발생했습니다.')
       }
     } catch (error) {
       console.error('Failed to delete user:', error)
-      alert('유저 삭제 중 오류가 발생했습니다.')
+      toast.error('유저 삭제 중 오류가 발생했습니다.')
     }
   }
 

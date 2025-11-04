@@ -35,7 +35,7 @@ async function updateJomanjalCoach() {
         curriculumItems: curriculumItems,
         totalCourseTime: "1시간",
         discount: 50,
-        price: "50,000원/시간", // 원가
+        price: 50000, // 가격 (원 단위 숫자)
       })
       .where(eq(coaches.id, coachId))
       .returning()

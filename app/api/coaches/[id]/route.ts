@@ -138,6 +138,7 @@ export async function PUT(
       curriculumItems,
       totalCourseTime,
       verified, // 코치는 verified 수정 불가 (관리자만 가능)
+      active, // 코치는 active 수정 불가 (관리자만 가능)
     } = body
 
     // 업데이트할 데이터 구성
@@ -165,9 +166,12 @@ export async function PUT(
     if (introductionContent !== undefined) updateData.introductionContent = introductionContent
     if (curriculumItems !== undefined) updateData.curriculumItems = JSON.stringify(curriculumItems)
     if (totalCourseTime !== undefined) updateData.totalCourseTime = totalCourseTime
-    // verified는 관리자만 수정 가능
+    // verified와 active는 관리자만 수정 가능
     if (verified !== undefined && user.isAdmin) {
       updateData.verified = verified
+    }
+    if (active !== undefined && user.isAdmin) {
+      updateData.active = active
     }
     updateData.updatedAt = new Date()
 

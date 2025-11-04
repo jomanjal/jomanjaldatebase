@@ -9,6 +9,7 @@ import { Search, Mail, UserCheck, Send, CheckCircle, RefreshCw } from "lucide-re
 import { useState, useEffect } from "react"
 import { format } from "date-fns"
 import { ko } from "date-fns/locale"
+import { toast } from "sonner"
 
 interface WaitlistItem {
   id: number
@@ -75,11 +76,11 @@ export default function WaitlistManagementPage() {
       if (response.ok) {
         fetchWaitlist()
       } else {
-        alert('연락 완료 표시 중 오류가 발생했습니다.')
+        toast.error('연락 완료 표시 중 오류가 발생했습니다.')
       }
     } catch (error) {
       console.error('Failed to update contacted status:', error)
-      alert('연락 완료 표시 중 오류가 발생했습니다.')
+      toast.error('연락 완료 표시 중 오류가 발생했습니다.')
     }
   }
 
@@ -96,12 +97,13 @@ export default function WaitlistManagementPage() {
 
       if (response.ok) {
         fetchWaitlist()
+        toast.success('웨이팅 리스트 항목이 삭제되었습니다.')
       } else {
-        alert('삭제 중 오류가 발생했습니다.')
+        toast.error('삭제 중 오류가 발생했습니다.')
       }
     } catch (error) {
       console.error('Failed to delete:', error)
-      alert('삭제 중 오류가 발생했습니다.')
+      toast.error('삭제 중 오류가 발생했습니다.')
     }
   }
 
@@ -195,7 +197,7 @@ export default function WaitlistManagementPage() {
         <Card>
           <CardContent className="pt-6">
             <div className="text-2xl font-bold text-blue-600">
-              {filteredWaitlist.filter(w => w.game === "리그 오브 레전드").length}
+              {filteredWaitlist.filter(w => w.goal === "리그 오브 레전드").length}
             </div>
             <div className="text-sm text-muted-foreground mt-1">리그오브레전드</div>
           </CardContent>
@@ -203,7 +205,7 @@ export default function WaitlistManagementPage() {
         <Card>
           <CardContent className="pt-6">
             <div className="text-2xl font-bold text-green-600">
-              {filteredWaitlist.filter(w => w.game === "발로란트").length}
+              {filteredWaitlist.filter(w => w.goal === "발로란트").length}
             </div>
             <div className="text-sm text-muted-foreground mt-1">발로란트</div>
           </CardContent>
@@ -211,7 +213,7 @@ export default function WaitlistManagementPage() {
         <Card>
           <CardContent className="pt-6">
             <div className="text-2xl font-bold text-orange-600">
-              {filteredWaitlist.filter(w => w.game === "오버워치 2").length}
+              {filteredWaitlist.filter(w => w.goal === "오버워치 2").length}
             </div>
             <div className="text-sm text-muted-foreground mt-1">오버워치 2</div>
           </CardContent>

@@ -2,7 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import { reviews, coaches, users } from '@/lib/db/schema'
 import { eq, desc, and, like, or } from 'drizzle-orm'
-import { getAuthenticatedUser } from '@/lib/auth-server'
+import { getAuthenticatedUser, requireAdmin } from '@/lib/auth-server'
+import { sql } from 'drizzle-orm'
 
 /**
  * 리뷰 목록 조회 (GET)
@@ -113,6 +114,114 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({
       success: false,
       message: '리뷰 조회 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.'
+    }, { status: 500 })
+  }
+}
+
+/**
+ * 리뷰 작성 (POST)
+ * 관리자 권한 필요
+ */
+export async function POST(request: NextRequest) {
+  try {
+    // 관리자 권한 확인
+    await requireAdmin(request)
+
+    const body = await request.json()
+    const { coachId, userId, rating, comment, verified = false } = body
+
+    // 필수 필드 검증
+    if (!coachId || !userId || !rating) {
+      return NextResponse.json({
+        success: false,
+        message: '코치 ID, 사용자 ID, 평점은 필수 입력 항목입니다.'
+      }, { status: 400 })
+    }
+
+    // 평점 범위 검증 (1-5)
+    if (rating < 1 || rating > 5) {
+      return NextResponse.json({
+        success: false,
+        message: '평점은 1부터 5까지 입력할 수 있습니다.'
+      }, { status: 400 })
+    }
+
+    // 코치 존재 확인
+    const [coach] = await db.select()
+      .from(coaches)
+      .where(eq(coaches.id, coachId))
+      .limit(1)
+
+    if (!coach) {
+      return NextResponse.json({
+        success: false,
+        message: '코치를 찾을 수 없습니다.'
+      }, { status: 404 })
+    }
+
+    // 사용자 존재 확인
+    const [user] = await db.select()
+      .from(users)
+      .where(eq(users.id, userId))
+      .limit(1)
+
+    if (!user) {
+      return NextResponse.json({
+        success: false,
+        message: '사용자를 찾을 수 없습니다.'
+      }, { status: 404 })
+    }
+
+    // 리뷰 추가
+    const [newReview] = await db.insert(reviews).values({
+      coachId: parseInt(coachId),
+      userId: parseInt(userId),
+      rating: parseInt(rating),
+      comment: comment || null,
+      verified: verified === true,
+    }).returning()
+
+    // 리뷰가 승인된 경우 코치 평점 업데이트
+    if (verified) {
+      // 코치의 평균 평점 계산
+      const [coachStats] = await db.select({
+        avgRating: sql<number>`COALESCE(AVG(${reviews.rating}), 0)`,
+        reviewCount: sql<number>`COUNT(*)`,
+      })
+        .from(reviews)
+        .where(and(
+          eq(reviews.coachId, coachId),
+          eq(reviews.verified, true)
+        ))
+
+      // 코치 평점 업데이트
+      await db.update(coaches)
+        .set({
+          rating: Number(coachStats.avgRating),
+          reviews: Number(coachStats.reviewCount),
+        })
+        .where(eq(coaches.id, coachId))
+    }
+
+    return NextResponse.json({
+      success: true,
+      data: newReview,
+      message: '리뷰가 추가되었습니다.'
+    }, { status: 201 })
+  } catch (error: any) {
+    console.error('Reviews POST error:', error)
+    
+    // requireAdmin에서 throw한 에러 처리
+    if (error.message === '인증이 필요합니다.' || error.message === '관리자 권한이 필요합니다.') {
+      return NextResponse.json({
+        success: false,
+        message: error.message
+      }, { status: 403 })
+    }
+
+    return NextResponse.json({
+      success: false,
+      message: '리뷰 추가 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.'
     }, { status: 500 })
   }
 }

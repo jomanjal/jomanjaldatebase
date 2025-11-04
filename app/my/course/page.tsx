@@ -13,6 +13,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Loader2, Save, X, Plus, Upload, ChevronLeft, ChevronRight, Search, Check } from "lucide-react"
 import { checkAuth, type User } from "@/lib/auth"
 import Link from "next/link"
+import { toast } from "sonner"
 
 interface Coach {
   id: number
@@ -256,12 +257,12 @@ export default function CourseSettingsPage() {
     if (!file) return
 
     if (!file.type.startsWith('image/')) {
-      alert('이미지 파일만 업로드할 수 있습니다.')
+      toast.error('이미지 파일만 업로드할 수 있습니다.')
       return
     }
 
     if (file.size > 5 * 1024 * 1024) {
-      alert('파일 크기는 5MB 이하여야 합니다.')
+      toast.error('파일 크기는 5MB 이하여야 합니다.')
       return
     }
 
@@ -282,13 +283,13 @@ export default function CourseSettingsPage() {
       if (result.success) {
         // 썸네일은 1개만 유지
         setGameInfo({ ...gameInfo, thumbnails: [result.path] })
-        alert('이미지가 업로드되었습니다.')
+        toast.success('이미지가 업로드되었습니다.')
       } else {
-        alert(result.message || '이미지 업로드에 실패했습니다.')
+        toast.error(result.message || '이미지 업로드에 실패했습니다.')
       }
     } catch (error) {
       console.error('파일 업로드 실패:', error)
-      alert('이미지 업로드 중 오류가 발생했습니다.')
+      toast.error('이미지 업로드 중 오류가 발생했습니다.')
     } finally {
       setUploading(false)
       e.target.value = ''
@@ -300,12 +301,12 @@ export default function CourseSettingsPage() {
     if (!file) return
 
     if (!file.type.startsWith('image/')) {
-      alert('이미지 파일만 업로드할 수 있습니다.')
+      toast.error('이미지 파일만 업로드할 수 있습니다.')
       return
     }
 
     if (file.size > 5 * 1024 * 1024) {
-      alert('파일 크기는 5MB 이하여야 합니다.')
+      toast.error('파일 크기는 5MB 이하여야 합니다.')
       return
     }
 
@@ -325,13 +326,13 @@ export default function CourseSettingsPage() {
 
       if (result.success) {
         setCourseDetail({ ...courseDetail, image: result.path })
-        alert('이미지가 업로드되었습니다.')
+        toast.success('이미지가 업로드되었습니다.')
       } else {
-        alert(result.message || '이미지 업로드에 실패했습니다.')
+        toast.error(result.message || '이미지 업로드에 실패했습니다.')
       }
     } catch (error) {
       console.error('파일 업로드 실패:', error)
-      alert('이미지 업로드 중 오류가 발생했습니다.')
+      toast.error('이미지 업로드 중 오류가 발생했습니다.')
     } finally {
       setUploading(false)
       e.target.value = ''
@@ -441,18 +442,18 @@ export default function CourseSettingsPage() {
       const result = await response.json()
 
       if (result.success) {
-        alert(result.message || '강의 설정이 저장되었습니다.')
+        toast.success(result.message || '강의 설정이 저장되었습니다.')
         if (result.data) {
           setCoach(result.data)
           setHasProfile(true)
           router.push('/my')
         }
       } else {
-        alert(result.message || '강의 설정 저장에 실패했습니다.')
+        toast.error(result.message || '강의 설정 저장에 실패했습니다.')
       }
     } catch (error) {
       console.error('강의 설정 저장 실패:', error)
-      alert('강의 설정 저장 중 오류가 발생했습니다.')
+      toast.error('강의 설정 저장 중 오류가 발생했습니다.')
     } finally {
       setSaving(false)
     }

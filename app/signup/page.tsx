@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
+import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -57,7 +58,7 @@ export default function SignupPage() {
       const data = await response.json()
 
       if (response.ok && data.success) {
-        alert("회원가입이 완료되었습니다!")
+        toast.success("회원가입이 완료되었습니다!")
         router.push('/login')
       } else {
         setError(data.message || '회원가입 중 오류가 발생했습니다.')

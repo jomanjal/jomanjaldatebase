@@ -5,9 +5,14 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Search, Star, Eye, Trash2, CheckCircle, RefreshCw } from "lucide-react"
+import { Search, Star, Eye, Trash2, CheckCircle, RefreshCw, Plus } from "lucide-react"
 import { useState, useEffect } from "react"
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { Label } from "@/components/ui/label"
+import { Textarea } from "@/components/ui/textarea"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Checkbox } from "@/components/ui/checkbox"
+import { toast } from "sonner"
 
 interface Review {
   id: number
@@ -23,6 +28,18 @@ interface Review {
   timeAgo: string
 }
 
+interface Coach {
+  id: number
+  name: string
+  specialty: string
+}
+
+interface User {
+  id: number
+  username: string
+  email: string
+}
+
 export default function ReviewsManagementPage() {
   const [reviews, setReviews] = useState<Review[]>([])
   const [loading, setLoading] = useState(true)
@@ -31,6 +48,50 @@ export default function ReviewsManagementPage() {
   const [showPendingOnly, setShowPendingOnly] = useState(false)
   const [selectedReview, setSelectedReview] = useState<Review | null>(null)
   const [isDialogOpen, setIsDialogOpen] = useState(false)
+  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false)
+  const [coaches, setCoaches] = useState<Coach[]>([])
+  const [users, setUsers] = useState<User[]>([])
+  const [formData, setFormData] = useState({
+    coachId: "",
+    userId: "",
+    rating: 5,
+    comment: "",
+    verified: false,
+  })
+
+  // 코치 목록 조회
+  const fetchCoaches = async () => {
+    try {
+      const response = await fetch('/api/coaches?admin=true', {
+        credentials: 'include',
+      })
+      if (response.ok) {
+        const result = await response.json()
+        if (result.success) {
+          setCoaches(result.data || [])
+        }
+      }
+    } catch (error) {
+      console.error('Failed to fetch coaches:', error)
+    }
+  }
+
+  // 사용자 목록 조회
+  const fetchUsers = async () => {
+    try {
+      const response = await fetch('/api/users', {
+        credentials: 'include',
+      })
+      if (response.ok) {
+        const result = await response.json()
+        if (result.success) {
+          setUsers(result.data || [])
+        }
+      }
+    } catch (error) {
+      console.error('Failed to fetch users:', error)
+    }
+  }
 
   // 리뷰 목록 조회
   const fetchReviews = async () => {
@@ -61,6 +122,8 @@ export default function ReviewsManagementPage() {
 
   useEffect(() => {
     fetchReviews()
+    fetchCoaches()
+    fetchUsers()
   }, [searchQuery, filterRating, showPendingOnly])
 
   const handleVerifyReview = async (id: number) => {
@@ -78,16 +141,17 @@ export default function ReviewsManagementPage() {
         const result = await response.json()
         if (result.success) {
           fetchReviews()
+          toast.success('리뷰가 승인되었습니다.')
         } else {
-          alert(result.message || '리뷰 승인 중 오류가 발생했습니다.')
+          toast.error(result.message || '리뷰 승인 중 오류가 발생했습니다.')
         }
       } else {
         const result = await response.json()
-        alert(result.message || '리뷰 승인 중 오류가 발생했습니다.')
+        toast.error(result.message || '리뷰 승인 중 오류가 발생했습니다.')
       }
     } catch (error) {
       console.error('Failed to verify review:', error)
-      alert('리뷰 승인 중 오류가 발생했습니다.')
+      toast.error('리뷰 승인 중 오류가 발생했습니다.')
     }
   }
 
@@ -106,16 +170,17 @@ export default function ReviewsManagementPage() {
         const result = await response.json()
         if (result.success) {
           fetchReviews()
+          toast.success('리뷰가 삭제되었습니다.')
         } else {
-          alert(result.message || '리뷰 삭제 중 오류가 발생했습니다.')
+          toast.error(result.message || '리뷰 삭제 중 오류가 발생했습니다.')
         }
       } else {
         const result = await response.json()
-        alert(result.message || '리뷰 삭제 중 오류가 발생했습니다.')
+        toast.error(result.message || '리뷰 삭제 중 오류가 발생했습니다.')
       }
     } catch (error) {
       console.error('Failed to delete review:', error)
-      alert('리뷰 삭제 중 오류가 발생했습니다.')
+      toast.error('리뷰 삭제 중 오류가 발생했습니다.')
     }
   }
 
@@ -138,7 +203,55 @@ export default function ReviewsManagementPage() {
       }
     } catch (error) {
       console.error('Failed to fetch review:', error)
-      alert('리뷰 조회 중 오류가 발생했습니다.')
+      toast.error('리뷰 조회 중 오류가 발생했습니다.')
+    }
+  }
+
+  const handleAddReview = async () => {
+    if (!formData.coachId || !formData.userId || !formData.rating) {
+      toast.error('코치, 사용자, 평점은 필수 입력 항목입니다.')
+      return
+    }
+
+    try {
+      const response = await fetch('/api/reviews', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify({
+          coachId: parseInt(formData.coachId),
+          userId: parseInt(formData.userId),
+          rating: formData.rating,
+          comment: formData.comment || null,
+          verified: formData.verified,
+        }),
+      })
+
+      if (response.ok) {
+        const result = await response.json()
+        if (result.success) {
+          setIsAddDialogOpen(false)
+          setFormData({
+            coachId: "",
+            userId: "",
+            rating: 5,
+            comment: "",
+            verified: false,
+          })
+          fetchReviews()
+          toast.success('리뷰가 추가되었습니다.')
+        } else {
+          toast.error(result.message || '리뷰 추가 중 오류가 발생했습니다.')
+        }
+      } else {
+        const result = await response.json()
+        toast.error(result.message || '리뷰 추가 중 오류가 발생했습니다.')
+      }
+    } catch (error) {
+      console.error('Failed to add review:', error)
+      toast.error('리뷰 추가 중 오류가 발생했습니다.')
     }
   }
 
@@ -161,10 +274,16 @@ export default function ReviewsManagementPage() {
             등록된 리뷰를 관리하고 승인할 수 있습니다.
           </p>
         </div>
-        <Button onClick={fetchReviews} variant="outline" disabled={loading}>
-          <RefreshCw className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
-          새로고침
-        </Button>
+        <div className="flex gap-2">
+          <Button onClick={() => setIsAddDialogOpen(true)}>
+            <Plus className="w-4 h-4 mr-2" />
+            리뷰 추가
+          </Button>
+          <Button onClick={fetchReviews} variant="outline" disabled={loading}>
+            <RefreshCw className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
+            새로고침
+          </Button>
+        </div>
       </div>
 
       {/* 검색 및 필터 */}
@@ -436,6 +555,96 @@ export default function ReviewsManagementPage() {
               )}
             </div>
           )}
+        </DialogContent>
+      </Dialog>
+
+      {/* 리뷰 추가 다이얼로그 */}
+      <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>리뷰 추가</DialogTitle>
+            <DialogDescription>
+              새로운 리뷰를 등록할 수 있습니다.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="coach" className="text-right">
+                코치
+              </Label>
+              <Select onValueChange={(value) => setFormData(prev => ({ ...prev, coachId: value }))} value={formData.coachId}>
+                <SelectTrigger className="col-span-3">
+                  <SelectValue placeholder="코치를 선택하세요" />
+                </SelectTrigger>
+                <SelectContent>
+                  {coaches.map(coach => (
+                    <SelectItem key={coach.id} value={coach.id.toString()}>
+                      {coach.name} ({coach.specialty})
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="user" className="text-right">
+                사용자
+              </Label>
+              <Select onValueChange={(value) => setFormData(prev => ({ ...prev, userId: value }))} value={formData.userId}>
+                <SelectTrigger className="col-span-3">
+                  <SelectValue placeholder="사용자를 선택하세요" />
+                </SelectTrigger>
+                <SelectContent>
+                  {users.map(user => (
+                    <SelectItem key={user.id} value={user.id.toString()}>
+                      {user.username} ({user.email})
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="rating" className="text-right">
+                평점
+              </Label>
+              <Select onValueChange={(value) => setFormData(prev => ({ ...prev, rating: parseInt(value, 10) }))} value={formData.rating.toString()}>
+                <SelectTrigger className="col-span-3">
+                  <SelectValue placeholder="평점을 선택하세요" />
+                </SelectTrigger>
+                <SelectContent>
+                  {[1, 2, 3, 4, 5].map(rating => (
+                    <SelectItem key={rating} value={rating.toString()}>
+                      {rating}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="comment" className="text-right">
+                리뷰 내용
+              </Label>
+              <Textarea
+                id="comment"
+                value={formData.comment}
+                onChange={(e) => setFormData(prev => ({ ...prev, comment: e.target.value }))}
+                className="col-span-3"
+                placeholder="리뷰 내용을 입력하세요 (최대 500자)"
+                maxLength={500}
+              />
+            </div>
+            <div className="flex items-center space-x-2">
+              <Checkbox
+                id="verified"
+                checked={formData.verified}
+                onCheckedChange={(checked) => setFormData(prev => ({ ...prev, verified: checked as boolean }))}
+              />
+              <Label htmlFor="verified">승인됨</Label>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsAddDialogOpen(false)}>취소</Button>
+            <Button onClick={handleAddReview}>리뷰 추가</Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>

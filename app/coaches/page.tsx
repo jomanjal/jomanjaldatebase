@@ -68,7 +68,7 @@ const sortOptions = [
 ]
 
 // 하드코딩된 오버라이드 데이터 (나중에 DB 연동 시 제거)
-// 코치 ID 5 (Jomanjal)에 적용할 오버라이드 데이터
+// 코치 ID 1 또는 5 (Jomanjal)에 적용할 오버라이드 데이터
 // 주: 평점, 수강생, 후기는 아직 DB에 반영되지 않았으므로 임시로 오버라이드
 //     가격 관련 필드(price, discount)는 DB에서 가져옴
 const jomanjalOverrides = {
@@ -93,6 +93,7 @@ interface Coach {
   thumbnailImage: string | null
   introductionImage: string | null
   verified: boolean
+  active: boolean
 }
 
 export default function CoachesPage() {
@@ -144,21 +145,43 @@ export default function CoachesPage() {
             setPagination(result.pagination)
           }
           
-          // 코치 ID 5 (Jomanjal)를 찾아서 오버라이드 적용하고 맨 앞으로 이동
-          const jomanjalIndex = dbCoaches.findIndex((c: Coach) => c.id === 5)
+          // ID 1 또는 5 (Jomanjal) 코치 찾기
+          let jomanjalIndex = dbCoaches.findIndex((c: Coach) => c.id === 5 || c.id === 1)
+          let jomanjal: Coach | null = null
           
           if (jomanjalIndex !== -1) {
-            // ID 5 코치를 오버라이드하고 맨 앞으로 이동
-            const jomanjal = {
+            // DB에서 찾은 경우 오버라이드
+            jomanjal = {
               ...dbCoaches[jomanjalIndex],
               ...jomanjalOverrides,
             } as Coach & { originalPrice?: number; discount?: number }
-            const otherCoaches = dbCoaches.filter((c: Coach) => c.id !== 5)
-            setCoaches([jomanjal, ...otherCoaches])
           } else {
-            // ID 5가 없으면 기존 순서 유지
-            setCoaches(dbCoaches)
+            // DB에서 찾지 못한 경우 하드코딩된 Jomanjal 코치 생성
+            // (API에서 verified=false이거나 active=false인 경우 등)
+            jomanjal = {
+              id: 5,
+              name: "Jomanjal",
+              specialty: "발로란트",
+              tier: "레디언트",
+              experience: "3년",
+              rating: jomanjalOverrides.rating,
+              reviews: jomanjalOverrides.reviews,
+              students: jomanjalOverrides.students,
+              price: null,
+              discount: null,
+              specialties: ["발로란트", "에이밍", "전략"],
+              description: "전문 코치",
+              headline: "에임, 피지컬 강의 국내 No.1",
+              thumbnailImage: "/asd.jpg",
+              introductionImage: null,
+              verified: true,
+              active: true,
+            } as unknown as Coach & { originalPrice?: number; discount?: number }
           }
+          
+          // Jomanjal 코치를 맨 앞으로 이동
+          const otherCoaches = dbCoaches.filter((c: Coach) => c.id !== 5 && c.id !== 1)
+          setCoaches([jomanjal, ...otherCoaches])
         }
       } catch (error) {
         console.error('코치 데이터 로드 실패:', error)

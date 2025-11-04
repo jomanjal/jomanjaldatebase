@@ -208,6 +208,7 @@ export async function POST(request: NextRequest) {
       specialties,
       description,
       verified = false,
+      active = true,
       // userId는 나중에 사용자 시스템과 연동할 때 사용
       userId = null,
     } = body
@@ -245,6 +246,7 @@ export async function POST(request: NextRequest) {
       specialties: specialties ? JSON.stringify(specialties) : JSON.stringify([]),
       description: description || null,
       verified: verified,
+      active: active,
     }).returning()
 
     // specialties 파싱
