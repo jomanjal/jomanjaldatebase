@@ -55,9 +55,16 @@ export const ratingSchema = z
 
 // 검색어 검증
 export const searchQuerySchema = z
-  .string()
-  .max(100, '검색어는 100자를 초과할 수 없습니다.')
+  .union([
+    z.string().max(100, '검색어는 100자를 초과할 수 없습니다.'),
+    z.literal(''),
+    z.undefined()
+  ])
   .optional()
+  .transform((val) => {
+    if (!val || val === '') return undefined
+    return val.trim()
+  })
 
 // 페이지네이션 검증
 export const paginationSchema = z.object({
@@ -136,15 +143,17 @@ export const coachSearchSchema = z.object({
   specialty: z.string().optional(),
   tier: z.string().optional(),
   minPrice: z
-    .union([z.string(), z.number()])
+    .union([z.string(), z.number(), z.null(), z.undefined()])
     .transform((val) => {
+      if (val === null || val === undefined) return undefined
       const num = typeof val === 'string' ? parseInt(val, 10) : val
       return isNaN(num) ? undefined : num
     })
     .optional(),
   maxPrice: z
-    .union([z.string(), z.number()])
+    .union([z.string(), z.number(), z.null(), z.undefined()])
     .transform((val) => {
+      if (val === null || val === undefined) return undefined
       const num = typeof val === 'string' ? parseInt(val, 10) : val
       return isNaN(num) ? undefined : num
     })

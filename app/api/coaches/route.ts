@@ -29,6 +29,9 @@ export async function GET(request: NextRequest) {
     })
     
     if (!validationResult.success) {
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Validation error:', validationResult.error.errors)
+      }
       const firstError = validationResult.error.errors[0]
       return NextResponse.json({
         success: false,
@@ -57,7 +60,7 @@ export async function GET(request: NextRequest) {
 
     // 검색 필터 (ILIKE 사용 - 대소문자 구분 없음, 인덱스 활용을 위해 prefix 검색도 고려)
     // PostgreSQL의 B-tree 인덱스는 prefix 검색에 최적화되어 있음
-    if (validatedSearch) {
+    if (validatedSearch && validatedSearch.trim() !== '') {
       // sanitized search 사용 (SQL Injection 방지)
       conditions.push(
         sql`${coaches.name} ILIKE ${`%${validatedSearch}%`}`
@@ -180,8 +183,17 @@ export async function GET(request: NextRequest) {
         hasPrevPage: page > 1,
       }
     }, { status: 200 })
-  } catch (error) {
-    console.error('Coaches GET error:', error)
+  } catch (error: any) {
+    if (process.env.NODE_ENV === 'development') {
+      console.error('Coaches GET error:', error)
+      console.error('Error details:', {
+        message: error.message,
+        code: error.code,
+        stack: error.stack,
+      })
+    } else {
+      console.error('Coaches GET error:', error.message)
+    }
     return NextResponse.json({
       success: false,
       message: '코치 조회 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.'

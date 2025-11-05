@@ -138,7 +138,8 @@ export default function CoachesPage() {
         const response = await fetch(`/api/coaches?${params.toString()}`)
         
         if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`)
+          const errorData = await response.json().catch(() => ({}))
+          throw new Error(errorData.message || `HTTP error! status: ${response.status}`)
         }
         
         const result = await response.json()
@@ -160,6 +161,12 @@ export default function CoachesPage() {
         }
       } catch (error) {
         console.error('코치 데이터 로드 실패:', error)
+        if (process.env.NODE_ENV === 'development') {
+          console.error('Error details:', {
+            message: error instanceof Error ? error.message : String(error),
+            stack: error instanceof Error ? error.stack : undefined,
+          })
+        }
         if (isMounted) {
           setError(error instanceof Error ? error : new Error('알 수 없는 오류가 발생했습니다.'))
         }
