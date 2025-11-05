@@ -9,6 +9,7 @@ import { Star, Clock, ChevronRight, Loader2, SlidersHorizontal } from "lucide-re
 import { useState, useEffect, useMemo } from "react"
 import Link from "next/link"
 import { ErrorDisplay } from "@/components/error-display"
+import { sanitizeText } from "@/lib/dompurify-client"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import {
   Pagination,
@@ -323,7 +324,7 @@ export default function ReviewsPage() {
                       {/* 후기 내용 */}
                       {review.comment && (
                         <p className="text-foreground mb-4 leading-relaxed">
-                          {review.comment}
+                          {sanitizeText(review.comment)}
                         </p>
                       )}
 

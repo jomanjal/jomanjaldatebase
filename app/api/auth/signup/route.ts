@@ -4,6 +4,7 @@ import { users } from '@/lib/db/schema'
 import { eq } from 'drizzle-orm'
 import bcrypt from 'bcryptjs'
 import { rateLimit, getClientIp } from '@/lib/rate-limit'
+import { signupSchema } from '@/lib/validations'
 
 export async function POST(request: NextRequest) {
   // Rate Limiting: IP당 3회/시간
@@ -25,55 +26,19 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    const { email, nickname, password, game, level } = await request.json()
-
-    // 입력 검증
-    if (!email || !nickname || !password) {
+    const body = await request.json()
+    
+    // Zod 스키마로 입력 검증
+    const validationResult = signupSchema.safeParse(body)
+    if (!validationResult.success) {
+      const firstError = validationResult.error.errors[0]
       return NextResponse.json({
         success: false,
-        message: '이메일, 닉네임, 비밀번호는 필수 입력 항목입니다.'
+        message: firstError.message || '입력값이 올바르지 않습니다.'
       }, { status: 400 })
     }
 
-    // 이메일 길이 검증
-    if (email.length > 255) {
-      return NextResponse.json({
-        success: false,
-        message: '이메일은 255자를 초과할 수 없습니다.'
-      }, { status: 400 })
-    }
-
-    // 이메일 형식 검증
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-    if (!emailRegex.test(email)) {
-      return NextResponse.json({
-        success: false,
-        message: '올바른 이메일 형식을 입력해주세요.'
-      }, { status: 400 })
-    }
-
-    // 비밀번호 검증 (최소 8자, 영문+숫자+특수문자 포함)
-    if (password.length < 8) {
-      return NextResponse.json({
-        success: false,
-        message: '비밀번호는 최소 8자 이상이어야 합니다.'
-      }, { status: 400 })
-    }
-
-    if (!/(?=.*[a-zA-Z])(?=.*[0-9])(?=.*[!@#$%^&*(),.?":{}|<>])/.test(password)) {
-      return NextResponse.json({
-        success: false,
-        message: '비밀번호는 영문, 숫자, 특수문자를 각각 1개 이상 포함해야 합니다.'
-      }, { status: 400 })
-    }
-
-    // 닉네임 검증 (2-20자)
-    if (nickname.length < 2 || nickname.length > 20) {
-      return NextResponse.json({
-        success: false,
-        message: '닉네임은 2자 이상 20자 이하여야 합니다.'
-      }, { status: 400 })
-    }
+    const { email, nickname, password, game, level } = validationResult.data
 
     // 이메일 중복 확인
     const [existingEmail] = await db.select()
@@ -121,12 +86,18 @@ export async function POST(request: NextRequest) {
       message: '회원가입이 완료되었습니다.'
     }, { status: 201 })
   } catch (error: any) {
-    console.error('Signup error:', error)
-    console.error('Error details:', {
-      message: error.message,
-      code: error.code,
-      stack: error.stack,
-    })
+    // 개발 환경에서만 상세 에러 로깅
+    if (process.env.NODE_ENV === 'development') {
+      console.error('Signup error:', error)
+      console.error('Error details:', {
+        message: error.message,
+        code: error.code,
+        stack: error.stack,
+      })
+    } else {
+      // 프로덕션에서는 민감한 정보 없이 로깅
+      console.error('Signup error:', error.message)
+    }
 
     // 데이터베이스 연결 오류
     if (error.code === 'ECONNREFUSED' || error.code === 'ENOTFOUND' || error.message?.includes('connect')) {

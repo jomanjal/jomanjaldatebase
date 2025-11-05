@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Switch } from "@/components/ui/switch"
 import { checkAuth } from "@/lib/auth"
-import { Loader2, UserCircle, BookOpen, Star, Users, Edit } from "lucide-react"
+import { Loader2, UserCircle, BookOpen, Star, Users, Edit, UserCheck } from "lucide-react"
 import Link from "next/link"
 
 interface Coach {
@@ -34,17 +34,22 @@ export default function MyPage() {
     async function loadData() {
       try {
         const user = await checkAuth()
-        if (!user) return
+        if (!user) {
+          window.location.href = '/login'
+          return
+        }
 
-        // 코치 프로필 조회
-        const response = await fetch('/api/coaches/my', {
-          credentials: 'include',
-        })
+        // 코치 프로필 조회 (코치만)
+        if (user.role === 'coach') {
+          const response = await fetch('/api/coaches/my', {
+            credentials: 'include',
+          })
 
-        const result = await response.json()
+          const result = await response.json()
 
-        if (result.success && result.data) {
-          setCoach(result.data)
+          if (result.success && result.data) {
+            setCoach(result.data)
+          }
         }
       } catch (error) {
         console.error('데이터 로드 실패:', error)
@@ -95,7 +100,7 @@ export default function MyPage() {
     <div className="p-6 space-y-6">
       <div>
         <h1 className="text-3xl font-bold mb-2">대시보드</h1>
-        <p className="text-muted-foreground">코치 대시보드에 오신 것을 환영합니다.</p>
+        <p className="text-muted-foreground">마이페이지에 오신 것을 환영합니다.</p>
       </div>
 
       {coach && (
@@ -243,21 +248,48 @@ export default function MyPage() {
       )}
 
       {!coach && (
-        <Card>
-          <CardHeader>
-            <CardTitle>프로필 생성</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-muted-foreground mb-4">
-              아직 코치 프로필이 생성되지 않았습니다. 강의 설정을 통해 프로필을 생성해주세요.
-            </p>
-            <Button asChild>
-              <Link href="/my/course">
-                프로필 생성하기
-              </Link>
-            </Button>
-          </CardContent>
-        </Card>
+        <>
+          {/* 일반 사용자 대시보드 */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <UserCheck className="w-5 h-5" />
+                  내 수강 신청
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-muted-foreground mb-4">
+                  수강 신청 내역을 확인하고 관리할 수 있습니다.
+                </p>
+                <Button asChild className="w-full">
+                  <Link href="/my/enrollments">
+                    수강 신청 보기
+                  </Link>
+                </Button>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <BookOpen className="w-5 h-5" />
+                  코치 찾기
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-muted-foreground mb-4">
+                  전문 코치를 찾아 수강 신청을 해보세요.
+                </p>
+                <Button variant="outline" asChild className="w-full">
+                  <Link href="/coaches">
+                    코치 목록 보기
+                  </Link>
+                </Button>
+              </CardContent>
+            </Card>
+          </div>
+        </>
       )}
     </div>
   )

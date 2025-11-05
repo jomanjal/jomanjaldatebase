@@ -10,7 +10,11 @@ import {
   BookOpen,
   LogOut,
   UserCircle,
-  Home
+  Home,
+  UserCheck,
+  Users,
+  User,
+  Calendar
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 
@@ -31,8 +35,8 @@ export default function MyPageLayout({ children }: { children: React.ReactNode }
           return
         }
         
-        // 코치 권한 확인
-        if (user.role !== 'coach') {
+        // 일반 사용자 또는 코치만 접근 가능
+        if (user.role !== 'coach' && user.role !== 'user') {
           router.push("/")
           return
         }
@@ -97,14 +101,52 @@ export default function MyPageLayout({ children }: { children: React.ReactNode }
                       </Link>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
-                  <SidebarMenuItem>
-                    <SidebarMenuButton asChild>
-                      <Link href="/my/course">
-                        <BookOpen className="w-5 h-5" />
-                        <span>강의 관리</span>
-                      </Link>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
+                  {currentUser?.role === 'coach' && (
+                    <>
+                      <SidebarMenuItem>
+                        <SidebarMenuButton asChild>
+                          <Link href="/my/profile">
+                            <User className="w-5 h-5" />
+                            <span>프로필</span>
+                          </Link>
+                        </SidebarMenuButton>
+                      </SidebarMenuItem>
+                      <SidebarMenuItem>
+                        <SidebarMenuButton asChild>
+                          <Link href="/my/course">
+                            <BookOpen className="w-5 h-5" />
+                            <span>강의 관리</span>
+                          </Link>
+                        </SidebarMenuButton>
+                      </SidebarMenuItem>
+                      <SidebarMenuItem>
+                        <SidebarMenuButton asChild>
+                          <Link href="/my/students">
+                            <Users className="w-5 h-5" />
+                            <span>수강생 관리</span>
+                          </Link>
+                        </SidebarMenuButton>
+                      </SidebarMenuItem>
+                      <SidebarMenuItem>
+                        <SidebarMenuButton asChild>
+                          <Link href="/my/schedule">
+                            <Calendar className="w-5 h-5" />
+                            <span>일정</span>
+                          </Link>
+                        </SidebarMenuButton>
+                      </SidebarMenuItem>
+                    </>
+                  )}
+                  {currentUser?.role === 'user' && (
+                    <SidebarMenuItem>
+                      <SidebarMenuButton asChild>
+                        <Link href="/my/enrollments">
+                          <UserCheck className="w-5 h-5" />
+                          <span>내 수강 신청</span>
+                        </Link>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  )}
                 </SidebarMenu>
               </SidebarGroupContent>
             </SidebarGroup>
@@ -136,7 +178,9 @@ export default function MyPageLayout({ children }: { children: React.ReactNode }
                 </div>
                 <div>
                   <p className="text-sm font-medium">{currentUser?.username}</p>
-                  <p className="text-xs text-muted-foreground">코치</p>
+                  <p className="text-xs text-muted-foreground">
+                    {currentUser?.role === 'coach' ? '코치' : '사용자'}
+                  </p>
                 </div>
               </div>
             </div>

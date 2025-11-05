@@ -24,7 +24,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ 
       success: true, 
       user: {
-        userId: payload.userId,
+        id: payload.userId, // User 인터페이스에 맞게 id로 반환
         username: payload.username,
         role: payload.role,
         email: payload.email,

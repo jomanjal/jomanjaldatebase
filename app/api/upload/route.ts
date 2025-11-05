@@ -163,7 +163,12 @@ export async function POST(request: NextRequest) {
         outputFormat = 'webp'
       }
     } catch (error: any) {
-      console.error('Image processing error:', error)
+      // 프로덕션에서는 상세 에러 정보 제한
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Image processing error:', error)
+      } else {
+        console.error('Image processing error:', error.message)
+      }
       return NextResponse.json({
         success: false,
         message: '이미지 처리 중 오류가 발생했습니다.'
@@ -205,7 +210,12 @@ export async function POST(request: NextRequest) {
       })
       blobUrl = blob.url
     } catch (error: any) {
-      console.error('Blob upload error:', error)
+      // 프로덕션에서는 상세 에러 정보 제한
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Blob upload error:', error)
+      } else {
+        console.error('Blob upload error:', error.message)
+      }
       return NextResponse.json({
         success: false,
         message: '파일 업로드 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.'
@@ -219,13 +229,17 @@ export async function POST(request: NextRequest) {
         blobUrl,
       })
     } catch (error: any) {
-      // DB 저장 실패 시 상세 에러 로깅
-      console.error('[Image Upload] ❌ Failed to save image hash to DB:', error)
-      console.error('[Image Upload] Error details:', {
-        fileHash: fileHash.substring(0, 16) + '...',
-        blobUrl,
-        errorMessage: error.message,
-      })
+      // DB 저장 실패 시 에러 로깅 (프로덕션에서는 제한)
+      if (process.env.NODE_ENV === 'development') {
+        console.error('[Image Upload] ❌ Failed to save image hash to DB:', error)
+        console.error('[Image Upload] Error details:', {
+          fileHash: fileHash.substring(0, 16) + '...',
+          blobUrl,
+          errorMessage: error.message,
+        })
+      } else {
+        console.error('[Image Upload] ❌ Failed to save image hash to DB:', error.message)
+      }
       // DB 저장 실패는 치명적이지 않지만, 다음 중복 체크가 작동하지 않을 수 있음
     }
 
@@ -235,7 +249,12 @@ export async function POST(request: NextRequest) {
       message: '파일이 업로드되었습니다.'
     }, { status: 200 })
   } catch (error: any) {
-    console.error('File upload error:', error)
+    // 프로덕션에서는 상세 에러 정보 제한
+    if (process.env.NODE_ENV === 'development') {
+      console.error('File upload error:', error)
+    } else {
+      console.error('File upload error:', error.message)
+    }
     return NextResponse.json({
       success: false,
       message: '파일 업로드 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.'
@@ -295,7 +314,12 @@ export async function DELETE(request: NextRequest) {
     try {
       await del(url)
     } catch (error: any) {
-      console.error('[Image Delete] ❌ Failed to delete blob:', error)
+      // 프로덕션에서는 상세 에러 정보 제한
+      if (process.env.NODE_ENV === 'development') {
+        console.error('[Image Delete] ❌ Failed to delete blob:', error)
+      } else {
+        console.error('[Image Delete] ❌ Failed to delete blob:', error.message)
+      }
       // Blob 삭제 실패해도 DB 레코드는 삭제 시도
     }
 
@@ -306,7 +330,12 @@ export async function DELETE(request: NextRequest) {
           .delete(uploadedImages)
           .where(eq(uploadedImages.fileHash, imageRecord[0].fileHash))
       } catch (error: any) {
-        console.error('[Image Delete] ❌ Failed to delete hash record from DB:', error)
+        // 프로덕션에서는 상세 에러 정보 제한
+        if (process.env.NODE_ENV === 'development') {
+          console.error('[Image Delete] ❌ Failed to delete hash record from DB:', error)
+        } else {
+          console.error('[Image Delete] ❌ Failed to delete hash record from DB:', error.message)
+        }
         // DB 삭제 실패는 치명적이지 않지만, 중복 체크에 영향을 줄 수 있음
       }
     }
@@ -316,7 +345,12 @@ export async function DELETE(request: NextRequest) {
       message: '이미지가 삭제되었습니다.'
     }, { status: 200 })
   } catch (error: any) {
-    console.error('Image delete error:', error)
+    // 프로덕션에서는 상세 에러 정보 제한
+    if (process.env.NODE_ENV === 'development') {
+      console.error('Image delete error:', error)
+    } else {
+      console.error('Image delete error:', error.message)
+    }
     return NextResponse.json({
       success: false,
       message: '이미지 삭제 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.'

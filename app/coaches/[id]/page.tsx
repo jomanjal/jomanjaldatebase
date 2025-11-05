@@ -10,9 +10,12 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
-import { Star, Users, Clock, MapPin, Trophy, Check, Gift, Loader2, Edit, Rocket } from "lucide-react"
+import { Star, Users, Clock, MapPin, Trophy, Check, Gift, Loader2, Edit, Rocket, Send } from "lucide-react"
 import Link from "next/link"
 import { checkAuth, type User } from "@/lib/auth"
+import { toast } from "sonner"
+import { sanitizeText } from "@/lib/dompurify-client"
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import {
   Pagination,
   PaginationContent,
@@ -40,6 +43,7 @@ interface Coach {
   description: string | null
   headline: string | null
   thumbnailImage: string | null
+  profileImage: string | null
   introductionImage: string | null
   introductionContent: string | null
   introductionItems?: IntroductionItem[]
@@ -84,6 +88,9 @@ export default function CoachDetailPage({ params }: { params: { id: string } }) 
     hasNextPage: false,
     hasPrevPage: false,
   })
+  const [isEnrollDialogOpen, setIsEnrollDialogOpen] = useState(false)
+  const [enrollLoading, setEnrollLoading] = useState(false)
+  const [enrollmentStatus, setEnrollmentStatus] = useState<string | null>(null) // 현재 수강 신청 상태
   const coachId = parseInt(params.id, 10)
 
   // 현재 사용자 확인 및 소유자 확인
@@ -94,6 +101,47 @@ export default function CoachDetailPage({ params }: { params: { id: string } }) 
     }
     loadUser()
   }, [])
+
+  // 수강 신청 상태 확인
+  useEffect(() => {
+    async function checkEnrollmentStatus() {
+      if (!currentUser || currentUser.role !== 'user' || !currentUser.id) return
+
+      try {
+        const response = await fetch(`/api/enrollments?userId=${currentUser.id}&coachId=${coachId}&role=user`, {
+          credentials: 'include',
+        })
+        
+        if (response.ok) {
+          const result = await response.json()
+          if (result.success && result.data && result.data.length > 0) {
+            // 취소되지 않은 수강 신청만 확인 (pending, approved, rejected, completed)
+            const activeEnrollments = result.data.filter(
+              (enrollment: any) => enrollment.status !== 'cancelled'
+            )
+            
+            if (activeEnrollments.length > 0) {
+              // 가장 최근 신청의 상태 확인
+              const latestEnrollment = activeEnrollments[0]
+              setEnrollmentStatus(latestEnrollment.status)
+            } else {
+              // 취소된 수강 신청만 있으면 상태를 null로 설정 (구매 가능)
+              setEnrollmentStatus(null)
+            }
+          } else {
+            // 수강 신청이 없으면 상태를 null로 설정
+            setEnrollmentStatus(null)
+          }
+        }
+      } catch (error) {
+        console.error('수강 신청 상태 확인 실패:', error)
+      }
+    }
+
+    if (currentUser && currentUser.id) {
+      checkEnrollmentStatus()
+    }
+  }, [currentUser, coachId])
 
   // 코치 정보가 로드된 후 소유자 확인
   useEffect(() => {
@@ -313,6 +361,89 @@ export default function CoachDetailPage({ params }: { params: { id: string } }) 
   const handleKakaoChat = () => {
     const chatUrl = process.env.NEXT_PUBLIC_KAKAO_CHAT_URL || 'https://open.kakao.com/o/s6kCFbZh'
     window.open(chatUrl, '_blank', 'noopener,noreferrer')
+  }
+
+  const handleEnrollClick = () => {
+    if (!currentUser) {
+      // 비회원은 로그인 페이지로 리다이렉트
+      window.location.href = '/login'
+      return
+    }
+
+    if (currentUser.role !== 'user') {
+      toast.error('일반 사용자만 수강 신청이 가능합니다.')
+      return
+    }
+
+    // 구매 페이지로 이동
+    window.location.href = `/coaches/${coachId}/purchase`
+  }
+
+  const handleEnrollSubmit = async () => {
+    if (!currentUser || !currentUser.id) {
+      toast.error('로그인이 필요합니다.')
+      return
+    }
+
+    setEnrollLoading(true)
+    try {
+      const response = await fetch('/api/enrollments', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify({
+          coachId: coachId,
+        }),
+      })
+
+      const result = await response.json()
+
+      if (response.ok && result.success) {
+        toast.success('수강 신청이 완료되었습니다.')
+        setIsEnrollDialogOpen(false)
+        setEnrollmentStatus('pending')
+        // 코치 정보 새로고침 (students 수 업데이트)
+        window.location.reload()
+      } else {
+        toast.error(result.message || '수강 신청 중 오류가 발생했습니다.')
+      }
+    } catch (error) {
+      console.error('수강 신청 실패:', error)
+      toast.error('수강 신청 중 오류가 발생했습니다.')
+    } finally {
+      setEnrollLoading(false)
+    }
+  }
+
+  const getEnrollButtonText = () => {
+    if (!currentUser || currentUser.role !== 'user') {
+      return '강의 구매'
+    }
+
+    switch (enrollmentStatus) {
+      case 'pending':
+        return '수강 신청 대기 중'
+      case 'approved':
+        return '수강 신청 승인됨'
+      case 'rejected':
+        return '수강 신청 거절됨'
+      case 'completed':
+        return '수강 완료'
+      case 'cancelled':
+        return '수강 신청 취소됨'
+      default:
+        return '수강 신청하기'
+    }
+  }
+
+  const isEnrollButtonDisabled = () => {
+    if (!currentUser || currentUser.role !== 'user') {
+      return false // 강의 구매 버튼은 항상 활성화
+    }
+
+    return enrollmentStatus === 'pending' || enrollmentStatus === 'approved' || enrollmentStatus === 'completed'
   }
 
   // 가격 처리 (숫자 또는 문자열 지원)
@@ -798,7 +929,7 @@ export default function CoachDetailPage({ params }: { params: { id: string } }) 
                                   <span className="text-sm text-muted-foreground">{formattedDate}</span>
                                 </div>
                                 {review.comment && (
-                                  <p className="text-muted-foreground">{review.comment}</p>
+                                  <p className="text-muted-foreground">{sanitizeText(review.comment)}</p>
                                 )}
                               </div>
                             )
@@ -939,9 +1070,24 @@ export default function CoachDetailPage({ params }: { params: { id: string } }) 
 
                     <Button 
                       className="w-full mb-4 bg-gray-800 text-white hover:bg-gray-700"
-                      onClick={handleKakaoChat}
+                      onClick={() => {
+                        if (!currentUser) {
+                          // 비회원은 로그인 페이지로 이동
+                          window.location.href = '/login'
+                        } else if (isEnrollButtonDisabled()) {
+                          // 이미 신청한 경우 아무 동작 안 함
+                          return
+                        } else if (currentUser.role === 'user') {
+                          // 일반 사용자는 수강 신청 다이얼로그 열기
+                          handleEnrollClick()
+                        } else {
+                          // 코치나 관리자는 카카오 채팅
+                          handleKakaoChat()
+                        }
+                      }}
+                      disabled={isEnrollButtonDisabled()}
                     >
-                      강의 구매
+                      {getEnrollButtonText()}
                     </Button>
 
                     <div className="space-y-2 text-sm text-muted-foreground">
@@ -954,9 +1100,21 @@ export default function CoachDetailPage({ params }: { params: { id: string } }) 
                 <Card>
                   <CardContent className="p-6">
                     <div className="flex items-center gap-3 mb-4">
-                      <div className="w-12 h-12 bg-primary/20 rounded-full flex items-center justify-center">
-                        <span className="font-bold text-primary">{coach.name.charAt(0)}</span>
-                      </div>
+                      {coach.profileImage ? (
+                        <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-primary/20">
+                          <Image
+                            src={coach.profileImage}
+                            alt={coach.name}
+                            width={48}
+                            height={48}
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                      ) : (
+                        <div className="w-12 h-12 bg-primary/20 rounded-full flex items-center justify-center">
+                          <span className="font-bold text-primary">{coach.name.charAt(0)}</span>
+                        </div>
+                      )}
                       <div>
                         <h4 className="font-bold">{coach.name}</h4>
                         <p className="text-sm text-muted-foreground">{coach.specialty}</p>
@@ -986,6 +1144,45 @@ export default function CoachDetailPage({ params }: { params: { id: string } }) 
           </div>
         </div>
       </section>
+
+      {/* 수강 신청 다이얼로그 */}
+      <Dialog open={isEnrollDialogOpen} onOpenChange={setIsEnrollDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>수강 신청</DialogTitle>
+            <DialogDescription>
+              {coach.name} 코치에게 수강 신청을 하시겠습니까?
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setIsEnrollDialogOpen(false)
+              }}
+              disabled={enrollLoading}
+            >
+              취소
+            </Button>
+            <Button
+              onClick={handleEnrollSubmit}
+              disabled={enrollLoading}
+            >
+              {enrollLoading ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  신청 중...
+                </>
+              ) : (
+                <>
+                  <Send className="w-4 h-4 mr-2" />
+                  신청하기
+                </>
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       <FooterSection />
     </main>

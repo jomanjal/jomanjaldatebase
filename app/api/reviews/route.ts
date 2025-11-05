@@ -4,6 +4,8 @@ import { reviews, coaches, users } from '@/lib/db/schema'
 import { eq, desc, and, like, or } from 'drizzle-orm'
 import { getAuthenticatedUser, requireAdmin } from '@/lib/auth-server'
 import { sql } from 'drizzle-orm'
+import { reviewSchema, sanitizeSearchQuery, idSchema, ratingSchema } from '@/lib/validations'
+import { verifyCsrfToken } from '@/lib/csrf'
 
 /**
  * 리뷰 목록 조회 (GET)
@@ -22,13 +24,8 @@ export async function GET(request: NextRequest) {
     const limit = Math.min(100, Math.max(1, parseInt(searchParams.get('limit') || '20', 10))) // 최대 100개, 기본 20개
     const offset = (page - 1) * limit
 
-    // 검색어 길이 제한
-    if (search.length > 100) {
-      return NextResponse.json({
-        success: false,
-        message: '검색어는 100자를 초과할 수 없습니다.'
-      }, { status: 400 })
-    }
+    // 검색어 sanitization
+    const sanitizedSearch = search ? sanitizeSearchQuery(search) : ''
 
     // 관리자 권한 확인 (필요시)
     let user = null
@@ -64,21 +61,35 @@ export async function GET(request: NextRequest) {
     // 필터 조건
     const conditions = []
     
-    if (search) {
+    if (sanitizedSearch) {
       conditions.push(
         or(
-          like(users.username, `%${search}%`),
-          like(coaches.name, `%${search}%`)
+          like(users.username, `%${sanitizedSearch}%`),
+          like(coaches.name, `%${sanitizedSearch}%`)
         )!
       )
     }
 
     if (rating) {
-      conditions.push(eq(reviews.rating, parseInt(rating)))
+      const ratingValidation = ratingSchema.safeParse(rating)
+      if (!ratingValidation.success) {
+        return NextResponse.json({
+          success: false,
+          message: '유효하지 않은 평점입니다.'
+        }, { status: 400 })
+      }
+      conditions.push(eq(reviews.rating, ratingValidation.data))
     }
 
     if (coachId) {
-      conditions.push(eq(reviews.coachId, parseInt(coachId)))
+      const coachIdValidation = idSchema.safeParse(coachId)
+      if (!coachIdValidation.success) {
+        return NextResponse.json({
+          success: false,
+          message: '유효하지 않은 코치 ID입니다.'
+        }, { status: 400 })
+      }
+      conditions.push(eq(reviews.coachId, coachIdValidation.data))
     }
 
     if (verified === 'true') {
@@ -149,24 +160,28 @@ export async function POST(request: NextRequest) {
     // 관리자 권한 확인
     await requireAdmin(request)
 
+    // CSRF 토큰 검증
+    const csrfToken = request.headers.get('X-CSRF-Token')
+    if (!await verifyCsrfToken(csrfToken)) {
+      return NextResponse.json({
+        success: false,
+        message: 'CSRF 토큰이 유효하지 않습니다.'
+      }, { status: 403 })
+    }
+
     const body = await request.json()
-    const { coachId, userId, rating, comment, verified = false } = body
-
-    // 필수 필드 검증
-    if (!coachId || !userId || !rating) {
+    
+    // Zod 스키마로 입력 검증
+    const validationResult = reviewSchema.safeParse(body)
+    if (!validationResult.success) {
+      const firstError = validationResult.error.errors[0]
       return NextResponse.json({
         success: false,
-        message: '코치 ID, 사용자 ID, 평점은 필수 입력 항목입니다.'
+        message: firstError.message || '입력값이 올바르지 않습니다.'
       }, { status: 400 })
     }
 
-    // 평점 범위 검증 (1-5)
-    if (rating < 1 || rating > 5) {
-      return NextResponse.json({
-        success: false,
-        message: '평점은 1부터 5까지 입력할 수 있습니다.'
-      }, { status: 400 })
-    }
+    const { coachId, userId, rating, comment, verified = false } = validationResult.data
 
     // 코치 존재 확인
     const [coach] = await db.select()
@@ -194,20 +209,36 @@ export async function POST(request: NextRequest) {
       }, { status: 404 })
     }
 
+    // 중복 리뷰 체크 (같은 사용자가 같은 코치에게 이미 리뷰를 작성했는지 확인)
+    const existingReview = await db.select()
+      .from(reviews)
+      .where(and(
+        eq(reviews.coachId, coachId),
+        eq(reviews.userId, userId)
+      ))
+      .limit(1)
+
+    if (existingReview.length > 0) {
+      return NextResponse.json({
+        success: false,
+        message: '이미 이 코치에 대한 리뷰를 작성하셨습니다. 리뷰를 수정하려면 관리자에게 문의하세요.'
+      }, { status: 400 })
+    }
+
     // 리뷰 추가
     const [newReview] = await db.insert(reviews).values({
-      coachId: parseInt(coachId),
-      userId: parseInt(userId),
-      rating: parseInt(rating),
+      coachId: coachId,
+      userId: userId,
+      rating: rating,
       comment: comment || null,
       verified: verified === true,
     }).returning()
 
     // 리뷰가 승인된 경우 코치 평점 업데이트
     if (verified) {
-      // 코치의 평균 평점 계산
+      // 코치의 평균 평점 계산 (소수점 1자리까지)
       const [coachStats] = await db.select({
-        avgRating: sql<number>`COALESCE(AVG(${reviews.rating}), 0)`,
+        avgRating: sql<number>`COALESCE(ROUND(AVG(${reviews.rating})::numeric, 1), 0)`,
         reviewCount: sql<number>`COUNT(*)`,
       })
         .from(reviews)
@@ -216,10 +247,11 @@ export async function POST(request: NextRequest) {
           eq(reviews.verified, true)
         ))
 
-      // 코치 평점 업데이트
+      // 코치 평점 업데이트 (소수점 1자리까지 반올림)
+      const avgRating = Number(coachStats.avgRating)
       await db.update(coaches)
         .set({
-          rating: Number(coachStats.avgRating),
+          rating: Math.round(avgRating * 10) / 10, // 소수점 1자리까지 반올림
           reviews: Number(coachStats.reviewCount),
         })
         .where(eq(coaches.id, coachId))

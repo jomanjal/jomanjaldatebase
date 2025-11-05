@@ -13,6 +13,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Checkbox } from "@/components/ui/checkbox"
 import { toast } from "sonner"
+import { sanitizeText } from "@/lib/dompurify-client"
 
 interface Review {
   id: number
@@ -140,8 +141,11 @@ export default function ReviewsManagementPage() {
       if (response.ok) {
         const result = await response.json()
         if (result.success) {
-          fetchReviews()
+          // 리뷰 목록 새로고침
+          await fetchReviews()
           toast.success('리뷰가 승인되었습니다.')
+          // 코치 평점이 자동으로 업데이트되었음을 알림
+          toast.info('코치 평점이 자동으로 업데이트되었습니다.')
         } else {
           toast.error(result.message || '리뷰 승인 중 오류가 발생했습니다.')
         }
@@ -169,8 +173,11 @@ export default function ReviewsManagementPage() {
       if (response.ok) {
         const result = await response.json()
         if (result.success) {
-          fetchReviews()
+          // 리뷰 목록 새로고침
+          await fetchReviews()
           toast.success('리뷰가 삭제되었습니다.')
+          // 코치 평점이 자동으로 재계산되었음을 알림
+          toast.info('코치 평점이 자동으로 재계산되었습니다.')
         } else {
           toast.error(result.message || '리뷰 삭제 중 오류가 발생했습니다.')
         }
@@ -240,8 +247,14 @@ export default function ReviewsManagementPage() {
             comment: "",
             verified: false,
           })
-          fetchReviews()
-          toast.success('리뷰가 추가되었습니다.')
+          // 리뷰 목록 새로고침
+          await fetchReviews()
+          toast.success(result.message || '리뷰가 추가되었습니다.')
+          
+          // 리뷰가 승인된 경우 코치 평점이 업데이트되었음을 알림
+          if (formData.verified) {
+            toast.info('코치 평점이 자동으로 업데이트되었습니다.')
+          }
         } else {
           toast.error(result.message || '리뷰 추가 중 오류가 발생했습니다.')
         }
@@ -423,7 +436,7 @@ export default function ReviewsManagementPage() {
                       </TableCell>
                       <TableCell>
                         <div className="max-w-md truncate" title={review.comment}>
-                          {review.comment || '(리뷰 내용 없음)'}
+                          {sanitizeText(review.comment) || '(리뷰 내용 없음)'}
                         </div>
                       </TableCell>
                       <TableCell>
@@ -517,7 +530,7 @@ export default function ReviewsManagementPage() {
               </div>
               <div>
                 <p className="text-sm text-muted-foreground mb-2">리뷰 내용</p>
-                <p className="text-sm whitespace-pre-wrap">{selectedReview.comment || '(리뷰 내용 없음)'}</p>
+                <p className="text-sm whitespace-pre-wrap">{sanitizeText(selectedReview.comment) || '(리뷰 내용 없음)'}</p>
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>

@@ -4,6 +4,7 @@ import { reviews, coaches } from '@/lib/db/schema'
 import { eq, and } from 'drizzle-orm'
 import { getAuthenticatedUser } from '@/lib/auth-server'
 import { sql } from 'drizzle-orm'
+import { idSchema, reviewStatusUpdateSchema } from '@/lib/validations'
 
 /**
  * 리뷰 조회 (GET)
@@ -13,13 +14,15 @@ export async function GET(
   { params }: { params: { id: string } }
 ) {
   try {
-    const id = parseInt(params.id)
-    if (isNaN(id)) {
+    // ID 검증
+    const idValidation = idSchema.safeParse(params.id)
+    if (!idValidation.success) {
       return NextResponse.json({
         success: false,
         message: '유효하지 않은 ID입니다.'
       }, { status: 400 })
     }
+    const id = idValidation.data
 
     const [review] = await db.select({
       id: reviews.id,
@@ -76,25 +79,35 @@ export async function PATCH(
       }, { status: 403 })
     }
 
-    const id = parseInt(params.id)
-    if (isNaN(id)) {
+    // ID 검증
+    const idValidation = idSchema.safeParse(params.id)
+    if (!idValidation.success) {
       return NextResponse.json({
         success: false,
         message: '유효하지 않은 ID입니다.'
       }, { status: 400 })
     }
+    const id = idValidation.data
 
     const body = await request.json()
-    const { verified, comment, rating } = body
+    
+    // Zod 스키마로 입력 검증
+    const validationResult = reviewStatusUpdateSchema.safeParse(body)
+    if (!validationResult.success) {
+      const firstError = validationResult.error.errors[0]
+      return NextResponse.json({
+        success: false,
+        message: firstError.message || '입력값이 올바르지 않습니다.'
+      }, { status: 400 })
+    }
+
+    const { verified } = validationResult.data
 
     // 업데이트할 데이터 구성
     const updateData: any = {
       updatedAt: new Date(),
+      verified: verified,
     }
-    
-    if (verified !== undefined) updateData.verified = verified === true
-    if (comment !== undefined) updateData.comment = comment
-    if (rating !== undefined) updateData.rating = rating
 
     // 업데이트
     const [updated] = await db.update(reviews)
@@ -109,11 +122,11 @@ export async function PATCH(
       }, { status: 404 })
     }
 
-    // 리뷰가 승인되면 코치의 평점 업데이트
-    if (verified === true && updated.verified) {
-      // 코치의 평균 평점 계산
+    // 리뷰가 승인되거나 평점이 변경되면 코치의 평점 업데이트
+    if ((verified === true && updated.verified) || rating !== undefined) {
+      // 코치의 평균 평점 계산 (소수점 1자리까지)
       const [coachStats] = await db.select({
-        avgRating: sql<number>`COALESCE(AVG(${reviews.rating}), 0)`,
+        avgRating: sql<number>`COALESCE(ROUND(AVG(${reviews.rating})::numeric, 1), 0)`,
         reviewCount: sql<number>`COUNT(*)`,
       })
         .from(reviews)
@@ -122,10 +135,11 @@ export async function PATCH(
           eq(reviews.verified, true)
         ))
 
-      // 코치 평점 업데이트
+      // 코치 평점 업데이트 (소수점 1자리까지 반올림)
+      const avgRating = Number(coachStats.avgRating)
       await db.update(coaches)
         .set({
-          rating: Number(coachStats.avgRating),
+          rating: Math.round(avgRating * 10) / 10, // 소수점 1자리까지 반올림
           reviews: Number(coachStats.reviewCount),
         })
         .where(eq(coaches.id, updated.coachId))
@@ -163,13 +177,15 @@ export async function DELETE(
       }, { status: 403 })
     }
 
-    const id = parseInt(params.id)
-    if (isNaN(id)) {
+    // ID 검증
+    const idValidation = idSchema.safeParse(params.id)
+    if (!idValidation.success) {
       return NextResponse.json({
         success: false,
         message: '유효하지 않은 ID입니다.'
       }, { status: 400 })
     }
+    const id = idValidation.data
 
     // 삭제 전에 코치 ID 가져오기
     const [reviewToDelete] = await db.select({
@@ -190,9 +206,9 @@ export async function DELETE(
     await db.delete(reviews)
       .where(eq(reviews.id, id))
 
-    // 코치 평점 재계산
+    // 코치 평점 재계산 (소수점 1자리까지)
     const [coachStats] = await db.select({
-      avgRating: sql<number>`COALESCE(AVG(${reviews.rating}), 0)`,
+      avgRating: sql<number>`COALESCE(ROUND(AVG(${reviews.rating})::numeric, 1), 0)`,
       reviewCount: sql<number>`COUNT(*)`,
     })
       .from(reviews)
@@ -201,10 +217,11 @@ export async function DELETE(
         eq(reviews.verified, true)
       ))
 
-    // 코치 평점 업데이트
+    // 코치 평점 업데이트 (소수점 1자리까지 반올림)
+    const avgRating = Number(coachStats.avgRating)
     await db.update(coaches)
       .set({
-        rating: Number(coachStats.avgRating),
+        rating: Math.round(avgRating * 10) / 10, // 소수점 1자리까지 반올림
         reviews: Number(coachStats.reviewCount),
       })
       .where(eq(coaches.id, reviewToDelete.coachId))

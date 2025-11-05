@@ -105,7 +105,7 @@ export function Header() {
                   </Button>
                 </Link>
               )}
-              {authenticated && currentUser?.role === 'coach' && (
+              {authenticated && (currentUser?.role === 'coach' || currentUser?.role === 'user') && (
                 <Link href="/my">
                   <Button
                     variant="outline"

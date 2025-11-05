@@ -133,6 +133,7 @@ export async function PUT(
       description,
       headline,
       thumbnailImage,
+      profileImage,
       introductionImage,
       introductionContent,
       curriculumItems,
@@ -162,6 +163,7 @@ export async function PUT(
     if (description !== undefined) updateData.description = description
     if (headline !== undefined) updateData.headline = headline
     if (thumbnailImage !== undefined) updateData.thumbnailImage = thumbnailImage
+    if (profileImage !== undefined) updateData.profileImage = profileImage
     if (introductionImage !== undefined) updateData.introductionImage = introductionImage
     if (introductionContent !== undefined) updateData.introductionContent = introductionContent
     if (curriculumItems !== undefined) updateData.curriculumItems = JSON.stringify(curriculumItems)

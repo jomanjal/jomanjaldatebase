@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import { coaches } from '@/lib/db/schema'
-import { eq, like, desc, asc, and } from 'drizzle-orm'
+import { eq, desc, asc, and, sql, count } from 'drizzle-orm'
 import { getAuthenticatedUser } from '@/lib/auth-server'
+import { coachSearchSchema, sanitizeSearchQuery } from '@/lib/validations'
 
 /**
  * 코치 목록 조회 (GET)
@@ -10,26 +11,34 @@ import { getAuthenticatedUser } from '@/lib/auth-server'
 export async function GET(request: NextRequest) {
   try {
     const searchParams = request.nextUrl.searchParams
-    const search = searchParams.get('search') || ''
-    const specialty = searchParams.get('specialty') || 'all'
-    const tier = searchParams.get('tier') || 'all'
-    const minPrice = searchParams.get('minPrice')
-    const maxPrice = searchParams.get('maxPrice')
-    const sortBy = searchParams.get('sortBy') || 'latest' // latest, rating-high, rating-low, price-high, price-low, students
-    const isAdmin = searchParams.get('admin') === 'true'
     
-    // 페이지네이션 파라미터
-    const page = Math.max(1, parseInt(searchParams.get('page') || '1', 10))
-    const limit = Math.min(100, Math.max(1, parseInt(searchParams.get('limit') || '20', 10))) // 최대 100개, 기본 20개
-    const offset = (page - 1) * limit
-
-    // 검색어 길이 제한
-    if (search.length > 100) {
+    // 입력 검증 및 sanitization
+    const search = searchParams.get('search') || ''
+    const sanitizedSearch = search ? sanitizeSearchQuery(search) : ''
+    
+    // Zod 스키마로 입력 검증
+    const validationResult = coachSearchSchema.safeParse({
+      search: sanitizedSearch,
+      specialty: searchParams.get('specialty') || 'all',
+      tier: searchParams.get('tier') || 'all',
+      minPrice: searchParams.get('minPrice'),
+      maxPrice: searchParams.get('maxPrice'),
+      sortBy: searchParams.get('sortBy') || 'latest',
+      page: searchParams.get('page') || '1',
+      limit: searchParams.get('limit') || '20',
+    })
+    
+    if (!validationResult.success) {
+      const firstError = validationResult.error.errors[0]
       return NextResponse.json({
         success: false,
-        message: '검색어는 100자를 초과할 수 없습니다.'
+        message: firstError.message || '입력값이 올바르지 않습니다.'
       }, { status: 400 })
     }
+    
+    const { search: validatedSearch, specialty, tier, minPrice, maxPrice, sortBy, page, limit } = validationResult.data
+    const offset = (page - 1) * limit
+    const isAdmin = searchParams.get('admin') === 'true'
 
     // 관리자 권한 확인 (필요시)
     let user = null
@@ -46,9 +55,13 @@ export async function GET(request: NextRequest) {
     // 쿼리 빌드
     const conditions = []
 
-    // 검색 필터
-    if (search) {
-      conditions.push(like(coaches.name, `%${search}%`))
+    // 검색 필터 (ILIKE 사용 - 대소문자 구분 없음, 인덱스 활용을 위해 prefix 검색도 고려)
+    // PostgreSQL의 B-tree 인덱스는 prefix 검색에 최적화되어 있음
+    if (validatedSearch) {
+      // sanitized search 사용 (SQL Injection 방지)
+      conditions.push(
+        sql`${coaches.name} ILIKE ${`%${validatedSearch}%`}`
+      )
     }
 
     // 전문 분야 필터
@@ -61,16 +74,39 @@ export async function GET(request: NextRequest) {
       conditions.push(eq(coaches.tier, tier))
     }
 
-    // 가격 필터 (가격 파싱 필요)
-    // price 필드는 "30,000원/시간" 같은 형식이므로, 숫자만 추출하여 비교
-    if (minPrice) {
-      const minPriceNum = parseInt(minPrice, 10)
-      if (!isNaN(minPriceNum)) {
-        // price 필드에서 숫자 추출하여 비교
-        // SQL에서 정규식이나 CAST를 사용해야 하지만, Drizzle에서는 제한적
-        // 일단 클라이언트 사이드에서도 필터링할 수 있도록 주석 처리
-        // 또는 price 필드를 별도 숫자 필드로 저장하는 것이 좋음
+    // 가격 필터 (DB 레벨에서 처리)
+    // 할인을 고려한 최종 가격 계산: price * (1 - discount / 100)
+    if (minPrice || maxPrice) {
+      const minPriceNum = minPrice ? parseInt(minPrice, 10) : null
+      const maxPriceNum = maxPrice ? parseInt(maxPrice, 10) : null
+      
+      if (minPriceNum !== null && !isNaN(minPriceNum)) {
+        // 최소 가격: 할인을 고려한 최종 가격이 minPriceNum 이상이어야 함
+        // 즉, price * (1 - discount / 100) >= minPriceNum
+        // 또는 price >= minPriceNum / (1 - discount / 100)
+        // 하지만 discount가 NULL일 수 있으므로, CASE 문을 사용
+        conditions.push(
+          sql`CASE 
+            WHEN ${coaches.discount} IS NULL OR ${coaches.discount} = 0 
+            THEN ${coaches.price} >= ${minPriceNum}
+            ELSE ${coaches.price} * (1 - ${coaches.discount}::float / 100) >= ${minPriceNum}
+          END`
+        )
       }
+      
+      if (maxPriceNum !== null && !isNaN(maxPriceNum)) {
+        // 최대 가격: 할인을 고려한 최종 가격이 maxPriceNum 이하여야 함
+        conditions.push(
+          sql`CASE 
+            WHEN ${coaches.discount} IS NULL OR ${coaches.discount} = 0 
+            THEN ${coaches.price} <= ${maxPriceNum}
+            ELSE ${coaches.price} * (1 - ${coaches.discount}::float / 100) <= ${maxPriceNum}
+          END`
+        )
+      }
+      
+      // 가격이 NULL이 아닌 코치만
+      conditions.push(sql`${coaches.price} IS NOT NULL`)
     }
 
     // 일반 사용자는 verified되고 active인 코치만 보기
@@ -109,31 +145,19 @@ export async function GET(request: NextRequest) {
       baseQuery = baseQuery.where(and(...conditions)) as any
     }
 
-    // 전체 개수 조회 (페이지네이션용) 및 가격 필터 적용
-    let allResults = await baseQuery.orderBy(orderByClause)
-
-    // 가격 필터 적용 (할인 포함)
-    if (minPrice || maxPrice) {
-      allResults = allResults.filter(coach => {
-        if (!coach.price) return false
-        const priceNum = typeof coach.price === 'number' ? coach.price : (coach.price ? parseInt(String(coach.price).replace(/,/g, '')) : null)
-        if (priceNum === null) return false
-        // 할인 적용된 가격 계산
-        let finalPrice = priceNum
-        if (coach.discount && coach.discount > 0) {
-          finalPrice = Math.round(priceNum * (1 - coach.discount / 100))
-        }
-        if (minPrice && finalPrice < parseInt(minPrice, 10)) return false
-        if (maxPrice && finalPrice > parseInt(maxPrice, 10)) return false
-        return true
-      })
+    // 전체 개수 조회 (COUNT 쿼리로 최적화 - 전체 데이터를 가져오지 않음)
+    let countQuery = db.select({ count: count() }).from(coaches)
+    if (conditions.length > 0) {
+      countQuery = countQuery.where(and(...conditions)) as any
     }
-    const totalCount = allResults.length
+    const countResult = await countQuery
+    const totalCountNum = countResult.length > 0 ? Number(countResult[0].count) : 0
 
-    // 정렬 및 페이지네이션 적용
-    // 가격 필터가 있는 경우 이미 필터링된 결과에서 정렬 적용
-    let results = allResults
-      .slice(offset, offset + limit)
+    // 정렬 및 페이지네이션 적용 (DB 레벨에서 처리)
+    const results = await baseQuery
+      .orderBy(orderByClause)
+      .limit(limit)
+      .offset(offset)
 
     // specialties를 JSON 파싱
     const formattedResults = results.map(coach => ({
@@ -142,7 +166,7 @@ export async function GET(request: NextRequest) {
     }))
 
     // 총 페이지 수 계산
-    const totalPages = Math.ceil(totalCount / limit)
+    const totalPages = Math.ceil(totalCountNum / limit)
 
     return NextResponse.json({
       success: true,
@@ -150,7 +174,7 @@ export async function GET(request: NextRequest) {
       pagination: {
         page,
         limit,
-        totalCount,
+        totalCount: totalCountNum,
         totalPages,
         hasNextPage: page < totalPages,
         hasPrevPage: page > 1,

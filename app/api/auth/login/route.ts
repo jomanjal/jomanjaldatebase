@@ -5,6 +5,7 @@ import { eq } from 'drizzle-orm'
 import bcrypt from 'bcryptjs'
 import { generateToken } from '@/lib/jwt'
 import { rateLimit, getClientIp } from '@/lib/rate-limit'
+import { loginSchema } from '@/lib/validations'
 
 export async function POST(request: NextRequest) {
   // Rate Limiting: IP당 5회/분
@@ -26,15 +27,19 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    const { email, password } = await request.json()
-
-    // 입력 검증
-    if (!email || !password) {
+    const body = await request.json()
+    
+    // Zod 스키마로 입력 검증
+    const validationResult = loginSchema.safeParse(body)
+    if (!validationResult.success) {
+      const firstError = validationResult.error.errors[0]
       return NextResponse.json({ 
         success: false, 
-        message: '이메일과 비밀번호를 입력해주세요.' 
+        message: firstError.message || '입력값이 올바르지 않습니다.' 
       }, { status: 400 })
     }
+
+    const { email, password } = validationResult.data
 
     // 데이터베이스에서 사용자 조회 (이메일로)
     const [user] = await db.select()
@@ -90,12 +95,18 @@ export async function POST(request: NextRequest) {
 
     return response
   } catch (error: any) {
-    console.error('Login error:', error)
-    console.error('Error details:', {
-      message: error.message,
-      code: error.code,
-      stack: error.stack,
-    })
+    // 개발 환경에서만 상세 에러 로깅
+    if (process.env.NODE_ENV === 'development') {
+      console.error('Login error:', error)
+      console.error('Error details:', {
+        message: error.message,
+        code: error.code,
+        stack: error.stack,
+      })
+    } else {
+      // 프로덕션에서는 민감한 정보 없이 로깅
+      console.error('Login error:', error.message)
+    }
 
     // 데이터베이스 연결 오류
     if (error.code === 'ECONNREFUSED' || error.code === 'ENOTFOUND' || error.message?.includes('connect')) {

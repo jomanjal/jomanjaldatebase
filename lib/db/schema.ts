@@ -1,4 +1,4 @@
-import { pgTable, text, timestamp, integer, real, boolean, serial, varchar } from 'drizzle-orm/pg-core'
+import { pgTable, text, timestamp, integer, real, boolean, serial, varchar, index } from 'drizzle-orm/pg-core'
 
 // 사용자 테이블
 export const users = pgTable('users', {
@@ -36,7 +36,8 @@ export const coaches = pgTable('coaches', {
   description: text('description'), // 코치 카드 설명 (제목)
   headline: text('headline'), // 한문장 표현 (상세 페이지 상단 표시)
   // 상세 페이지 구성 정보
-  thumbnailImage: text('thumbnail_image'), // 섬네일 이미지 URL (코치 카드, 사이드바용)
+  thumbnailImage: text('thumbnail_image'), // 섬네일 이미지 URL (코치 카드용)
+  profileImage: text('profile_image'), // 프로필 이미지 URL (코치 상세 페이지 우측바용)
   introductionImage: text('introduction_image'), // 강의 소개 이미지 URL
   introductionContent: text('introduction_content'), // 강의 소개 내용 (JSON)
   curriculumItems: text('curriculum_items').default('[]'), // 커리큘럼 항목들 (JSON 배열)
@@ -45,7 +46,16 @@ export const coaches = pgTable('coaches', {
   active: boolean('active').default(true).notNull(), // 강의 활성화 여부 (코치 목록 노출)
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
-})
+}, (table) => ({
+  // 검색 성능 최적화를 위한 인덱스
+  nameIdx: index('coaches_name_idx').on(table.name), // 이름 검색용
+  specialtyIdx: index('coaches_specialty_idx').on(table.specialty), // 전문 분야 필터링용
+  tierIdx: index('coaches_tier_idx').on(table.tier), // 티어 필터링용
+  verifiedActiveIdx: index('coaches_verified_active_idx').on(table.verified, table.active), // 일반 사용자 필터링용 복합 인덱스
+  priceIdx: index('coaches_price_idx').on(table.price), // 가격 정렬/필터링용
+  ratingIdx: index('coaches_rating_idx').on(table.rating), // 평점 정렬용
+  createdAtIdx: index('coaches_created_at_idx').on(table.createdAt), // 최신순 정렬용
+}))
 
 // 웨이팅 리스트 테이블
 export const waitlist = pgTable('waitlist', {
@@ -79,6 +89,39 @@ export const uploadedImages = pgTable('uploaded_images', {
   createdAt: timestamp('created_at').defaultNow().notNull(),
 })
 
+// 수강 신청 테이블 (enrollments)
+export const enrollments = pgTable('enrollments', {
+  id: serial('id').primaryKey(),
+  userId: integer('user_id').references(() => users.id).notNull(),
+  coachId: integer('coach_id').references(() => coaches.id).notNull(),
+  status: varchar('status', { length: 20 }).notNull().default('pending'), // pending, approved, rejected, completed, cancelled
+  message: text('message'), // 사용자가 보내는 메시지
+  coachMessage: text('coach_message'), // 코치가 보내는 메시지
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+}, (table) => ({
+  userIdIdx: index('enrollments_user_id_idx').on(table.userId),
+  coachIdIdx: index('enrollments_coach_id_idx').on(table.coachId),
+  statusIdx: index('enrollments_status_idx').on(table.status),
+  createdAtIdx: index('enrollments_created_at_idx').on(table.createdAt),
+}))
+
+// 코치 주간 일정 테이블 (coach_schedules)
+export const coachSchedules = pgTable('coach_schedules', {
+  id: serial('id').primaryKey(),
+  coachId: integer('coach_id').references(() => coaches.id).notNull(),
+  dayOfWeek: integer('day_of_week').notNull(), // 0: 일요일, 1: 월요일, ..., 6: 토요일
+  enabled: boolean('enabled').default(true).notNull(), // 해당 요일 활성화 여부
+  startTime: varchar('start_time', { length: 5 }).notNull(), // 시작 시간 (HH:mm 형식)
+  endTime: varchar('end_time', { length: 5 }).notNull(), // 종료 시간 (HH:mm 형식)
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+}, (table) => ({
+  coachIdIdx: index('coach_schedules_coach_id_idx').on(table.coachId),
+  dayOfWeekIdx: index('coach_schedules_day_of_week_idx').on(table.dayOfWeek),
+  coachDayIdx: index('coach_schedules_coach_day_idx').on(table.coachId, table.dayOfWeek),
+}))
+
 // 타입 추출
 export type User = typeof users.$inferSelect
 export type NewUser = typeof users.$inferInsert
@@ -92,4 +135,8 @@ export type Review = typeof reviews.$inferSelect
 export type NewReview = typeof reviews.$inferInsert
 export type UploadedImage = typeof uploadedImages.$inferSelect
 export type NewUploadedImage = typeof uploadedImages.$inferInsert
+export type Enrollment = typeof enrollments.$inferSelect
+export type NewEnrollment = typeof enrollments.$inferInsert
+export type CoachSchedule = typeof coachSchedules.$inferSelect
+export type NewCoachSchedule = typeof coachSchedules.$inferInsert
 
