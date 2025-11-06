@@ -1,71 +1,175 @@
 "use client"
 
-import { useState, useEffect, Suspense } from "react"
+import { useState, useEffect, useRef, Suspense } from "react"
 import Link from "next/link"
 import { useRouter, usePathname, useSearchParams } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { ChatbotModal } from "@/components/chatbot-modal"
-import { Search, Sparkles, Moon, Sun } from "lucide-react"
+import { Search, Sparkles, Moon, Sun, ChevronDown } from "lucide-react"
 import { checkAuth, getCurrentUser, logout, type User } from "@/lib/auth"
 import { useTheme } from "next-themes"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 
-// useSearchParams를 사용하는 카테고리 네비게이션 컴포넌트
-function CategoryNavigation() {
+// 메인 네비게이션 컴포넌트
+function MainNavigation() {
   const pathname = usePathname()
   const searchParams = useSearchParams()
+  const [isCoachesMenuOpen, setIsCoachesMenuOpen] = useState(false)
+  const hoverTimeoutRef = useRef<NodeJS.Timeout | null>(null)
   
   const gameCategories = [
-    { id: 'all', name: '전체' },
-    { id: 1, name: '리그 오브 레전드' },
-    { id: 2, name: '발로란트' },
-    { id: 3, name: '오버워치 2' },
-    { id: 4, name: '배틀그라운드' },
+    { id: "all", name: "전체" },
+    { id: "리그 오브 레전드", name: "리그 오브 레전드" },
+    { id: "발로란트", name: "발로란트" },
+    { id: "오버워치 2", name: "오버워치 2" },
+    { id: "배틀그라운드", name: "배틀그라운드" },
   ]
 
+  const isCoachesPage = pathname === '/coaches'
+  const isReviewsPage = pathname === '/reviews'
+  const isFavoritesPage = pathname === '/favorites'
+  const isHomePage = pathname === '/'
+
+  // 현재 선택된 게임 확인
+  const currentGame = isCoachesPage 
+    ? (searchParams.get('specialty') || 'all')
+    : 'all'
+
+  // 호버로 메뉴 열기
+  const handleMouseEnter = () => {
+    if (hoverTimeoutRef.current) {
+      clearTimeout(hoverTimeoutRef.current)
+      hoverTimeoutRef.current = null
+    }
+    setIsCoachesMenuOpen(true)
+  }
+
+  // 호버 해제 시 약간의 지연 후 닫기
+  const handleMouseLeave = () => {
+    if (hoverTimeoutRef.current) {
+      clearTimeout(hoverTimeoutRef.current)
+    }
+    hoverTimeoutRef.current = setTimeout(() => {
+      setIsCoachesMenuOpen(false)
+      hoverTimeoutRef.current = null
+    }, 150) // 150ms 지연
+  }
+
+  // 컴포넌트 언마운트 시 timeout 정리
+  useEffect(() => {
+    return () => {
+      if (hoverTimeoutRef.current) {
+        clearTimeout(hoverTimeoutRef.current)
+      }
+    }
+  }, [])
+
   return (
-    <div className="border-t border-[var(--divider01)] bg-[var(--layer01)]">
+    <nav className="border-t border-[var(--divider01)] bg-[var(--layer01)]">
       <div className="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8">
-        <nav className="flex items-center gap-3 overflow-x-auto scrollbar-hide h-12 scroll-smooth snap-x snap-mandatory" aria-label="게임 카테고리 네비게이션">
-          {gameCategories.map((category) => {
-            const isActive = pathname === '/coaches' && 
-              ((category.id === 'all' && !searchParams.get('game')) ||
-               (category.id !== 'all' && searchParams.get('game') === String(category.id)))
-            return (
-              <Link
-                key={category.id}
-                href={category.id === 'all' ? '/coaches' : `/coaches?game=${category.id}`}
-                className={`text-sm whitespace-nowrap transition-colors shrink-0 snap-start relative pb-1 ${
-                  isActive 
-                    ? 'text-[var(--textPrimary)] font-semibold' 
-                    : 'text-[var(--text01)] hover:text-[var(--textPrimary)]'
-                }`}
-                aria-label={`${category.name} 카테고리 보기`}
-              >
-                {category.name}
-                {isActive && (
-                  <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-[var(--textPrimary)] rounded-full" />
-                )}
-              </Link>
-            )
-          })}
+        <div className="flex items-center gap-6 h-12">
+          {/* 홈 */}
           <Link
-            href="/reviews"
-            className={`text-sm whitespace-nowrap transition-colors shrink-0 ml-auto pb-1 relative ${
-              pathname === '/reviews'
-                ? 'text-[var(--textPrimary)] font-semibold'
-                : 'text-[var(--text01)] hover:text-[var(--textPrimary)]'
+            href="/"
+            className={`text-sm font-medium transition-colors relative pb-1 ${
+              isHomePage
+                ? 'text-[var(--primary01)]'
+                : 'text-[var(--text01)] hover:text-[var(--primary01)]'
             }`}
-            aria-label="수업후기 페이지로 이동"
           >
-            수업후기
-            {pathname === '/reviews' && (
-              <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-[var(--textPrimary)] rounded-full" />
+            홈
+            {isHomePage && (
+              <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-[var(--primary01)]" />
             )}
           </Link>
-        </nav>
+
+          {/* 코치 목록 - 드롭다운 */}
+          <div 
+            className="relative"
+            onMouseEnter={handleMouseEnter}
+            onMouseLeave={handleMouseLeave}
+          >
+            <Popover open={isCoachesMenuOpen} onOpenChange={setIsCoachesMenuOpen}>
+              <PopoverTrigger asChild>
+                <button
+                  type="button"
+                  className={`text-sm font-medium transition-colors relative pb-1 flex items-center gap-1 outline-none ${
+                    isCoachesPage
+                      ? 'text-[var(--primary01)]'
+                      : 'text-[var(--text01)] hover:text-[var(--primary01)]'
+                  }`}
+                >
+                  코치 목록
+                  <ChevronDown className={`h-3 w-3 transition-transform duration-200 ${isCoachesMenuOpen ? 'rotate-180' : ''}`} />
+                  {isCoachesPage && (
+                    <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-[var(--primary01)]" />
+                  )}
+                </button>
+              </PopoverTrigger>
+              <PopoverContent 
+                className="w-48 p-1 bg-[var(--layer01)] border-[var(--divider01)] shadow-lg !animate-none"
+                align="start"
+                sideOffset={4}
+                onMouseEnter={handleMouseEnter}
+                onMouseLeave={handleMouseLeave}
+              >
+              <div className="flex flex-col gap-0.5">
+                {gameCategories.map((game) => {
+                  const isActive = currentGame === game.id
+                  
+                  return (
+                    <Link
+                      key={game.id}
+                      href={game.id === 'all' ? '/coaches' : `/coaches?specialty=${encodeURIComponent(game.id)}`}
+                      onClick={() => setIsCoachesMenuOpen(false)}
+                      className={`px-3 py-1.5 rounded-md text-sm transition-colors ${
+                        isActive
+                          ? 'bg-[var(--primaryOpacity01)] text-[var(--primary01)] font-medium'
+                          : 'text-[var(--text01)] hover:bg-[var(--layer02Hover)]'
+                      }`}
+                    >
+                      {game.name}
+                    </Link>
+                  )
+                })}
+              </div>
+            </PopoverContent>
+          </Popover>
+          </div>
+
+          {/* 후기 */}
+          <Link
+            href="/reviews"
+            className={`text-sm font-medium transition-colors relative pb-1 ${
+              isReviewsPage
+                ? 'text-[var(--primary01)]'
+                : 'text-[var(--text01)] hover:text-[var(--primary01)]'
+            }`}
+          >
+            후기
+            {isReviewsPage && (
+              <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-[var(--primary01)]" />
+            )}
+          </Link>
+
+          {/* 찜목록 */}
+          <Link
+            href="/favorites"
+            className={`text-sm font-medium transition-colors relative pb-1 ${
+              isFavoritesPage
+                ? 'text-[var(--primary01)]'
+                : 'text-[var(--text01)] hover:text-[var(--primary01)]'
+            }`}
+          >
+            찜목록
+            {isFavoritesPage && (
+              <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-[var(--primary01)]" />
+            )}
+          </Link>
+        </div>
       </div>
-    </div>
+    </nav>
   )
 }
 
@@ -250,17 +354,17 @@ export function Header() {
           </div>
         </div>
 
-        {/* Category Navigation */}
+        {/* Main Navigation */}
         <Suspense fallback={
           <div className="border-t border-[var(--divider01)] bg-[var(--layer01)]">
             <div className="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8">
-              <nav className="flex items-center gap-3 h-12" aria-label="게임 카테고리 네비게이션">
+              <div className="flex items-center gap-6 h-12">
                 <div className="h-4 w-16 bg-[var(--layer02)] rounded animate-pulse" />
-              </nav>
+              </div>
             </div>
           </div>
         }>
-          <CategoryNavigation />
+          <MainNavigation />
         </Suspense>
       </header>
 
