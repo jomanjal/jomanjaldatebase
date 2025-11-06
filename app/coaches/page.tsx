@@ -1,6 +1,7 @@
 "use client"
 
-import React, { useState, useEffect, useMemo } from "react"
+import React, { useState, useEffect, useMemo, Suspense } from "react"
+import { useSearchParams, useRouter } from "next/navigation"
 import { Header } from "@/components/header"
 import { FooterSection } from "@/components/footer-section"
 import { Button } from "@/components/ui/button"
@@ -91,7 +92,9 @@ interface Coach {
   active: boolean
 }
 
-export default function CoachesPage() {
+function CoachesPageContent() {
+  const searchParams = useSearchParams()
+  const router = useRouter()
   const [coaches, setCoaches] = useState<Coach[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<Error | null>(null) // 에러 상태 추가
@@ -109,6 +112,20 @@ export default function CoachesPage() {
     hasNextPage: false,
     hasPrevPage: false,
   })
+
+  // URL 파라미터에서 필터 초기화
+  useEffect(() => {
+    const specialty = searchParams.get('specialty')
+    if (specialty) {
+      // 게임 카테고리 목록에 있는 게임인지 확인
+      const gameExists = gameCategories.some(g => g.id === specialty)
+      if (gameExists) {
+        setSelectedGame(specialty)
+      }
+    } else {
+      setSelectedGame("all")
+    }
+  }, [searchParams])
 
   // 코치 목록 조회
   useEffect(() => {
@@ -450,7 +467,14 @@ export default function CoachesPage() {
                   variant={selectedGame === game.id ? "default" : "outline"}
                   onClick={(e) => {
                     e.preventDefault()
-                    setSelectedGame(game.id)
+                    const newGame = game.id === selectedGame ? "all" : game.id
+                    setSelectedGame(newGame)
+                    // URL 업데이트
+                    if (newGame === "all") {
+                      router.push("/coaches")
+                    } else {
+                      router.push(`/coaches?specialty=${encodeURIComponent(newGame)}`)
+                    }
                   }}
                   className={`whitespace-nowrap rounded-md snap-start shrink-0 ${
                     selectedGame === game.id 
@@ -582,6 +606,26 @@ export default function CoachesPage() {
 
       <FooterSection />
     </main>
+  )
+}
+
+export default function CoachesPage() {
+  return (
+    <Suspense fallback={
+      <main className="min-h-screen bg-[var(--layer01)]">
+        <Header />
+        <div className="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8 py-6">
+          <div className="h-8 w-48 bg-[var(--layer02)] animate-pulse rounded mb-4" />
+          <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-5 gap-3">
+            {Array.from({ length: 12 }).map((_, index) => (
+              <SkeletonCard key={index} />
+            ))}
+          </div>
+        </div>
+      </main>
+    }>
+      <CoachesPageContent />
+    </Suspense>
   )
 }
 

@@ -41,7 +41,6 @@ gamecoach-ai/
 ├── components/            # React 컴포넌트
 │   ├── ui/               # 재사용 가능한 UI 컴포넌트
 │   ├── header.tsx        # 헤더 컴포넌트
-│   ├── hero-section.tsx  # 히어로 섹션
 │   ├── chatbot-modal.tsx # 챗봇 모달
 │   └── ...               # 기타 섹션 컴포넌트들
 ├── lib/                  # 유틸리티 함수
@@ -60,15 +59,14 @@ gamecoach-ai/
 
 ### 컴포넌트 구조
 1. **Header** - 네비게이션 및 로고
-2. **HeroSection** - 메인 캐러셀 배너
-3. **GameCoachSection** - 게임별 코치 카테고리
-4. **KeyBenefitsSection** - 주요 혜택 소개
-5. **AIMatchingProcessSection** - AI 매칭 프로세스
-6. **InstructorProfileSection** - 강사 프로필
-7. **UseCaseSection** - 사용 사례
-8. **ReviewsSection** - 리뷰 섹션
-9. **CTAHighlightSection** - 행동 유도 섹션
-10. **FooterSection** - 푸터
+2. **GameCoachSection** - 게임별 코치 카테고리
+3. **KeyBenefitsSection** - 주요 혜택 소개
+4. **AIMatchingProcessSection** - AI 매칭 프로세스
+5. **InstructorProfileSection** - 강사 프로필
+6. **UseCaseSection** - 사용 사례
+7. **ReviewsSection** - 리뷰 섹션
+8. **CTAHighlightSection** - 행동 유도 섹션
+9. **FooterSection** - 푸터
 
 ## 상태 관리
 
@@ -77,7 +75,6 @@ gamecoach-ai/
 - 복잡한 상태 관리는 최소화 (workspace rules에 따라)
 - 주요 상태:
   - `isChatbotOpen`: 챗봇 모달 열림/닫힘 상태
-  - `currentSlide`: 히어로 섹션 캐러셀 현재 슬라이드
   - `messages`: 챗봇 대화 메시지 배열
   - `userAnswers`: 사용자 답변 저장
 
@@ -90,7 +87,6 @@ gamecoach-ai/
 
 ### 정적 데이터
 - 게임 카테고리 정보 (리그 오브 레전드, 발로란트, 오버워치 2, 배틀그라운드)
-- 히어로 섹션 슬라이드 데이터
 - 강사 프로필 정보
 - 리뷰 데이터
 
@@ -116,22 +112,17 @@ gamecoach-ai/
 
 ## 주요 기능
 
-### 1. 반응형 캐러셀 히어로 섹션
-- 자동 슬라이드 전환 (5초 간격)
-- 수동 네비게이션 (화살표, 도트)
-- 반응형 디자인
-
-### 2. 게임별 코치 카테고리
+### 1. 게임별 코치 카테고리
 - 4개 주요 게임 카테고리
 - 호버 효과 및 그라데이션 배경
 - 클릭 시 챗봇 모달 열림
 
-### 3. AI 챗봇 모달
+### 2. AI 챗봇 모달
 - 단계별 질문 시스템
 - 실시간 대화 인터페이스
 - 웨이팅 리스트 등록 기능
 
-### 4. 반응형 레이아웃
+### 3. 반응형 레이아웃
 - 모바일 우선 디자인
 - Tailwind CSS 브레이크포인트 활용
 - 유연한 그리드 시스템

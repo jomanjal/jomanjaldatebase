@@ -1,10 +1,9 @@
 "use client"
 
-import { useState } from "react"
+import { useRouter } from "next/navigation"
 import Image from "next/image"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
-import { ChatbotModal } from "@/components/chatbot-modal"
 
 const gameCategories = [
   {
@@ -38,67 +37,67 @@ const gameCategories = [
 ]
 
 export function GameCoachSection() {
-  const [isChatbotOpen, setIsChatbotOpen] = useState(false)
+  const router = useRouter()
+
+  const handleGameClick = (gameName: string) => {
+    router.push(`/coaches?specialty=${encodeURIComponent(gameName)}`)
+  }
 
   return (
-    <>
-      <section className="py-8 px-4 bg-[var(--layer01)]">
-        <div className="max-w-[1280px] mx-auto">
-          <div className="text-center mb-6">
-            <h2 className="mb-2 text-balance text-[var(--text01)]">게임별 코치를 찾아볼까요?</h2>
-            <p className="text-sm text-[var(--text04)]">전문 코치들이 당신의 실력 향상을 도와드립니다</p>
-          </div>
+    <section className="py-8 px-4 bg-[var(--layer01)]">
+      <div className="max-w-[1280px] mx-auto">
+        <div className="text-center mb-6">
+          <h2 className="mb-2 text-balance text-[var(--text01)]">전 프로와 코치 출신에게 직접 배우는 게 가능할까요?</h2>
+          <p className="text-sm text-[var(--text04)]">프로는 가르치는 방식부터 다릅니다. 압도적인 티어 상승을 경험하세요.</p>
+        </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
-            {gameCategories.map((game) => (
-              <div key={game.id} className="group cursor-pointer" onClick={() => setIsChatbotOpen(true)}>
-                <Card className="relative h-48 md:h-56 overflow-hidden rounded-md ">
-                  {/* Background Image */}
-                  <div className="absolute inset-0">
-                    <Image
-                      src={game.image || "/placeholder.svg"}
-                      alt={game.name}
-                      fill
-                      className="object-cover"
-                      sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 25vw"
-                    />
-                    {/* Overlay Gradient */}
-                    <div className={`absolute inset-0 ${game.bgColor} opacity-80 group-hover:opacity-70 transition-opacity`} style={{ transition: 'var(--transition)' }} />
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
+          {gameCategories.map((game) => (
+            <div key={game.id} className="group cursor-pointer" onClick={() => handleGameClick(game.name)}>
+              <Card className="relative h-48 md:h-56 overflow-hidden rounded-md ">
+                {/* Background Image */}
+                <div className="absolute inset-0">
+                  <Image
+                    src={game.image || "/placeholder.svg"}
+                    alt={game.name}
+                    fill
+                    className="object-cover"
+                    sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 25vw"
+                  />
+                  {/* Overlay Gradient */}
+                  <div className={`absolute inset-0 ${game.bgColor} opacity-80 group-hover:opacity-70 transition-opacity`} style={{ transition: 'var(--transition)' }} />
+                </div>
+                
+                {/* Content */}
+                <div className="relative z-10 h-full flex flex-col justify-between p-4">
+                  <div className="flex-1 flex flex-col justify-center items-center text-center">
+                    <h3 className="text-2xl md:text-3xl font-bold text-white mb-2 drop-shadow-lg">
+                      {game.nameEn}
+                    </h3>
+                    <p className="text-sm md:text-base text-white/90 font-medium">
+                      {game.name}
+                    </p>
                   </div>
                   
-                  {/* Content */}
-                  <div className="relative z-10 h-full flex flex-col justify-between p-4">
-                    <div className="flex-1 flex flex-col justify-center items-center text-center">
-                      <h3 className="text-2xl md:text-3xl font-bold text-white mb-2 drop-shadow-lg">
-                        {game.nameEn}
-                      </h3>
-                      <p className="text-sm md:text-base text-white/90 font-medium">
-                        {game.name}
-                      </p>
-                    </div>
-                    
-                    {/* Button */}
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="w-full bg-white/10 hover:bg-white/20 text-white border border-white/20 hover:border-white/30 font-semibold"
-                      style={{ transition: 'var(--transition)' }}
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        setIsChatbotOpen(true)
-                      }}
-                    >
-                      코치 찾기
-                    </Button>
-                  </div>
-                </Card>
-              </div>
-            ))}
-          </div>
+                  {/* Button */}
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="w-full bg-white/10 hover:bg-white/20 text-white border border-white/20 hover:border-white/30 font-semibold"
+                    style={{ transition: 'var(--transition)' }}
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      handleGameClick(game.name)
+                    }}
+                  >
+                    코치 찾기
+                  </Button>
+                </div>
+              </Card>
+            </div>
+          ))}
         </div>
-      </section>
-
-      <ChatbotModal isOpen={isChatbotOpen} onClose={() => setIsChatbotOpen(false)} />
-    </>
+      </div>
+    </section>
   )
 }
