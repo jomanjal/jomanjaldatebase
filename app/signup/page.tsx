@@ -76,12 +76,12 @@ export default function SignupPage() {
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
           <div className="flex items-center justify-center space-x-2 mb-4">
-            <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center">
+            <div className="w-8 h-8 bg-[var(--primary01)] rounded-md flex items-center justify-center">
               <span className="text-white font-bold text-sm">G</span>
             </div>
             <span className="text-xl font-bold text-foreground">GameCoach.AI</span>
           </div>
-          <CardTitle className="text-2xl">회원가입</CardTitle>
+          <CardTitle className="text-xl">회원가입</CardTitle>
           <CardDescription>
             계정을 생성하여 게임 코칭을 시작하세요
           </CardDescription>
@@ -89,7 +89,7 @@ export default function SignupPage() {
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
             {error && (
-              <div className="bg-destructive/10 text-destructive text-sm p-3 rounded-md">
+              <div className="bg-[var(--systemWarning01)]/10 text-[var(--systemWarning01)] text-sm p-3 rounded-md border border-[var(--systemWarning01)]/30">
                 {error}
               </div>
             )}
@@ -120,7 +120,7 @@ export default function SignupPage() {
                 minLength={2}
                 maxLength={20}
               />
-              <p className="text-xs text-muted-foreground">2자 이상 20자 이하여야 합니다.</p>
+              <p className="text-xs text-[var(--text04)]">2자 이상 20자 이하여야 합니다.</p>
             </div>
             
             <div className="space-y-2">
@@ -135,7 +135,7 @@ export default function SignupPage() {
                 disabled={isLoading}
                 minLength={8}
               />
-              <p className="text-xs text-muted-foreground">최소 8자 이상, 영문, 숫자, 특수문자를 각각 1개 이상 포함해야 합니다.</p>
+              <p className="text-xs text-[var(--text04)]">최소 8자 이상, 영문, 숫자, 특수문자를 각각 1개 이상 포함해야 합니다.</p>
             </div>
             
             <div className="space-y-2">
@@ -195,13 +195,13 @@ export default function SignupPage() {
           </form>
           
           <div className="mt-6 text-center space-y-2">
-            <p className="text-sm text-muted-foreground">
+            <p className="text-sm text-[var(--text04)]">
               이미 계정이 있으신가요?{" "}
-              <Link href="/login" className="text-primary hover:underline">
+              <Link href="/login" className="text-[var(--primary01)] hover:underline">
                 로그인
               </Link>
             </p>
-            <Link href="/" className="text-sm text-muted-foreground hover:underline">
+            <Link href="/" className="text-sm text-[var(--text04)] hover:underline">
               홈으로 돌아가기
             </Link>
           </div>

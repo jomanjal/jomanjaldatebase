@@ -377,7 +377,7 @@ export default function PurchasePage({ params }: { params: { id: string } }) {
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <Loader2 className="w-12 h-12 animate-spin text-primary mx-auto mb-4" />
-          <p className="text-muted-foreground">로딩 중...</p>
+          <p className="text-[var(--text04)]">로딩 중...</p>
         </div>
       </div>
     )
@@ -388,7 +388,7 @@ export default function PurchasePage({ params }: { params: { id: string } }) {
   }
 
   return (
-    <main className="min-h-screen bg-background">
+    <main className="min-h-screen bg-white">
       <Header />
       
       <div className="container mx-auto px-4 py-8 max-w-7xl">
@@ -402,16 +402,16 @@ export default function PurchasePage({ params }: { params: { id: string } }) {
           뒤로가기
         </Button>
 
-        <div className="flex gap-6">
+        <div className="flex gap-4">
           {/* 왼쪽 메인 콘텐츠 */}
-          <div className="flex-1 space-y-6">
-            <h1 className="text-3xl font-bold mb-6">강의 구매</h1>
+          <div className="flex-1 space-y-4">
+            <h1 className="text-xl font-semibold mb-6">강의 구매</h1>
 
             {/* 강의 정보 카드 */}
-            <Card>
-              <CardContent className="p-6">
-                <div className="flex gap-6">
-                  <div className="w-48 h-32 rounded-lg overflow-hidden bg-gray-100 flex-shrink-0">
+            <Card className="border border-[var(--divider01)] shadow-[var(--shadow-sm)]">
+              <CardContent className="p-4">
+                <div className="flex gap-4">
+                  <div className="w-48 h-32 rounded-md overflow-hidden bg-white border border-[var(--divider01)] flex-shrink-0">
                     {coach.introductionImage || coach.thumbnailImage ? (
                       <Image
                         src={coach.introductionImage || coach.thumbnailImage || ''}
@@ -421,7 +421,7 @@ export default function PurchasePage({ params }: { params: { id: string } }) {
                         className="w-full h-full object-cover"
                       />
                     ) : (
-                      <div className="w-full h-full flex items-center justify-center text-gray-400">
+                      <div className="w-full h-full flex items-center justify-center text-[var(--text04)]">
                         이미지 없음
                       </div>
                     )}
@@ -430,11 +430,11 @@ export default function PurchasePage({ params }: { params: { id: string } }) {
                     <h2 className="text-xl font-bold mb-2">{coach.description || coach.headline || '강의 제목'}</h2>
                     <div className="flex items-center gap-3 mb-3">
                       {discountRate > 0 && (
-                        <Badge className="bg-red-500">{(discountRate)}% 할인</Badge>
+                        <Badge className="bg-[var(--systemWarning01)]">{(discountRate)}% 할인</Badge>
                       )}
                       <div className="flex items-center gap-2">
                         {discountRate > 0 && (
-                          <span className="text-sm text-muted-foreground line-through">
+                          <span className="text-sm text-[var(--text04)] line-through">
                             {originalPrice.toLocaleString()}원
                           </span>
                         )}
@@ -459,11 +459,11 @@ export default function PurchasePage({ params }: { params: { id: string } }) {
                     {introductionItems.map((item, index) => (
                       <div key={index}>
                         <h3 className="font-semibold mb-2">{item.title}</h3>
-                        <p className="text-muted-foreground whitespace-pre-line">{item.content}</p>
+                        <p className="text-[var(--text04)] whitespace-pre-line">{item.content}</p>
                         {item.items && item.items.length > 0 && (
                           <ul className="list-disc list-inside mt-2 space-y-1">
                             {item.items.map((listItem, idx) => (
-                              <li key={idx} className="text-muted-foreground">{listItem}</li>
+                              <li key={idx} className="text-[var(--text04)]">{listItem}</li>
                             ))}
                           </ul>
                         )}
@@ -490,7 +490,7 @@ export default function PurchasePage({ params }: { params: { id: string } }) {
                     {coach.curriculumItems.map((item, index) => (
                       <div 
                         key={index} 
-                        className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors gap-4"
+                        className="flex items-center justify-between p-4 border border-[var(--divider01)] rounded-md hover:opacity-90 transition-opacity gap-4"
                       >
                         <div className="flex items-center gap-3 flex-1 min-w-0">
                           <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary/10 text-primary flex items-center justify-center font-semibold text-sm">
@@ -514,14 +514,14 @@ export default function PurchasePage({ params }: { params: { id: string } }) {
             )}
 
             {/* 예약 일정 섹션 */}
-            <Card>
+            <Card className="border border-[var(--divider01)] shadow-[var(--shadow-sm)]">
               <CardHeader>
-                <CardTitle className="text-2xl">희망 일정</CardTitle>
-                <CardDescription className="text-base">
+                <CardTitle className="text-xl">희망 일정</CardTitle>
+                <CardDescription className="text-sm">
                   코치가 가능한 가장 빠른 일정으로 기본 선택되며, 필요에 따라 일정 변경은 가능합니다.
                 </CardDescription>
               </CardHeader>
-              <CardContent className="space-y-6">
+              <CardContent className="space-y-4">
                 <div className="flex gap-8">
                   {/* 캘린더 - 크게 */}
                   <div className="flex-1">
@@ -541,7 +541,7 @@ export default function PurchasePage({ params }: { params: { id: string } }) {
                         return date < today || date > maxDate
                       }}
                       locale={ko}
-                      className="rounded-lg border p-6 w-full"
+                      className="rounded-md border border-[var(--divider01)] p-4 w-full"
                       formatters={{
                         formatCaption: (month, options) => {
                           const year = month.getFullYear()
@@ -575,14 +575,14 @@ export default function PurchasePage({ params }: { params: { id: string } }) {
                         nav_button_next: "absolute right-1",
                         table: "w-full border-collapse space-y-1",
                         head_row: "flex mb-2",
-                        head_cell: "text-muted-foreground rounded-md w-14 font-medium text-base flex items-center justify-center",
+                        head_cell: "text-[var(--text04)] rounded-md w-14 font-medium text-base flex items-center justify-center",
                         row: "flex w-full mt-2",
                         cell: "h-14 w-14 text-center text-base p-0 relative [&:has([aria-selected])]:bg-accent first:[&:has([aria-selected])]:rounded-l-md last:[&:has([aria-selected])]:rounded-r-md focus-within:relative focus-within:z-20",
                         day: "h-14 w-14 p-0 font-medium aria-selected:opacity-100 text-base rounded-md hover:bg-accent transition-colors",
                         day_selected: "bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground focus:bg-primary focus:text-primary-foreground font-semibold",
                         day_today: "bg-accent text-accent-foreground font-semibold",
-                        day_outside: "text-muted-foreground opacity-50",
-                        day_disabled: "text-muted-foreground opacity-30 cursor-not-allowed",
+                        day_outside: "text-[var(--text04)] opacity-50",
+                        day_disabled: "text-[var(--text04)] opacity-30 cursor-not-allowed",
                         day_range_middle: "aria-selected:bg-accent aria-selected:text-accent-foreground",
                         day_hidden: "invisible",
                       }}
@@ -591,7 +591,9 @@ export default function PurchasePage({ params }: { params: { id: string } }) {
                   
                   {/* 시간 선택 - 버튼 리스트로 */}
                   <div className="flex-1">
-                    <Label className="mb-4 block text-lg font-semibold">시간 선택</Label>
+                    <div className="mb-4">
+                      <Label className="text-base font-semibold">시간 선택</Label>
+                    </div>
                     {loadingTimes ? (
                       <div className="flex items-center justify-center h-[400px]">
                         <Loader2 className="w-8 h-8 animate-spin text-primary" />
@@ -603,10 +605,10 @@ export default function PurchasePage({ params }: { params: { id: string } }) {
                             key={time}
                             type="button"
                             variant={selectedTime === time ? "default" : "outline"}
-                            className={`w-full h-14 text-lg font-medium ${
+                            className={`w-full h-14 text-base font-medium ${
                               selectedTime === time 
                                 ? "bg-primary text-primary-foreground hover:bg-primary/90" 
-                                : "hover:bg-muted"
+                                : "hover:opacity-80"
                             }`}
                             onClick={() => setSelectedTime(time)}
                           >
@@ -616,11 +618,11 @@ export default function PurchasePage({ params }: { params: { id: string } }) {
                       </div>
                     ) : selectedDate ? (
                       <div className="flex items-center justify-center h-[400px]">
-                        <p className="text-base text-muted-foreground">예약 가능한 시간이 없습니다.</p>
+                        <p className="text-base text-[var(--text04)]">예약 가능한 시간이 없습니다.</p>
                       </div>
                     ) : (
                       <div className="flex items-center justify-center h-[400px]">
-                        <p className="text-base text-muted-foreground">날짜를 먼저 선택해주세요.</p>
+                        <p className="text-base text-[var(--text04)]">날짜를 먼저 선택해주세요.</p>
                       </div>
                     )}
                   </div>
@@ -629,14 +631,14 @@ export default function PurchasePage({ params }: { params: { id: string } }) {
             </Card>
 
             {/* 내 게임 정보 섹션 */}
-            <Card>
+            <Card className="border border-[var(--divider01)] shadow-[var(--shadow-sm)]">
               <CardHeader>
-                <CardTitle>내 게임 정보 <span className="text-sm font-normal text-muted-foreground">(선택사항)</span></CardTitle>
+                <CardTitle>내 게임 정보 <span className="text-sm font-normal text-[var(--text04)]">(선택사항)</span></CardTitle>
                 <CardDescription>
                   코치님이 강의 준비 및 맞춤형 코칭을 위해 참고하는 정보입니다. 선택사항이며, 입력하지 않아도 강의 구매가 가능합니다.
                 </CardDescription>
               </CardHeader>
-              <CardContent className="space-y-6">
+              <CardContent className="space-y-4">
                 {/* 랭크 선택 */}
                 <div>
                   <Label htmlFor="rank">랭크</Label>
@@ -734,7 +736,7 @@ export default function PurchasePage({ params }: { params: { id: string } }) {
                   
                   {/* 검색 바 */}
                   <div className="relative mb-4">
-                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-[var(--text04)] w-4 h-4" />
                     <Input
                       placeholder="요원 검색"
                       value={agentSearchQuery}
@@ -770,7 +772,7 @@ export default function PurchasePage({ params }: { params: { id: string } }) {
                               }
                             }}
                           >
-                            <div className={`w-12 h-12 rounded-full ${isSelected ? "bg-primary-foreground/20" : "bg-muted"} flex items-center justify-center text-xs font-semibold`}>
+                            <div className={`w-12 h-12 rounded-full ${isSelected ? "bg-[var(--primary01)] text-white" : "bg-white border border-[var(--divider01)]"} flex items-center justify-center text-xs font-semibold`}>
                               {agent.charAt(0)}
                             </div>
                             <span className="text-xs">{agent}</span>
@@ -788,15 +790,15 @@ export default function PurchasePage({ params }: { params: { id: string } }) {
             </Card>
 
             {/* 환불 규정 및 자주 묻는 질문 */}
-            <Card className="p-0">
+            <Card className="border border-[var(--divider01)] shadow-[var(--shadow-sm)] p-0">
               <CardContent className="p-0">
                 <Accordion type="single" collapsible>
-                  <AccordionItem value="refund" className="border-b">
+                  <AccordionItem value="refund" className="border-b border-[var(--divider01)]">
                     <AccordionTrigger className="px-6 py-4">
                       <span className="flex-1 text-left">환불 규정</span>
                     </AccordionTrigger>
                     <AccordionContent>
-                      <div className="px-6 pb-4 space-y-2 text-sm text-muted-foreground">
+                      <div className="px-6 pb-4 space-y-2 text-sm text-[var(--text04)]">
                         <p>• 수강 시작 전: 전액 환불 가능</p>
                         <p>• 수강 시작 후 7일 이내: 50% 환불 가능</p>
                         <p>• 수강 시작 후 7일 이후: 환불 불가</p>
@@ -804,7 +806,7 @@ export default function PurchasePage({ params }: { params: { id: string } }) {
                     </AccordionContent>
                   </AccordionItem>
                   
-                  <AccordionItem value="faq" className="border-b last:border-b-0">
+                  <AccordionItem value="faq" className="border-b border-[var(--divider01)] last:border-b-0">
                     <AccordionTrigger className="px-6 py-4">
                       <span className="flex-1 text-left">자주 묻는 질문</span>
                     </AccordionTrigger>
@@ -812,11 +814,11 @@ export default function PurchasePage({ params }: { params: { id: string } }) {
                       <div className="px-6 pb-4 space-y-4 text-sm">
                         <div>
                           <p className="font-semibold mb-1">Q. 강의는 어떻게 진행되나요?</p>
-                          <p className="text-muted-foreground">1:1 맞춤형 강의로 진행됩니다. 예약하신 시간에 코치와 연결됩니다.</p>
+                          <p className="text-[var(--text04)]">1:1 맞춤형 강의로 진행됩니다. 예약하신 시간에 코치와 연결됩니다.</p>
                         </div>
                         <div>
                           <p className="font-semibold mb-1">Q. 환불은 어떻게 하나요?</p>
-                          <p className="text-muted-foreground">마이페이지에서 환불 신청이 가능합니다.</p>
+                          <p className="text-[var(--text04)]">마이페이지에서 환불 신청이 가능합니다.</p>
                         </div>
                       </div>
                     </AccordionContent>
@@ -828,7 +830,7 @@ export default function PurchasePage({ params }: { params: { id: string } }) {
 
           {/* 오른쪽 결제 정보 사이드바 */}
           <div className="w-80 flex-shrink-0">
-            <Card className="sticky top-4">
+            <Card className="border border-[var(--divider01)] shadow-[var(--shadow-sm)] sticky top-4">
               <CardHeader>
                 <CardTitle>결제 정보</CardTitle>
               </CardHeader>
@@ -836,35 +838,35 @@ export default function PurchasePage({ params }: { params: { id: string } }) {
                 {selectedDate && selectedTime && (
                   <>
                     <div>
-                      <Label className="text-sm text-muted-foreground">예약일</Label>
+                      <Label className="text-sm text-[var(--text04)]">예약일</Label>
                       <p className="font-medium">{format(selectedDate, 'yyyy-MM-dd', { locale: ko })}</p>
                     </div>
                     <div>
-                      <Label className="text-sm text-muted-foreground">예약 시간</Label>
+                      <Label className="text-sm text-[var(--text04)]">예약 시간</Label>
                       <p className="font-medium">{selectedTime}</p>
                     </div>
                   </>
                 )}
                 
-                <div className="border-t pt-4 space-y-2">
+                <div className="border-t border-[var(--divider01)] pt-4 space-y-2">
                   <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">상품 금액</span>
+                    <span className="text-[var(--text04)]">상품 금액</span>
                     <span>{originalPrice.toLocaleString()}원</span>
                   </div>
                   {discountRate > 0 && (
                     <div className="flex justify-between text-sm">
-                      <span className="text-muted-foreground">할인 금액</span>
-                      <span className="text-red-500">-{discountAmount.toLocaleString()}원</span>
+                      <span className="text-[var(--text04)]">할인 금액</span>
+                      <span className="text-[var(--systemWarning01)]">-{discountAmount.toLocaleString()}원</span>
                     </div>
                   )}
-                  <div className="flex justify-between text-lg font-bold pt-2 border-t">
+                  <div className="flex justify-between text-lg font-bold pt-2 border-t border-[var(--divider01)]">
                     <span>총 결제 금액</span>
                     <span>{finalPrice.toLocaleString()}원</span>
                   </div>
                 </div>
 
                 <Button
-                  className="w-full bg-purple-600 hover:bg-purple-700"
+                  className="w-full bg-[var(--primary01)] hover:bg-[var(--primary02)]"
                   size="lg"
                   onClick={handlePurchase}
                   disabled={purchasing || !selectedDate || !selectedTime}

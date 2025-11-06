@@ -162,12 +162,12 @@ export default function UsersManagementPage() {
   const normalUsers = users.filter(u => u.role === 'user').length
 
   return (
-    <div className="p-8 space-y-8">
+    <div className="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
       {/* 헤더 */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold">유저 관리</h1>
-          <p className="text-muted-foreground mt-1">
+          <h1 className="text-xl font-semibold mb-1 text-[var(--text01)]">유저 관리</h1>
+          <p className="text-[var(--text04)] text-xs">
             등록된 모든 유저를 관리할 수 있습니다.
           </p>
         </div>
@@ -182,12 +182,12 @@ export default function UsersManagementPage() {
       </div>
 
       {/* 검색 및 필터 */}
-      <Card>
-        <CardContent className="pt-6">
+      <Card className="bg-[var(--layer02)] ">
+        <CardContent className="p-4">
           <div className="flex flex-col gap-4">
             <div className="flex flex-col md:flex-row gap-4">
               <div className="flex-1 relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-[var(--text04)] w-4 h-4" />
               <Input
                 placeholder="이메일 또는 닉네임으로 검색... (최대 100자)"
                 value={searchQuery}
@@ -202,7 +202,7 @@ export default function UsersManagementPage() {
               </div>
             </div>
             <div className="flex gap-2 flex-wrap items-center">
-              <span className="text-sm text-muted-foreground self-center">역할:</span>
+              <span className="text-xs text-[var(--text04)] self-center">역할:</span>
               <Button
                 variant={filterRole === "all" ? "default" : "outline"}
                 onClick={() => setFilterRole("all")}
@@ -237,53 +237,53 @@ export default function UsersManagementPage() {
       </Card>
 
       {/* 통계 */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card>
-          <CardContent className="pt-6">
-            <div className="text-2xl font-bold">{totalUsers}</div>
-            <div className="text-sm text-muted-foreground mt-1">총 유저 수</div>
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
+        <Card className="bg-[var(--layer02)]  ">
+          <CardContent className="p-3">
+            <div className="text-xl font-bold text-[var(--text01)]">{totalUsers}</div>
+            <div className="text-xs text-[var(--text04)] mt-1">총 유저 수</div>
           </CardContent>
         </Card>
-        <Card>
-          <CardContent className="pt-6">
-            <div className="text-2xl font-bold text-blue-600">
+        <Card className="bg-[var(--layer02)]  ">
+          <CardContent className="p-3">
+            <div className="text-xl font-bold text-[var(--primary01)]">
               {normalUsers}
             </div>
-            <div className="text-sm text-muted-foreground mt-1">일반 사용자</div>
+            <div className="text-xs text-[var(--text04)] mt-1">일반 사용자</div>
           </CardContent>
         </Card>
-        <Card>
-          <CardContent className="pt-6">
-            <div className="text-2xl font-bold text-purple-600">
+        <Card className="bg-[var(--layer02)]  ">
+          <CardContent className="p-3">
+            <div className="text-xl font-bold text-[var(--textPrimary)]">
               {adminUsers}
             </div>
-            <div className="text-sm text-muted-foreground mt-1">관리자</div>
+            <div className="text-xs text-[var(--text04)] mt-1">관리자</div>
           </CardContent>
         </Card>
-        <Card>
-          <CardContent className="pt-6">
-            <div className="text-2xl font-bold text-green-600">
+        <Card className="bg-[var(--layer02)]  ">
+          <CardContent className="p-3">
+            <div className="text-xl font-bold text-[var(--systemSuccess01)]">
               {coachUsers}
             </div>
-            <div className="text-sm text-muted-foreground mt-1">코치</div>
+            <div className="text-xs text-[var(--text04)] mt-1">코치</div>
           </CardContent>
         </Card>
       </div>
 
       {/* 유저 목록 */}
-      <Card>
+      <Card className="bg-[var(--layer02)] ">
         <CardHeader>
-          <CardTitle>유저 목록</CardTitle>
+          <CardTitle className="text-[var(--text01)]">유저 목록</CardTitle>
         </CardHeader>
         <CardContent>
           {loading ? (
             <div className="text-center py-12">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
-              <p className="text-muted-foreground mt-4">유저를 불러오는 중...</p>
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[var(--primary01)] mx-auto"></div>
+              <p className="text-[var(--text04)] mt-4">유저를 불러오는 중...</p>
             </div>
           ) : users.length === 0 ? (
             <div className="text-center py-12">
-              <p className="text-muted-foreground">검색 결과가 없습니다.</p>
+              <p className="text-[var(--text04)]">검색 결과가 없습니다.</p>
             </div>
           ) : (
             <div className="overflow-x-auto">
@@ -311,20 +311,20 @@ export default function UsersManagementPage() {
                         </TableCell>
                         <TableCell>
                           <div className="flex items-center gap-2">
-                            <UserCircle className="w-4 h-4 text-muted-foreground" />
-                            <span className="font-medium">{user.username}</span>
+                            <UserCircle className="w-4 h-4 text-[var(--text04)]" />
+                            <span className="font-medium text-[var(--text01)]">{user.username}</span>
                           </div>
                         </TableCell>
                         <TableCell>
-                          <span className="text-sm">{user.email}</span>
+                          <span className="text-xs text-[var(--text01)]">{user.email}</span>
                         </TableCell>
                         <TableCell>
-                          <Badge variant={getRoleBadgeVariant(user.role)}>
+                          <Badge variant={getRoleBadgeVariant(user.role)} className="border-[var(--divider01)]">
                             {getRoleLabel(user.role)}
                           </Badge>
                         </TableCell>
                         <TableCell>
-                          <div className="text-sm text-muted-foreground">
+                          <div className="text-xs text-[var(--text04)]">
                             {format(createdAt, 'yyyy-MM-dd HH:mm', { locale: ko })}
                           </div>
                         </TableCell>

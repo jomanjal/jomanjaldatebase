@@ -4,7 +4,7 @@ import { useState, useRef, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent } from "@/components/ui/card"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { FlightMenu, FlightMenuItem } from "@/components/ui/flight-menu"
 import { X, Bot, User, Loader2 } from "lucide-react"
 import { submitWaitlist } from "@/actions/notion"
 
@@ -44,10 +44,92 @@ export function ChatbotModal({ isOpen, onClose }: ChatbotModalProps) {
   // 메시지 스크롤을 위한 ref
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
-  // 메시지가 변경될 때마다 스크롤을 맨 아래로 이동
+  // 모달이 열릴 때 배경 스크롤 차단 (스크롤바는 유지, 스크롤만 막기)
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
-  }, [messages])
+    if (isOpen) {
+      // 현재 스크롤 위치 저장
+      const scrollY = window.scrollY
+      
+      // 스크롤 이벤트 차단 함수 (모달 내부는 제외)
+      const preventScroll = (e: Event) => {
+        const target = e.target as HTMLElement
+        // 모달 내부 요소는 스크롤 허용
+        if (target.closest('[data-modal-content]')) {
+          // 모달 내부 스크롤이 끝에 도달했을 때 배경 스크롤 차단
+          const scrollContainer = target.closest('.overflow-y-auto')
+          if (scrollContainer) {
+            const { scrollTop, scrollHeight, clientHeight } = scrollContainer as HTMLElement
+            const isAtTop = scrollTop === 0
+            const isAtBottom = scrollTop + clientHeight >= scrollHeight - 1
+            
+            // 스크롤이 끝에 도달했고 같은 방향으로 스크롤하려고 할 때 차단
+            if (isAtTop && (e as WheelEvent).deltaY < 0) {
+              e.preventDefault()
+              e.stopPropagation()
+              return
+            }
+            if (isAtBottom && (e as WheelEvent).deltaY > 0) {
+              e.preventDefault()
+              e.stopPropagation()
+              return
+            }
+          }
+          return
+        }
+        // 배경 스크롤 차단
+        e.preventDefault()
+        e.stopPropagation()
+      }
+      
+      // 스크롤 위치 고정 함수
+      const lockScroll = () => {
+        if (window.scrollY !== scrollY) {
+          window.scrollTo(0, scrollY)
+        }
+      }
+      
+      // 키보드 스크롤 차단 함수
+      const preventKeyboardScroll = (e: KeyboardEvent) => {
+        if (['ArrowUp', 'ArrowDown', 'PageUp', 'PageDown', 'Home', 'End', ' '].includes(e.key)) {
+          const target = e.target as HTMLElement
+          if (!target.closest('[data-modal-content]')) {
+            e.preventDefault()
+          }
+        }
+      }
+      
+      // 스크롤 관련 이벤트 모두 차단 (스크롤바는 유지)
+      window.addEventListener('scroll', lockScroll, { passive: false, capture: true })
+      window.addEventListener('wheel', preventScroll, { passive: false, capture: true })
+      window.addEventListener('touchmove', preventScroll, { passive: false, capture: true })
+      window.addEventListener('keydown', preventKeyboardScroll, { passive: false, capture: true })
+      
+      return () => {
+        // 이벤트 리스너 제거
+        window.removeEventListener('scroll', lockScroll, { capture: true })
+        window.removeEventListener('wheel', preventScroll, { capture: true })
+        window.removeEventListener('touchmove', preventScroll, { capture: true })
+        window.removeEventListener('keydown', preventKeyboardScroll, { capture: true })
+      }
+    }
+  }, [isOpen])
+
+  // 메시지가 변경될 때마다 스크롤을 맨 아래로 이동 (모달 내부만)
+  useEffect(() => {
+    if (isOpen && messagesEndRef.current) {
+      // 모달 내부 스크롤 컨테이너 찾기
+      const scrollContainer = messagesEndRef.current.closest('.overflow-y-auto')
+      if (scrollContainer) {
+        scrollContainer.scrollTop = scrollContainer.scrollHeight
+      } else {
+        // 대체 방법: 부모 컨테이너 직접 찾기
+        const container = messagesEndRef.current.parentElement
+        if (container) {
+          container.scrollTop = container.scrollHeight
+        }
+      }
+    }
+  }, [messages, isOpen])
 
   const games = [
     "리그 오브 레전드",
@@ -211,14 +293,6 @@ export function ChatbotModal({ isOpen, onClose }: ChatbotModalProps) {
     await new Promise(resolve => setTimeout(resolve, 3500))
 
     try {
-      console.log('웨이팅 리스트 제출 시작:', {
-        name: userInfo.name,
-        email: userInfo.email,
-        game: selectedGame || "",
-        tier: selectedTier || "",
-        matchingStyle: userAnswers[2] || "",
-      })
-
       // 타임아웃 설정 (30초)
       const timeoutPromise = new Promise((_, reject) => 
         setTimeout(() => reject(new Error('요청 시간 초과')), 30000)
@@ -235,8 +309,6 @@ export function ChatbotModal({ isOpen, onClose }: ChatbotModalProps) {
         }),
         timeoutPromise
       ]) as { success: boolean; message?: string; error?: string }
-
-      console.log('웨이팅 리스트 제출 결과:', result)
 
       if (result.success) {
         // 로딩 메시지 제거
@@ -335,7 +407,6 @@ export function ChatbotModal({ isOpen, onClose }: ChatbotModalProps) {
             }, 2000)
           }
         } catch (error) {
-          console.error('Error fetching coach:', error)
           setMessages((prev) => [
             ...prev,
             {
@@ -358,7 +429,6 @@ export function ChatbotModal({ isOpen, onClose }: ChatbotModalProps) {
         return
       }
     } catch (error) {
-      console.error('Error submitting waitlist:', error)
       setMessages((prev) => prev.filter(msg => msg.type !== "loading"))
       setMessages((prev) => [
         ...prev,
@@ -406,46 +476,50 @@ export function ChatbotModal({ isOpen, onClose }: ChatbotModalProps) {
   if (!isOpen) return null
 
   return (
-    <div className="fixed inset-0 bg-black/40 backdrop-blur-md flex items-center justify-center p-4 z-50 transition-all" onClick={handleClose}>
-      <Card className="w-full max-w-md bg-white/90 backdrop-blur-xl border border-white/30 shadow-2xl rounded-2xl overflow-hidden" onClick={(e) => e.stopPropagation()}>
+    <div className="fixed inset-0 bg-[var(--modalBackground)] flex items-start justify-center pt-20 sm:pt-32 p-4 z-[60]" onClick={handleClose}>
+      <Card 
+        data-modal-content
+        className="w-full max-w-md bg-[var(--layer01)] border border-[var(--divider01)] shadow-[var(--shadow-xl)] rounded-md overflow-hidden" 
+        onClick={(e) => e.stopPropagation()}
+      >
         <CardContent className="p-0">
           {/* Header */}
-          <div className="flex items-center justify-between p-4 border-b border-white/20 bg-white/60 backdrop-blur-md">
+          <div className="flex items-center justify-between p-4 border-b border-[var(--divider01)] bg-[var(--layer01)]">
             <div className="flex items-center gap-2">
-              <div className="w-8 h-8 bg-gradient-to-br from-primary to-primary/80 rounded-full flex items-center justify-center shadow-lg">
+              <div className="w-8 h-8 bg-[var(--primary01)] rounded-full flex items-center justify-center shadow-[var(--shadow-md)]">
                 <Bot className="w-4 h-4 text-white" />
               </div>
               <span className="font-semibold text-foreground">GameCoach.AI</span>
             </div>
-            <Button variant="ghost" size="sm" onClick={handleClose} className="hover:bg-white/40 rounded-full transition-colors">
+            <Button variant="ghost" size="sm" onClick={handleClose} className="hover:bg-[var(--primaryOpacity02)] rounded-full transition-colors">
               <X className="w-4 h-4" />
             </Button>
           </div>
 
           {/* Chat messages */}
-          <div className="h-80 overflow-y-auto p-4 space-y-4 bg-gradient-to-b from-white/40 via-white/50 to-white/60 backdrop-blur-sm">
+          <div className="h-80 overflow-y-auto p-4 space-y-4 bg-[var(--layer01)]" style={{ overscrollBehavior: 'contain' }}>
             {messages.map((msg, index) => (
               <div key={index} className={`flex gap-3 ${msg.type === "user" ? "justify-end" : "justify-start"}`}>
                 {msg.type === "bot" && (
-                  <div className="w-8 h-8 bg-gradient-to-br from-primary to-primary/80 rounded-full flex items-center justify-center flex-shrink-0 shadow-lg">
+                  <div className="w-8 h-8 bg-[var(--primary01)] rounded-full flex items-center justify-center flex-shrink-0 shadow-[var(--shadow-md)]">
                     <Bot className="w-4 h-4 text-white" />
                   </div>
                 )}
                 <div
-                  className={`max-w-[80%] p-3 rounded-2xl shadow-lg ${
+                  className={`max-w-[80%] p-3 rounded-2xl shadow-[var(--shadow-md)] ${
                     msg.type === "bot"
-                      ? "bg-white/80 backdrop-blur-sm text-foreground border border-white/30"
+                      ? "bg-[var(--layer02)] text-[var(--text01)] border border-[var(--divider01)]"
                       : msg.type === "user"
-                      ? "bg-gradient-to-br from-primary to-primary/80 text-white ml-auto shadow-xl"
-                      : "bg-white/80 backdrop-blur-sm text-foreground border border-primary/30 flex items-center gap-2 shadow-lg"
+                      ? "bg-[var(--primary01)] text-white ml-auto"
+                      : "bg-[var(--layer02)] text-[var(--text01)] border border-[var(--primary01)] flex items-center gap-2"
                   }`}
                 >
                   {msg.type === "loading" && <Loader2 className="w-4 h-4 animate-spin" />}
                   {msg.message}
                 </div>
                 {msg.type === "user" && (
-                  <div className="w-8 h-8 bg-gradient-to-br from-gray-200 to-gray-300 rounded-full flex items-center justify-center flex-shrink-0 shadow-md">
-                    <User className="w-4 h-4 text-gray-700" />
+                  <div className="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center flex-shrink-0 shadow-sm">
+                    <User className="w-4 h-4 text-primary" />
                   </div>
                 )}
               </div>
@@ -455,7 +529,7 @@ export function ChatbotModal({ isOpen, onClose }: ChatbotModalProps) {
           </div>
 
           {/* Input area */}
-          <div className="p-4 border-t border-white/20 bg-white/80 backdrop-blur-md">
+          <div className="p-4 border-t border-[var(--divider01)] bg-[var(--layer01)]">
             {isCollectingInfo ? (
               <div className="space-y-3">
                 <div className="space-y-2">
@@ -463,7 +537,7 @@ export function ChatbotModal({ isOpen, onClose }: ChatbotModalProps) {
                     value={userInfo.name}
                     onChange={(e) => setUserInfo(prev => ({ ...prev, name: e.target.value }))}
                     placeholder="이름을 입력하세요"
-                    className="border-white/40 bg-white/60 backdrop-blur-sm focus:border-primary focus:bg-white/80 transition-all shadow-sm"
+                    className="bg-[var(--layer02)] border-[var(--divider01)]"
                   />
                   <Input
                     value={userInfo.email}
@@ -471,46 +545,48 @@ export function ChatbotModal({ isOpen, onClose }: ChatbotModalProps) {
                     onKeyPress={(e) => e.key === "Enter" && userInfo.name.trim() && userInfo.email.trim() && handleInfoSubmit()}
                     placeholder="이메일을 입력하세요"
                     type="email"
-                    className="border-white/40 bg-white/60 backdrop-blur-sm focus:border-primary focus:bg-white/80 transition-all shadow-sm"
+                    className="bg-[var(--layer02)] border-[var(--divider01)]"
                   />
                 </div>
                 <Button 
                   onClick={handleInfoSubmit} 
                   disabled={!userInfo.name.trim() || !userInfo.email.trim()} 
-                  className="w-full bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary/80 text-white shadow-lg transition-all"
+                  className="w-full bg-[var(--primary01)] hover:bg-[var(--primary02)] text-white"
                 >
                   다음 단계로
                 </Button>
               </div>
             ) : isSelectingGame ? (
               <div className="space-y-3">
-                <Select onValueChange={handleGameSelect}>
-                  <SelectTrigger className="w-full border-white/40 bg-white/60 backdrop-blur-sm focus:border-primary focus:bg-white/80 transition-all shadow-sm">
-                    <SelectValue placeholder="게임을 선택하세요" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {games.map((game) => (
-                      <SelectItem key={game} value={game}>
-                        {game}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <FlightMenu
+                  value={selectedGame}
+                  onValueChange={handleGameSelect}
+                  placeholder="게임을 선택하세요"
+                  triggerClassName="w-full"
+                  contentClassName="w-full"
+                >
+                  {games.map((game) => (
+                    <FlightMenuItem key={game} value={game}>
+                      {game}
+                    </FlightMenuItem>
+                  ))}
+                </FlightMenu>
               </div>
             ) : isSelectingTier ? (
               <div className="space-y-3">
-                <Select onValueChange={handleTierSelect}>
-                  <SelectTrigger className="w-full border-white/40 bg-white/60 backdrop-blur-sm focus:border-primary focus:bg-white/80 transition-all shadow-sm">
-                    <SelectValue placeholder="티어를 선택하세요" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {getTierOptions().map((tier) => (
-                      <SelectItem key={tier} value={tier}>
-                        {tier}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <FlightMenu
+                  value={selectedTier}
+                  onValueChange={handleTierSelect}
+                  placeholder="티어를 선택하세요"
+                  triggerClassName="w-full"
+                  contentClassName="w-full"
+                >
+                  {getTierOptions().map((tier) => (
+                    <FlightMenuItem key={tier} value={tier}>
+                      {tier}
+                    </FlightMenuItem>
+                  ))}
+                </FlightMenu>
               </div>
             ) : !isCompleted ? (
               <div className="flex gap-2">
@@ -519,15 +595,15 @@ export function ChatbotModal({ isOpen, onClose }: ChatbotModalProps) {
                   onChange={(e) => setUserInput(e.target.value)}
                   placeholder="매칭 스타일을 입력하세요..."
                   onKeyPress={(e) => e.key === "Enter" && handleSubmit()}
-                  className="flex-1 border-white/40 bg-white/60 backdrop-blur-sm focus:border-primary focus:bg-white/80 transition-all shadow-sm"
+                  className="flex-1 bg-[var(--layer02)] border-[var(--divider01)]"
                 />
-                <Button onClick={handleSubmit} disabled={!userInput.trim()} className="bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary/80 text-white shadow-lg transition-all">
+                <Button onClick={handleSubmit} disabled={!userInput.trim()} className="bg-[var(--primary01)] hover:bg-[var(--primary02)] text-white">
                   전송
                 </Button>
               </div>
             ) : showInstructorCard && matchedInstructor ? (
               <div className="space-y-3">
-                <div className="border-2 border-primary/30 rounded-2xl p-4 bg-gradient-to-br from-primary/10 via-primary/5 to-white/60 backdrop-blur-md shadow-xl">
+                <div className="border border-[var(--divider01)] rounded-lg p-4 bg-[var(--layer02)] shadow-[var(--shadow-sm)]">
                   <div className="flex items-start gap-3">
                     <div className="w-16 h-16 bg-gradient-to-br from-primary/20 to-primary/10 rounded-full flex items-center justify-center flex-shrink-0 overflow-hidden border-2 border-primary/30 shadow-lg">
                       <img 
@@ -537,11 +613,11 @@ export function ChatbotModal({ isOpen, onClose }: ChatbotModalProps) {
                       />
                     </div>
                     <div className="flex-1">
-                      <h3 className="font-bold text-lg text-foreground">{matchedInstructor.name} 강사</h3>
+                      <h3 className="font-semibold text-lg text-foreground">{matchedInstructor.name} 강사</h3>
                       <p className="text-sm text-muted-foreground mt-1">{matchedInstructor.description}</p>
                       <div className="flex flex-wrap gap-2 mt-2">
                         {matchedInstructor.games.map((game: string) => (
-                          <span key={game} className="text-xs bg-primary/20 backdrop-blur-sm text-primary px-2 py-1 rounded-full shadow-sm border border-primary/10">{game}</span>
+                          <span key={game} className="text-xs bg-[var(--primaryOpacity01)] text-[var(--textPrimary)] px-2 py-1 rounded-md border border-[var(--primaryOpacity02)]">{game}</span>
                         ))}
                       </div>
                       <p className="text-xs text-muted-foreground mt-2">✨ {matchedInstructor.tier} 티어</p>
@@ -550,14 +626,14 @@ export function ChatbotModal({ isOpen, onClose }: ChatbotModalProps) {
                 </div>
                 <Button 
                   onClick={handleInstructorSelect} 
-                  className="w-full bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary/80 text-white shadow-lg transition-all"
+                  className="w-full bg-[var(--primary01)] hover:bg-[var(--primary02)] text-white"
                 >
                   강사 프로필 보기
                 </Button>
                 <Button 
                   variant="outline" 
                   onClick={handleClose} 
-                  className="w-full border-white/40 bg-white/60 backdrop-blur-sm hover:bg-white/80 transition-all shadow-sm"
+                  className="w-full bg-[var(--layer02)] border-[var(--divider01)] hover:bg-[var(--layer02Hover)]"
                 >
                   닫기
                 </Button>
@@ -566,7 +642,7 @@ export function ChatbotModal({ isOpen, onClose }: ChatbotModalProps) {
               <Button 
                 onClick={handleFinalSubmit} 
                 disabled={isProcessingAI}
-                className="w-full bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary/80 text-white shadow-lg transition-all disabled:opacity-50"
+                className="w-full bg-[var(--primary01)] hover:bg-[var(--primary02)] text-white transition-all disabled:opacity-50"
               >
                 {isProcessingAI ? "처리 중..." : "AI 매칭 시작"}
               </Button>

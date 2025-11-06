@@ -110,22 +110,22 @@ export default function WaitlistManagementPage() {
   const filteredWaitlist = waitlistItems
 
   return (
-    <div className="p-8 space-y-8">
+    <div className="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
       {/* 헤더 */}
       <div>
-        <h1 className="text-3xl font-bold">웨이팅 리스트 관리</h1>
-        <p className="text-muted-foreground mt-1">
+        <h1 className="text-xl font-semibold mb-1 text-[var(--text01)]">웨이팅 리스트 관리</h1>
+        <p className="text-[var(--text04)] text-xs">
           코칭 서비스를 기다리는 사용자들을 관리합니다.
         </p>
       </div>
 
       {/* 검색 및 필터 */}
-      <Card>
-        <CardContent className="pt-6">
+      <Card className="bg-[var(--layer02)] ">
+        <CardContent className="p-4">
           <div className="flex flex-col gap-4">
             <div className="flex flex-col md:flex-row gap-4">
               <div className="flex-1 relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-[var(--text04)] w-4 h-4" />
                             <Input
                               placeholder="이름 또는 이메일로 검색... (최대 100자)"
                               value={searchQuery}
@@ -148,7 +148,7 @@ export default function WaitlistManagementPage() {
               </Button>
             </div>
             <div className="flex gap-2 flex-wrap">
-              <span className="text-sm text-muted-foreground self-center">게임:</span>
+              <span className="text-xs text-[var(--text04)] self-center">게임:</span>
               {games.map(game => (
                 <Button
                   key={game}
@@ -159,7 +159,7 @@ export default function WaitlistManagementPage() {
                   {game === "all" ? "전체" : game}
                 </Button>
               ))}
-              <span className="text-sm text-muted-foreground self-center ml-2">연락 상태:</span>
+              <span className="text-xs text-[var(--text04)] self-center ml-2">연락 상태:</span>
               <Button
                 variant={filterContacted === "all" ? "default" : "outline"}
                 onClick={() => setFilterContacted("all")}
@@ -187,53 +187,53 @@ export default function WaitlistManagementPage() {
       </Card>
 
       {/* 통계 */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card>
-          <CardContent className="pt-6">
-            <div className="text-2xl font-bold">{filteredWaitlist.length}</div>
-            <div className="text-sm text-muted-foreground mt-1">총 웨이팅</div>
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
+        <Card className="bg-[var(--layer02)]  ">
+          <CardContent className="p-3">
+            <div className="text-xl font-bold text-[var(--text01)]">{filteredWaitlist.length}</div>
+            <div className="text-xs text-[var(--text04)] mt-1">총 웨이팅</div>
           </CardContent>
         </Card>
-        <Card>
-          <CardContent className="pt-6">
-            <div className="text-2xl font-bold text-blue-600">
+        <Card className="bg-[var(--layer02)]  ">
+          <CardContent className="p-3">
+            <div className="text-xl font-bold text-[var(--primary01)]">
               {filteredWaitlist.filter(w => w.goal === "리그 오브 레전드").length}
             </div>
-            <div className="text-sm text-muted-foreground mt-1">리그오브레전드</div>
+            <div className="text-xs text-[var(--text04)] mt-1">리그오브레전드</div>
           </CardContent>
         </Card>
-        <Card>
-          <CardContent className="pt-6">
-            <div className="text-2xl font-bold text-green-600">
+        <Card className="bg-[var(--layer02)]  ">
+          <CardContent className="p-3">
+            <div className="text-xl font-bold text-[var(--systemSuccess01)]">
               {filteredWaitlist.filter(w => w.goal === "발로란트").length}
             </div>
-            <div className="text-sm text-muted-foreground mt-1">발로란트</div>
+            <div className="text-xs text-[var(--text04)] mt-1">발로란트</div>
           </CardContent>
         </Card>
-        <Card>
-          <CardContent className="pt-6">
-            <div className="text-2xl font-bold text-orange-600">
+        <Card className="bg-[var(--layer02)]  ">
+          <CardContent className="p-3">
+            <div className="text-xl font-bold text-[var(--systemWarning01)]">
               {filteredWaitlist.filter(w => w.goal === "오버워치 2").length}
             </div>
-            <div className="text-sm text-muted-foreground mt-1">오버워치 2</div>
+            <div className="text-xs text-[var(--text04)] mt-1">오버워치 2</div>
           </CardContent>
         </Card>
       </div>
 
       {/* 웨이팅 리스트 */}
-      <Card>
+      <Card className="bg-[var(--layer02)] ">
         <CardHeader>
-          <CardTitle>웨이팅 리스트</CardTitle>
+          <CardTitle className="text-lg text-[var(--text01)]">웨이팅 리스트</CardTitle>
         </CardHeader>
         <CardContent>
           {loading ? (
             <div className="text-center py-12">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
-              <p className="text-muted-foreground mt-4">로딩 중...</p>
+              <p className="text-[var(--text04)] mt-4">로딩 중...</p>
             </div>
           ) : filteredWaitlist.length === 0 ? (
             <div className="text-center py-12">
-              <p className="text-muted-foreground">검색 결과가 없습니다.</p>
+              <p className="text-[var(--text04)]">검색 결과가 없습니다.</p>
             </div>
           ) : (
             <div className="overflow-x-auto">
@@ -260,13 +260,13 @@ export default function WaitlistManagementPage() {
                       <TableRow key={item.id} className={item.contacted ? 'opacity-60' : ''}>
                         <TableCell>
                           <div className="flex items-center gap-2">
-                            <UserCheck className={`w-4 h-4 ${item.contacted ? 'text-green-600' : 'text-primary'}`} />
+                            <UserCheck className={`w-4 h-4 ${item.contacted ? 'text-[var(--systemSuccess01)]' : 'text-[var(--primary01)]'}`} />
                             <span className="font-medium">{item.name}</span>
                           </div>
                         </TableCell>
                         <TableCell>
                           <div className="flex items-center gap-2">
-                            <Mail className="w-4 h-4 text-muted-foreground" />
+                            <Mail className="w-4 h-4 text-[var(--text04)]" />
                             <span className="text-sm">{item.email}</span>
                           </div>
                         </TableCell>
@@ -274,11 +274,11 @@ export default function WaitlistManagementPage() {
                           {item.goal ? (
                             <Badge variant="outline">{item.goal}</Badge>
                           ) : (
-                            <span className="text-muted-foreground text-sm">-</span>
+                            <span className="text-[var(--text04)] text-sm">-</span>
                           )}
                         </TableCell>
                         <TableCell>
-                          {item.tier || <span className="text-muted-foreground text-sm">-</span>}
+                          {item.tier || <span className="text-[var(--text04)] text-sm">-</span>}
                         </TableCell>
                         <TableCell>
                           <div className="max-w-xs truncate text-sm" title={item.importantPoint || ''}>
@@ -286,13 +286,13 @@ export default function WaitlistManagementPage() {
                           </div>
                         </TableCell>
                         <TableCell>
-                          <div className="text-sm text-muted-foreground">
+                          <div className="text-sm text-[var(--text04)]">
                             {format(createdAt, 'yyyy-MM-dd HH:mm', { locale: ko })}
                           </div>
                         </TableCell>
                         <TableCell>
                           {item.contacted ? (
-                            <Badge className="bg-green-500">연락 완료</Badge>
+                            <Badge className="bg-[var(--systemSuccess01)]">연락 완료</Badge>
                           ) : (
                             <Badge variant="outline">대기 중</Badge>
                           )}
@@ -305,7 +305,7 @@ export default function WaitlistManagementPage() {
                               onClick={() => handleMarkAsContacted(item.id, item.contacted)}
                               title={item.contacted ? '연락 완료 취소' : '연락 완료 표시'}
                             >
-                              <CheckCircle className={`w-4 h-4 ${item.contacted ? 'text-green-600' : 'text-gray-400'}`} />
+                              <CheckCircle className={`w-4 h-4 ${item.contacted ? 'text-[var(--systemSuccess01)]' : 'text-[var(--text04)]'}`} />
                             </Button>
                             <Button
                               variant="ghost"

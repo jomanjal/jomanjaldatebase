@@ -31,38 +31,38 @@ const useCases = [
 
 export function UseCaseSection() {
   return (
-    <section className="py-20 px-4 bg-muted/20">
-      <div className="max-w-6xl mx-auto">
-        <div className="text-center mb-16">
-          <h2 className="text-3xl md:text-4xl font-bold mb-4 text-balance">
-            <span className="text-primary">성공 스토리</span>
+    <section className="py-8 px-4 bg-[var(--layer01)]">
+      <div className="max-w-[1280px] mx-auto">
+        <div className="text-center mb-6">
+          <h2 className="mb-2 text-balance text-[var(--text01)]">
+            <span className="text-[var(--textPrimary)]">성공 스토리</span>
           </h2>
-          <p className="text-muted-foreground text-lg max-w-2xl mx-auto text-balance">
+          <p className="text-[var(--text04)] text-sm max-w-2xl mx-auto text-balance">
             GameCoach.AI와 함께한 유저들의 실제 경험담
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
           {useCases.map((useCase, index) => (
-            <Card key={index} className="bg-card border-border hover:border-primary/50 transition-colors">
-              <CardContent className="p-6">
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="w-12 h-12 bg-primary/20 rounded-lg flex items-center justify-center">
-                    <useCase.icon className="w-6 h-6 text-primary" />
+            <Card key={index} className="bg-[var(--layer02)] hover:bg-[var(--layer02Hover)] ">
+              <CardContent className="p-4">
+                <div className="flex items-center gap-3 mb-2.5">
+                  <div className="w-10 h-10 bg-[var(--layer01)] rounded-md flex items-center justify-center">
+                    <useCase.icon className="w-5 h-5 text-[var(--textPrimary)]" />
                   </div>
                   <div>
-                    <Badge variant="secondary" className="text-xs mb-1">
+                    <Badge variant="secondary" className="text-xs mb-1 bg-[var(--layerNotNormal)] text-[var(--text01)]">
                       {useCase.badge}
                     </Badge>
-                    <h3 className="font-semibold text-lg">{useCase.title}</h3>
-                    <p className="text-sm text-muted-foreground">{useCase.subtitle}</p>
+                    <h3 className="font-semibold text-base text-[var(--text01)]">{useCase.title}</h3>
+                    <p className="text-sm text-[var(--text04)]">{useCase.subtitle}</p>
                   </div>
                 </div>
 
-                <p className="text-muted-foreground text-sm leading-relaxed mb-4">{useCase.description}</p>
+                <p className="text-[var(--text04)] text-sm leading-relaxed mb-2.5">{useCase.description}</p>
 
-                <div className="bg-primary/10 rounded-lg p-3 text-center">
-                  <span className="text-primary font-semibold">{useCase.result}</span>
+                <div className="bg-[var(--primaryOpacity01)] rounded-md p-2 text-center">
+                  <span className="text-[var(--textPrimary)] font-semibold text-sm">{useCase.result}</span>
                 </div>
               </CardContent>
             </Card>

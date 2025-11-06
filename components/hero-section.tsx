@@ -1,7 +1,6 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import Image from "next/image"
 import { Button } from "@/components/ui/button"
 import { ChevronLeft, ChevronRight } from "lucide-react"
 import { ChatbotModal } from "@/components/chatbot-modal"
@@ -10,22 +9,19 @@ const slides = [
   {
     id: 1,
     title: "프로게이머로 성장하고 싶다면?",
-    subtitle: "프로게이머로 성장하고 싶다면?",
-    image: "/professional-korean-esports-player-clean.png",
+    subtitle: "AI 기반 맞춤형 코칭으로 실력을 한 단계 올려보세요",
     cta: "지금 시작하기",
   },
   {
     id: 2,
     title: "AI가 찾아주는 맞춤 코치",
     subtitle: "당신의 실력에 맞는 최고의 강사를 만나보세요",
-    image: "/ai-coaching-interface-with-game-analytics-and-perf.jpg",
     cta: "코치 찾기",
   },
   {
     id: 3,
     title: "실력 향상의 새로운 기준",
     subtitle: "체계적인 코칭으로 빠른 성장을 경험하세요",
-    image: "/gaming-skill-improvement-charts-and-training-inter.jpg",
     cta: "체험해보기",
   },
 ]
@@ -51,37 +47,38 @@ export function HeroSection() {
 
   return (
     <>
-      <section className="relative h-[600px] overflow-hidden bg-gradient-to-r from-slate-900 via-purple-900 to-slate-900">
+      <section className="relative h-[400px] md:h-[450px] overflow-hidden bg-gradient-to-br from-[var(--layer01)] via-[var(--layer02)] to-[var(--layer01)] py-8">
         {/* Carousel Container */}
         <div className="relative w-full h-full">
           {slides.map((slide, index) => (
             <div
               key={slide.id}
-              className={`absolute inset-0 transition-opacity duration-1000 ${
-                index === currentSlide ? "opacity-100" : "opacity-0"
+              className={`absolute inset-0 transition-opacity ${
+                index === currentSlide ? "opacity-100 z-10" : "opacity-0 z-0"
               }`}
+              style={{ transitionDuration: '0.3s' }}
             >
-              {/* Background Image */}
-              <div className="absolute inset-0">
-                <Image
-                  src={slide.image || "/placeholder.svg"}
-                  alt={slide.title}
-                  fill
-                  priority={index === 0}
-                  className="object-cover"
-                  sizes="100vw"
-                />
-                <div className="absolute inset-0 bg-black/40" />
-              </div>
+              {/* Background without Image */}
+              <div className="absolute inset-0 bg-[var(--primary01)]/8" />
+              
+              {/* Subtle Pattern */}
+              <div className="absolute inset-0 opacity-3" style={{
+                backgroundImage: 'radial-gradient(circle at 2px 2px, var(--primary01) 1px, transparent 0)',
+                backgroundSize: '40px 40px'
+              }} />
 
               {/* Content */}
-              <div className="relative z-10 flex items-center justify-center h-full px-4">
-                <div className="text-center text-white max-w-4xl">
-                  <h1 className="text-4xl md:text-6xl font-bold mb-4 text-balance">{slide.title}</h1>
-                  <p className="text-xl md:text-2xl mb-8 text-balance opacity-90">{slide.subtitle}</p>
+              <div className="relative z-20 flex items-center justify-center h-full px-4 sm:px-6 lg:px-8">
+                <div className="text-center max-w-4xl mx-auto">
+                  <h1 className="mb-4 text-2xl md:text-3xl lg:text-4xl font-bold tracking-tight leading-tight text-[var(--text01)]">
+                    {slide.title}
+                  </h1>
+                  <p className="mb-8 text-sm md:text-base text-[var(--text04)] max-w-2xl mx-auto leading-relaxed">
+                    {slide.subtitle}
+                  </p>
                   <Button
                     size="lg"
-                    className="bg-white text-slate-900 hover:bg-gray-100 px-8 py-3 text-lg font-semibold rounded-lg"
+                    className="bg-[var(--primary01)] hover:bg-[var(--primary02)] text-white px-8 py-4 text-base font-semibold rounded-md"
                     onClick={() => setIsChatbotOpen(true)}
                   >
                     {slide.cta}
@@ -91,29 +88,35 @@ export function HeroSection() {
             </div>
           ))}
 
-          {/* Navigation Arrows */}
+          {/* Navigation Arrows - Updated for light background */}
           <button
             onClick={prevSlide}
-            className="absolute left-4 top-1/2 -translate-y-1/2 z-20 bg-white/20 hover:bg-white/30 rounded-full p-2 transition-colors"
+            className="absolute left-4 top-1/2 -translate-y-1/2 z-30 bg-[var(--layer02)] hover:bg-[var(--layer02Hover)] border border-[var(--divider01)] rounded-full p-2.5 shadow-[var(--shadow-sm)]"
+            aria-label="이전 슬라이드"
           >
-            <ChevronLeft className="w-6 h-6 text-white" />
+            <ChevronLeft className="w-5 h-5 text-[var(--text01)]" />
           </button>
           <button
             onClick={nextSlide}
-            className="absolute right-4 top-1/2 -translate-y-1/2 z-20 bg-white/20 hover:bg-white/30 rounded-full p-2 transition-colors"
+            className="absolute right-4 top-1/2 -translate-y-1/2 z-30 bg-[var(--layer02)] hover:bg-[var(--layer02Hover)] border border-[var(--divider01)] rounded-full p-2.5 shadow-[var(--shadow-sm)]"
+            aria-label="다음 슬라이드"
           >
-            <ChevronRight className="w-6 h-6 text-white" />
+            <ChevronRight className="w-5 h-5 text-[var(--text01)]" />
           </button>
 
-          {/* Dots Indicator */}
-          <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-20 flex space-x-2">
+          {/* Dots Indicator - Updated for light background */}
+          <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-30 flex space-x-2.5">
             {slides.map((_, index) => (
               <button
                 key={index}
                 onClick={() => setCurrentSlide(index)}
-                className={`w-3 h-3 rounded-full transition-colors ${
-                  index === currentSlide ? "bg-white" : "bg-white/50"
+                className={`rounded-full transition-all ${
+                  index === currentSlide 
+                    ? "bg-[var(--primary01)] w-7 h-2 shadow-[0_0_8px_var(--primaryOpacity03)]" 
+                    : "bg-[var(--divider01)] w-2 h-2 hover:bg-[var(--primaryOpacity02)]"
                 }`}
+                style={{ transition: 'var(--transition)' }}
+                aria-label={`슬라이드 ${index + 1}`}
               />
             ))}
           </div>

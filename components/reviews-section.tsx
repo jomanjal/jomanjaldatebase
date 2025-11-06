@@ -28,62 +28,62 @@ const reviews = [
 
 export function ReviewsSection() {
   return (
-    <section className="py-20 px-4">
-      <div className="max-w-6xl mx-auto">
-        <div className="text-center mb-16">
-          <h2 className="text-3xl md:text-4xl font-bold mb-4 text-balance">
-            실제 <span className="text-primary">성과</span>와 후기
+    <section className="py-8 px-4 bg-[var(--layer01)]">
+      <div className="max-w-[1280px] mx-auto">
+        <div className="text-center mb-6">
+          <h2 className="mb-2 text-balance text-[var(--text01)]">
+            실제 <span className="text-[var(--textPrimary)]">성과</span>와 후기
           </h2>
-          <p className="text-muted-foreground text-lg max-w-2xl mx-auto text-balance">
+          <p className="text-[var(--text04)] text-sm max-w-2xl mx-auto text-balance">
             데이터로 증명되는 확실한 실력 향상
           </p>
         </div>
 
         {/* Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-16">
-          <Card className="bg-card border-border text-center">
-            <CardContent className="p-6">
-              <div className="text-3xl font-bold text-primary mb-2">평균 2.3티어</div>
-              <p className="text-muted-foreground">상승 효과</p>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-6">
+          <Card className="bg-[var(--layer02)] text-center ">
+            <CardContent className="p-4">
+              <div className="text-xl font-bold text-[var(--text01)] mb-2">평균 2.3티어</div>
+              <p className="text-xs text-[var(--text04)]">상승 효과</p>
             </CardContent>
           </Card>
-          <Card className="bg-card border-border text-center">
-            <CardContent className="p-6">
-              <div className="text-3xl font-bold text-primary mb-2">6주</div>
-              <p className="text-muted-foreground">평균 목표 달성</p>
+          <Card className="bg-[var(--layer02)] text-center ">
+            <CardContent className="p-4">
+              <div className="text-xl font-bold text-[var(--text01)] mb-2">6주</div>
+              <p className="text-xs text-[var(--text04)]">평균 목표 달성</p>
             </CardContent>
           </Card>
-          <Card className="bg-card border-border text-center">
-            <CardContent className="p-6">
-              <div className="text-3xl font-bold text-primary mb-2">98%</div>
-              <p className="text-muted-foreground">만족도</p>
+          <Card className="bg-[var(--layer02)] text-center ">
+            <CardContent className="p-4">
+              <div className="text-xl font-bold text-[var(--text01)] mb-2">98%</div>
+              <p className="text-xs text-[var(--text04)]">만족도</p>
             </CardContent>
           </Card>
         </div>
 
         {/* Reviews */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
           {reviews.map((review, index) => (
-            <Card key={index} className="bg-card border-border">
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between mb-4">
+            <Card key={index} className="bg-[var(--layer02)] hover:bg-[var(--layer02Hover)] ">
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between mb-3">
                   <div>
-                    <h4 className="font-semibold">{review.name}</h4>
-                    <Badge variant="outline" className="text-xs mt-1">
+                    <h4 className="font-semibold text-[var(--text01)]">{review.name}</h4>
+                    <Badge variant="outline" className="text-xs mt-1 border-[var(--divider01)] text-[var(--text04)]">
                       <TrendingUp className="w-3 h-3 mr-1" />
                       {review.tier}
                     </Badge>
                   </div>
                   <div className="flex items-center gap-1">
                     {[...Array(review.rating)].map((_, i) => (
-                      <Star key={i} className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+                      <Star key={i} className="w-4 h-4 fill-[var(--textYellow)] text-[var(--textYellow)]" />
                     ))}
                   </div>
                 </div>
 
-                <p className="text-muted-foreground text-sm leading-relaxed mb-3">"{review.comment}"</p>
+                <p className="text-[var(--text04)] text-sm leading-relaxed mb-2.5">"{review.comment}"</p>
 
-                <div className="text-xs text-primary">{review.weeks}주 코칭 후기</div>
+                <div className="text-xs text-[var(--textPrimary)]">{review.weeks}주 코칭 후기</div>
               </CardContent>
             </Card>
           ))}

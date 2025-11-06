@@ -31,31 +31,28 @@ export function AIMatchingProcessSection() {
   const [isChatbotOpen, setIsChatbotOpen] = useState(false)
 
   return (
-    <section className="py-20 px-4 bg-muted/20">
-      <div className="max-w-6xl mx-auto">
-        <div className="text-center mb-16">
-          <h2 className="text-3xl md:text-4xl font-bold mb-4 text-balance">AI 매칭 프로세스</h2>
-          <p className="text-muted-foreground text-lg max-w-2xl mx-auto text-balance">
-            3단계로 완성되는 당신만의 게임 코칭 여정
-          </p>
+    <section className="py-8 px-4 bg-[var(--layer01)]">
+      <div className="max-w-[1280px] mx-auto">
+        <div className="text-center mb-6">
+          <h2 className="mb-2 text-balance text-[var(--text01)]">AI 매칭 프로세스</h2>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-6">
           {steps.map((step, index) => (
             <div key={index} className="relative">
-              <Card className="bg-card border-border hover:border-primary/50 transition-colors">
-                <CardContent className="p-6 text-center">
-                  <div className="w-16 h-16 bg-primary/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <step.icon className="w-8 h-8 text-primary" />
+              <Card className="bg-[var(--layer02)] hover:bg-[var(--layer02Hover)] ">
+                <CardContent className="p-4 text-center">
+                  <div className="w-10 h-10 bg-[var(--layer01)] rounded-md flex items-center justify-center mx-auto mb-2">
+                    <step.icon className="w-5 h-5 text-[var(--textPrimary)]" />
                   </div>
-                  <h3 className="text-xl font-semibold mb-2">{step.title}</h3>
-                  <p className="text-primary font-medium mb-3">{step.description}</p>
-                  <p className="text-muted-foreground text-sm leading-relaxed">{step.detail}</p>
+                  <h3 className="text-sm font-semibold mb-2 text-[var(--text01)]">{step.title}</h3>
+                  <p className="text-[var(--text01)] font-medium mb-2 text-xs">{step.description}</p>
+                  <p className="text-[var(--text04)] text-xs leading-relaxed">{step.detail}</p>
                 </CardContent>
               </Card>
 
               {index < steps.length - 1 && (
-                <div className="hidden md:block absolute top-1/2 -right-4 w-8 h-0.5 bg-primary/30" />
+                <div className="hidden md:block absolute top-1/2 -right-1.5 w-3 h-0.5 bg-[var(--primaryOpacity02)]" />
               )}
             </div>
           ))}
@@ -63,8 +60,8 @@ export function AIMatchingProcessSection() {
 
         <div className="text-center">
           <Button
-            size="lg"
-            className="bg-primary hover:bg-primary/90 text-primary-foreground px-8 py-6 text-lg font-semibold rounded-xl"
+            size="sm"
+            className="bg-[var(--primary01)] hover:bg-[var(--primary02)] text-white px-6 py-2 text-sm font-semibold rounded-md"
             onClick={() => setIsChatbotOpen(true)}
           >
             AI 매칭 시작하기

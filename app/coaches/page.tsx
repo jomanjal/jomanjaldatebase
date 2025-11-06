@@ -1,16 +1,17 @@
 "use client"
 
 import React, { useState, useEffect, useMemo } from "react"
-import Image from "next/image"
 import { Header } from "@/components/header"
 import { FooterSection } from "@/components/footer-section"
-import { Card, CardContent } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Heart, MapPin, Star, User, Search, Loader2, Percent, SlidersHorizontal } from "lucide-react"
+import { Badge } from "@/components/ui/badge"
+import { FlightMenu, FlightMenuItem } from "@/components/ui/flight-menu"
+import { Search, Loader2, SlidersHorizontal, X } from "lucide-react"
 import Link from "next/link"
+import { CoachCard } from "@/components/CoachCard"
+import { SkeletonCard } from "@/components/SkeletonCard"
+import { EmptyState } from "@/components/EmptyState"
 import { ErrorDisplay } from "@/components/error-display"
 import {
   Pagination,
@@ -114,10 +115,18 @@ export default function CoachesPage() {
     let isMounted = true
 
     async function fetchCoaches() {
+      // 초기 로드가 아닌 경우에만 기존 데이터 유지하면서 업데이트
+      const isInitialLoad = coaches.length === 0 && loading
+      
       if (searchQuery) {
         setSearching(true) // 검색 중일 때만 searching 상태 활성화
       }
-      setLoading(true)
+      
+      // 초기 로드일 때만 loading 상태 설정
+      if (isInitialLoad) {
+        setLoading(true)
+      }
+      
       setError(null) // 에러 초기화
       
       try {
@@ -153,7 +162,7 @@ export default function CoachesPage() {
               setPagination(result.pagination)
             }
             
-            // DB에서 받은 코치 목록 그대로 사용
+            // DB에서 받은 코치 목록 그대로 사용 (레이아웃 시프트 방지를 위해 즉시 업데이트)
             setCoaches(dbCoaches)
           } else {
             throw new Error(result.message || '코치 데이터를 불러오는데 실패했습니다.')
@@ -295,32 +304,30 @@ export default function CoachesPage() {
   }
 
   return (
-    <main className="min-h-screen bg-background">
+    <main className="min-h-screen bg-[var(--layer01)]" style={{ transition: 'var(--transition)' }}>
       <Header />
       
       {/* 페이지 헤더 */}
-      <section className="bg-gradient-to-r from-primary/10 to-accent/10 py-16">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h1 className="text-4xl font-bold text-foreground mb-4">
+      <section className="bg-[var(--layer01)] py-6" style={{ transition: 'var(--transition)' }}>
+        <div className="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8">
+          <h1 className="mb-2 text-xl font-semibold text-[var(--text01)]">
             전문 코치 목록
           </h1>
-          <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-            각 게임 분야의 전문 코치들과 함께 실력을 향상시켜보세요
-          </p>
         </div>
       </section>
 
       {/* 검색 및 필터 */}
-      <section className="py-8 bg-white border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col md:flex-row gap-4 mb-6">
-            <div className="flex-1 relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
+      <section className="py-4 bg-[var(--layer01)] border-b border-[var(--divider01)]" style={{ transition: 'var(--transition)' }}>
+        <div className="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8">
+          {/* 강의 검색 */}
+          <div className="mb-4 min-h-[40px]">
+            <div className="flex-1 relative max-w-md">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-[var(--text04)] w-4 h-4" aria-hidden="true" />
               {searching && (
-                <Loader2 className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4 animate-spin" />
+                <Loader2 className="absolute right-3 top-1/2 transform -translate-y-1/2 text-[var(--text04)] w-4 h-4 animate-spin" aria-hidden="true" />
               )}
               <Input
-                placeholder="코치 이름으로 검색... (최대 100자)"
+                placeholder="강의 검색"
                 value={searchQuery}
                 onChange={(e) => {
                   if (e.target.value.length <= 100) {
@@ -329,51 +336,130 @@ export default function CoachesPage() {
                 }}
                 className={searching ? "pl-10 pr-10" : "pl-10"}
                 maxLength={100}
+                aria-label="강의 검색"
               />
-            </div>
-            <div className="flex items-center gap-2">
-              <Select value={selectedPriceRange} onValueChange={setSelectedPriceRange}>
-                <SelectTrigger className="w-[140px]">
-                  <SelectValue placeholder="가격">
-                    {priceRanges.find(r => r.id === selectedPriceRange)?.name || "가격"}
-                  </SelectValue>
-                </SelectTrigger>
-                <SelectContent>
-                  {priceRanges
-                    .filter(range => range.id !== "all") // "가격" 옵션 제외
-                    .map((range) => (
-                      <SelectItem key={range.id} value={range.id}>
-                        {range.name}
-                      </SelectItem>
-                    ))}
-                </SelectContent>
-              </Select>
-              <SlidersHorizontal className="w-4 h-4 text-muted-foreground" />
-              <Select value={sortBy} onValueChange={setSortBy}>
-                <SelectTrigger className="w-[140px]">
-                  <SelectValue placeholder="정렬" />
-                </SelectTrigger>
-                <SelectContent>
-                  {sortOptions.map((option) => (
-                    <SelectItem key={option.id} value={option.id}>
-                      {option.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
             </div>
           </div>
 
+          {/* 필터 버튼들 */}
+          <div className="flex items-start gap-2 mb-4 flex-wrap" style={{ minHeight: '40px' }}>
+            {/* 전체 초기화 버튼 - 활성 필터가 하나라도 있을 때 표시 */}
+            {(selectedGame !== 'all' || selectedPriceRange !== 'all' || sortBy !== 'latest') && (
+              <Button
+                onClick={() => {
+                  setSelectedGame("all")
+                  setSelectedPriceRange("all")
+                  setSortBy("latest")
+                }}
+                variant="outline"
+                className="border-[var(--divider01)] hover:bg-[var(--layer02Hover)] text-[var(--text04)] hover:text-[var(--text01)] rounded-md px-3 py-1.5 h-auto text-sm shrink-0"
+                aria-label="모든 필터 초기화"
+              >
+                <X className="w-3 h-3 mr-1.5" />
+                전체 초기화
+              </Button>
+            )}
+            
+            {/* 활성 필터 버튼들 (Gigs 스타일) */}
+            {selectedGame !== 'all' && (
+              <Button
+                onClick={() => setSelectedGame("all")}
+                className="bg-[var(--primary01)] text-white hover:bg-[var(--primary02)] rounded-md px-3 py-1.5 h-auto text-sm shrink-0"
+                aria-label={`${gameCategories.find(g => g.id === selectedGame)?.name} 필터 제거`}
+              >
+                {gameCategories.find(g => g.id === selectedGame)?.name}
+                <X className="w-3 h-3 ml-1.5" />
+              </Button>
+            )}
+            {selectedPriceRange !== 'all' && (
+              <Button
+                onClick={() => setSelectedPriceRange("all")}
+                className="bg-[var(--primary01)] text-white hover:bg-[var(--primary02)] rounded-md px-3 py-1.5 h-auto text-sm shrink-0"
+                aria-label={`${priceRanges.find(r => r.id === selectedPriceRange)?.name} 필터 제거`}
+              >
+                {priceRanges.find(r => r.id === selectedPriceRange)?.name}
+                <X className="w-3 h-3 ml-1.5" />
+              </Button>
+            )}
+            {sortBy !== 'latest' && (
+              <Button
+                onClick={() => setSortBy("latest")}
+                className="bg-[var(--primary01)] text-white hover:bg-[var(--primary02)] rounded-md px-3 py-1.5 h-auto text-sm shrink-0"
+                aria-label={`${sortOptions.find(o => o.id === sortBy)?.name} 필터 제거`}
+              >
+                {sortOptions.find(o => o.id === sortBy)?.name}
+                <X className="w-3 h-3 ml-1.5" />
+              </Button>
+            )}
+            
+            {/* 비활성 필터 드롭다운들 */}
+            {selectedPriceRange === 'all' && (
+              <FlightMenu
+                value={selectedPriceRange}
+                onValueChange={setSelectedPriceRange}
+                placeholder="가격"
+                triggerClassName="w-[140px] shrink-0"
+                contentClassName="w-[140px]"
+              >
+                {priceRanges
+                  .filter(range => range.id !== "all")
+                  .map((range) => (
+                    <FlightMenuItem key={range.id} value={range.id}>
+                      {range.name}
+                    </FlightMenuItem>
+                  ))}
+              </FlightMenu>
+            )}
+          </div>
+
+          {/* 강의 개수 및 정렬 */}
+          <div className="flex items-center justify-between mb-4 min-h-[32px]">
+            <div className="min-w-[100px]">
+              {loading && coaches.length === 0 ? (
+                <div className="h-5 w-24 bg-[var(--layer02)] animate-pulse rounded" />
+              ) : (
+                <p className="text-sm text-[var(--text04)]">
+                  {coaches.length}개의 강의
+                </p>
+              )}
+            </div>
+            <div className="flex items-center gap-2 shrink-0">
+              <FlightMenu
+                value={sortBy}
+                onValueChange={setSortBy}
+                placeholder="정렬"
+                triggerClassName="w-[120px]"
+                contentClassName="w-[120px]"
+              >
+                {sortOptions.map((option) => (
+                  <FlightMenuItem key={option.id} value={option.id}>
+                    {option.name}
+                  </FlightMenuItem>
+                ))}
+              </FlightMenu>
+            </div>
+          </div>
+
+
           {/* 게임별 필터 */}
-          <div>
-            <label className="text-sm font-medium text-muted-foreground mb-2 block">게임</label>
-            <div className="flex items-center gap-2 overflow-x-auto pb-2">
+          <div style={{ minHeight: '44px' }}>
+            <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-hide scroll-smooth snap-x snap-mandatory" role="group" aria-label="게임 카테고리 필터">
               {gameCategories.map((game) => (
                 <Button
                   key={game.id}
                   variant={selectedGame === game.id ? "default" : "outline"}
-                  onClick={() => setSelectedGame(game.id)}
-                  className="whitespace-nowrap"
+                  onClick={(e) => {
+                    e.preventDefault()
+                    setSelectedGame(game.id)
+                  }}
+                  className={`whitespace-nowrap rounded-md snap-start shrink-0 ${
+                    selectedGame === game.id 
+                      ? "bg-[var(--primary01)] text-white hover:bg-[var(--primary02)] !border-0" 
+                      : "bg-[var(--layer02)] text-[var(--text01)] !border !border-[var(--divider01)] hover:bg-[var(--layer02Hover)]"
+                  }`}
+                  style={{ transition: 'var(--transition)' }}
+                  aria-label={`${game.name} 필터 ${selectedGame === game.id ? '해제' : '적용'}`}
+                  aria-pressed={selectedGame === game.id}
                 >
                   {game.name}
                 </Button>
@@ -384,8 +470,8 @@ export default function CoachesPage() {
       </section>
 
       {/* 코치 목록 */}
-      <section className="py-16">
-        <div className="max-w-7xl mx-auto px-2 sm:px-3 lg:px-4">
+      <section className="py-6" style={{ transition: 'var(--transition)' }}>
+        <div className="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8">
           {error ? (
             <ErrorDisplay 
               error={error} 
@@ -395,119 +481,36 @@ export default function CoachesPage() {
                 window.location.reload()
               }} 
             />
-          ) : loading ? (
-            <div className="flex justify-center items-center py-20">
-              <Loader2 className="w-8 h-8 animate-spin text-primary" />
+          ) : loading && coaches.length === 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-5 gap-3">
+              {Array.from({ length: 12 }).map((_, index) => (
+                <SkeletonCard key={index} />
+              ))}
             </div>
           ) : coachesWithPrices.length === 0 ? (
-            <div className="text-center py-20">
-              <p className="text-lg text-muted-foreground">
-                {searchQuery || selectedGame !== 'all' 
-                  ? '검색 조건에 맞는 코치가 없습니다.' 
-                  : '등록된 코치가 없습니다.'}
-              </p>
-            </div>
+            <EmptyState
+              type={searchQuery ? "search" : selectedGame !== 'all' ? "filter" : "default"}
+              searchQuery={searchQuery}
+              onResetFilters={() => {
+                setSearchQuery("")
+                setSelectedGame("all")
+                setSelectedPriceRange("all")
+                setSortBy("latest")
+              }}
+            />
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-4">
-              {coachesWithPrices.map((coach) => {
-                const price = coach.calculatedPrice
-                const originalPrice = coach.calculatedOriginalPrice
-                const discount = coach.calculatedDiscount
-                
-                return (
-                  <Link href={`/coaches/${coach.id}`} key={coach.id} className="block">
-                    <Card className="overflow-hidden hover:shadow-lg transition-shadow cursor-pointer h-full bg-card border-0 py-0">
-                      {/* 헤더 이미지 영역 */}
-                      <div className="relative h-32 overflow-hidden">
-                        <Image
-                          src={coach.thumbnailImage || "/uploads/coaches/1762077719977_qq.jpg"}
-                          alt={coach.name}
-                          fill
-                          className="object-cover"
-                          sizes="(max-width: 768px) 100vw, (max-width: 1024px) 33vw, (max-width: 1280px) 25vw, (max-width: 1536px) 20vw, 16vw"
-                        />
-                      </div>
-
-                      <CardContent className="relative p-4 bg-card">
-                        {/* 배지 */}
-                        <div className="flex items-center gap-2 mb-2.5">
-                          <Badge className="bg-green-500 hover:bg-green-500 text-xs px-2 py-0.5">
-                            <MapPin className="w-3 h-3 mr-1" />
-                            온라인
-                          </Badge>
-                          {discount && discount > 0 && (
-                            <Badge className="bg-red-500 hover:bg-red-500 text-xs px-2 py-0.5">
-                              <Percent className="w-3 h-3 mr-1" />
-                              할인
-                            </Badge>
-                          )}
-                        </div>
-
-                        {/* 제목 */}
-                        <h3 className="text-base font-bold text-foreground mb-2.5 leading-tight line-clamp-2">
-                          {searchQuery 
-                            ? highlightSearchTerm(coach.description || `${coach.name} 코치`, searchQuery)
-                            : (coach.description || `${coach.name} 코치`)
-                          }
-                        </h3>
-
-                        {/* 평점과 인원수 */}
-                        <div className="flex items-center gap-3 mb-2.5">
-                          <div className="flex items-center gap-1">
-                            <Star className="w-4 h-4 fill-purple-500 text-purple-500 flex-shrink-0" />
-                            <span className="text-sm font-medium whitespace-nowrap">{coach.rating > 0 ? coach.rating.toFixed(1) : '0.0'} ({coach.reviews})</span>
-                          </div>
-                          <div className="flex items-center gap-1">
-                            <User className="w-4 h-4 flex-shrink-0" />
-                            <span className="text-sm whitespace-nowrap">{coach.students}</span>
-                          </div>
-                        </div>
-
-                        {/* 코치 이름 */}
-                        <p className="text-sm text-muted-foreground mb-3 truncate">
-                          {searchQuery ? highlightSearchTerm(coach.name, searchQuery) : coach.name}
-                        </p>
-
-                        {/* 가격 정보 */}
-                        {price && (
-                          <div className="mb-1">
-                            {discount && discount > 0 && originalPrice ? (
-                              <div className="flex gap-1.5">
-                                <div className="w-5 h-5 rounded-full bg-blue-500 flex items-center justify-center flex-shrink-0">
-                                  <span className="text-white text-xs font-bold">₩</span>
-                                </div>
-                                <div className="flex-1 min-w-0">
-                                  <div className="text-xl font-bold text-green-600 mb-0.5 leading-none">
-                                    {price.toLocaleString()}
-                                  </div>
-                                  <div className="flex items-center gap-2">
-                                    <span className="inline-block rounded-md bg-destructive text-white text-xs font-medium px-1.5 py-0.5 leading-4">{discount}%</span>
-                                    <span className="text-xs text-muted-foreground line-through whitespace-nowrap">{originalPrice.toLocaleString()}</span>
-                                  </div>
-                                </div>
-                              </div>
-                            ) : (
-                              <div className="flex items-center gap-1.5">
-                                <div className="w-5 h-5 rounded-full bg-blue-500 flex items-center justify-center flex-shrink-0">
-                                  <span className="text-white text-xs font-bold">₩</span>
-                                </div>
-                                <div className="text-xl font-bold text-green-600">
-                                  {price.toLocaleString()}
-                                </div>
-                              </div>
-                            )}
-                          </div>
-                        )}
-
-                        {/* 좋아요 버튼 */}
-                        <div className="absolute bottom-3 right-3">
-                          <Heart className="w-5 h-5 text-muted-foreground hover:text-red-500 transition-colors cursor-pointer" />
-                        </div>
-                      </CardContent>
-                    </Card>
-                  </Link>
-                )
-              })}
+            <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-5 gap-3">
+              {coachesWithPrices.map((coach) => (
+                <CoachCard
+                  key={coach.id}
+                  coach={coach}
+                  calculatedPrice={coach.calculatedPrice}
+                  calculatedOriginalPrice={coach.calculatedOriginalPrice}
+                  calculatedDiscount={coach.calculatedDiscount}
+                  searchQuery={searchQuery}
+                  highlightSearchTerm={highlightSearchTerm}
+                />
+              ))}
             </div>
           )}
 

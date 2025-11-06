@@ -49,18 +49,18 @@ export function InstructorProfileSection() {
 
   if (loading) {
     return (
-      <section className="py-20 px-4">
-        <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold mb-4 text-balance">
-              검증된 <span className="text-primary">프로 강사진</span>
+      <section className="py-8 px-4 bg-[var(--layer01)]">
+        <div className="max-w-[1280px] mx-auto">
+          <div className="text-center mb-6">
+            <h2 className="mb-2 text-balance text-[var(--text01)]">
+              검증된 <span className="text-[var(--textPrimary)]">프로 강사진</span>
             </h2>
-            <p className="text-muted-foreground text-lg max-w-2xl mx-auto text-balance">
+            <p className="text-[var(--text04)] text-sm max-w-2xl mx-auto text-balance">
               각 분야 최고의 실력을 갖춘 강사들이 당신의 성장을 도와드립니다
             </p>
           </div>
           <div className="flex justify-center">
-            <Loader2 className="w-8 h-8 animate-spin text-primary" />
+            <Loader2 className="w-8 h-8 animate-spin text-[var(--primary01)]" />
           </div>
         </div>
       </section>
@@ -72,43 +72,43 @@ export function InstructorProfileSection() {
   }
 
   return (
-    <section className="py-20 px-4">
-      <div className="max-w-6xl mx-auto">
-        <div className="text-center mb-16">
-          <h2 className="text-3xl md:text-4xl font-bold mb-4 text-balance">
-            검증된 <span className="text-primary">프로 강사진</span>
+    <section className="py-8 px-4 bg-[var(--layer01)]" style={{ transition: 'var(--transition)' }}>
+      <div className="max-w-[1280px] mx-auto">
+        <div className="text-center mb-6">
+          <h2 className="mb-2 text-balance text-[var(--text01)]">
+            검증된 <span className="text-[var(--textPrimary)]">프로 강사진</span>
           </h2>
-          <p className="text-muted-foreground text-lg max-w-2xl mx-auto text-balance">
+          <p className="text-[var(--text04)] text-sm max-w-2xl mx-auto text-balance">
             각 분야 최고의 실력을 갖춘 강사들이 당신의 성장을 도와드립니다
           </p>
         </div>
 
-        <div className="flex justify-center mb-12">
-          <div className="grid grid-cols-1 gap-6 max-w-md">
+        <div className="flex justify-center mb-6">
+          <div className="grid grid-cols-1 gap-3 max-w-md">
             {instructors.map((instructor) => (
               <Link href={`/coaches/${instructor.id}`} key={instructor.id} className="block">
-                <Card className="bg-card border-border hover:border-primary/50 transition-colors cursor-pointer">
-                  <CardContent className="p-6">
-                    <div className="text-center mb-4">
-                      <div className="relative w-40 h-40 mx-auto mb-3">
+                  <Card className="bg-[var(--layer02)] hover:bg-[var(--layer02Hover)] cursor-pointer ">
+                  <CardContent className="p-4">
+                    <div className="text-center mb-2.5">
+                      <div className="relative w-32 h-32 mx-auto mb-2.5">
                         <Image
                           src={instructor.thumbnailImage || "/uploads/coaches/1762077719977_qq.jpg"}
                           alt={instructor.name}
                           fill
-                          className="object-cover rounded-full border-2 border-primary/20"
-                          sizes="160px"
+                          className="object-cover rounded-full "
+                          sizes="128px"
                         />
                       </div>
-                      <h3 className="text-lg font-semibold">{instructor.name}</h3>
-                      <p className="text-sm text-muted-foreground">{instructor.specialty}</p>
+                      <h3 className="text-base font-semibold text-[var(--text01)]">{instructor.name}</h3>
+                      <p className="text-sm text-[var(--text04)]">{instructor.specialty}</p>
                     </div>
 
-                    <div className="space-y-2 mb-4">
-                      <Badge variant="secondary" className="text-xs">
+                    <div className="space-y-2 mb-2.5">
+                      <Badge variant="secondary" className="text-xs bg-[var(--layerNotNormal)] text-[var(--text01)]">
                         {instructor.tier}
                       </Badge>
                       {instructor.specialties && instructor.specialties.length > 0 && (
-                        <Badge variant="outline" className="text-xs ml-2">
+                        <Badge variant="outline" className="text-xs ml-2 border-[var(--divider01)] text-[var(--text04)]">
                           {instructor.specialties.slice(0, 2).join(', ')}
                           {instructor.specialties.length > 2 && '...'}
                         </Badge>
@@ -116,9 +116,9 @@ export function InstructorProfileSection() {
                     </div>
 
                     <div className="flex items-center justify-center gap-1 text-sm">
-                      <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-                      <span className="font-medium">{instructor.rating > 0 ? instructor.rating.toFixed(1) : '0.0'}</span>
-                      <span className="text-muted-foreground">({instructor.reviews})</span>
+                      <Star className="w-4 h-4 fill-[var(--textYellow)] text-[var(--textYellow)]" />
+                      <span className="font-medium text-[var(--text01)]">{instructor.rating > 0 ? instructor.rating.toFixed(1) : '0.0'}</span>
+                      <span className="text-[var(--text04)]">({instructor.reviews})</span>
                     </div>
                   </CardContent>
                 </Card>
@@ -129,7 +129,7 @@ export function InstructorProfileSection() {
 
         <div className="text-center">
           <Link href="/coaches">
-            <Button variant="outline" size="lg">
+            <Button variant="outline" size="lg" className="border-[var(--divider01)] text-[var(--text01)] hover:bg-[var(--layer02Hover)]">
               더 많은 강사 보기
             </Button>
           </Link>

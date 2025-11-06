@@ -229,8 +229,8 @@ export default function ProfileSettingsPage() {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
-          <p className="mt-4 text-muted-foreground">로딩 중...</p>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[var(--primary01)] mx-auto"></div>
+          <p className="mt-4 text-[var(--text04)]">로딩 중...</p>
         </div>
       </div>
     )
@@ -238,10 +238,10 @@ export default function ProfileSettingsPage() {
 
   if (!coach) {
     return (
-      <div className="container mx-auto px-4 py-8">
-        <Card>
-          <CardContent className="p-6">
-            <p className="text-center text-muted-foreground mb-4">
+      <div className="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        <Card className="bg-[var(--layer02)] ">
+          <CardContent className="p-4">
+            <p className="text-center text-[var(--text04)] mb-4">
               코치 프로필을 먼저 생성해주세요.
             </p>
             <Button onClick={() => router.push('/my/course')} className="w-full">
@@ -254,10 +254,10 @@ export default function ProfileSettingsPage() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-4xl">
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold mb-2">프로필 설정</h1>
-        <p className="text-muted-foreground">
+    <div className="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8 py-6">
+      <div className="mb-4">
+        <h1 className="text-xl font-semibold mb-1 text-[var(--text01)]">프로필 설정</h1>
+        <p className="text-[var(--text04)] text-xs">
           코치 프로필 이미지, 경력, 소개글을 설정할 수 있습니다.
         </p>
       </div>
@@ -265,16 +265,16 @@ export default function ProfileSettingsPage() {
       <form onSubmit={handleSubmit}>
         <div className="space-y-6">
           {/* 프로필 이미지 */}
-          <Card>
+          <Card className="bg-[var(--layer02)]  ">
             <CardHeader>
-              <CardTitle>프로필 이미지</CardTitle>
-              <CardDescription>
+              <CardTitle className="text-[var(--text01)]">프로필 이미지</CardTitle>
+              <CardDescription className="text-[var(--text04)]">
                 코치 상세 페이지 우측바에 표시될 프로필 이미지입니다.
               </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className="p-3 space-y-3">
               {formData.profileImage ? (
-                <div className="relative w-32 h-32 rounded-full overflow-hidden border-2 border-gray-200">
+                <div className="relative w-32 h-32 rounded-full overflow-hidden border-2 border-[var(--divider01)]">
                   <Image
                     src={formData.profileImage}
                     alt="프로필 이미지"
@@ -292,8 +292,8 @@ export default function ProfileSettingsPage() {
                   </Button>
                 </div>
               ) : (
-                <div className="w-32 h-32 rounded-full bg-gray-100 border-2 border-dashed border-gray-300 flex items-center justify-center">
-                  <span className="text-gray-400 text-sm">이미지 없음</span>
+                <div className="w-32 h-32 rounded-full bg-[var(--layer01)] border-2 border-dashed border-[var(--divider01)] flex items-center justify-center">
+                  <span className="text-[var(--text04)] text-xs">이미지 없음</span>
                 </div>
               )}
               <div className="flex items-center gap-4">
@@ -332,10 +332,10 @@ export default function ProfileSettingsPage() {
           </Card>
 
           {/* 경력 */}
-          <Card>
+          <Card className="bg-[var(--layer02)]  ">
             <CardHeader>
-              <CardTitle>경력</CardTitle>
-              <CardDescription>
+              <CardTitle className="text-[var(--text01)]">경력</CardTitle>
+              <CardDescription className="text-[var(--text04)]">
                 코치의 경력을 입력해주세요. (예: "5년", "프로게이머 경력 3년")
               </CardDescription>
             </CardHeader>
@@ -350,10 +350,10 @@ export default function ProfileSettingsPage() {
           </Card>
 
           {/* 소개글 */}
-          <Card>
+          <Card className="bg-[var(--layer02)]  ">
             <CardHeader>
-              <CardTitle>소개글</CardTitle>
-              <CardDescription>
+              <CardTitle className="text-[var(--text01)]">소개글</CardTitle>
+              <CardDescription className="text-[var(--text04)]">
                 코치 카드에 표시될 간단한 소개글을 입력해주세요.
               </CardDescription>
             </CardHeader>
@@ -365,7 +365,7 @@ export default function ProfileSettingsPage() {
                 rows={4}
                 maxLength={200}
               />
-              <p className="text-sm text-muted-foreground mt-2">
+              <p className="text-xs text-[var(--text04)] mt-2">
                 {formData.description.length}/200
               </p>
             </CardContent>

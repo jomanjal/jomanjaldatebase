@@ -129,17 +129,17 @@ export default function MyEnrollmentsPage() {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'pending':
-        return <Badge variant="outline" className="bg-yellow-50 text-yellow-700 border-yellow-300">대기 중</Badge>
+        return <Badge variant="outline" className="bg-[var(--systemWarning01)]/10 text-[var(--systemWarning01)] border-[var(--systemWarning01)]">대기 중</Badge>
       case 'approved':
-        return <Badge className="bg-green-500">승인됨</Badge>
+        return <Badge className="bg-[var(--systemSuccess01)] text-white">승인됨</Badge>
       case 'rejected':
         return <Badge variant="destructive">거절됨</Badge>
       case 'completed':
-        return <Badge className="bg-blue-500">완료</Badge>
+        return <Badge className="bg-[var(--primary01)] text-white">완료</Badge>
       case 'cancelled':
-        return <Badge variant="outline">취소됨</Badge>
+        return <Badge variant="outline" className="text-[var(--text04)] border-[var(--divider01)]">취소됨</Badge>
       default:
-        return <Badge variant="outline">{status}</Badge>
+        return <Badge variant="outline" className="text-[var(--text04)] border-[var(--divider01)]">{status}</Badge>
     }
   }
 
@@ -182,19 +182,19 @@ export default function MyEnrollmentsPage() {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
-          <Loader2 className="w-8 h-8 animate-spin text-primary mx-auto mb-4" />
-          <p className="text-muted-foreground">로딩 중...</p>
+          <Loader2 className="w-8 h-8 animate-spin text-[var(--primary01)] mx-auto mb-4" />
+          <p className="text-[var(--text04)]">로딩 중...</p>
         </div>
       </div>
     )
   }
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold mb-2">내 수강 신청</h1>
-          <p className="text-muted-foreground">수강 신청 내역을 확인하고 관리할 수 있습니다.</p>
+          <h1 className="text-xl font-semibold mb-1 text-[var(--text01)]">내 수강 신청</h1>
+          <p className="text-[var(--text04)] text-xs">수강 신청 내역을 확인하고 관리할 수 있습니다.</p>
         </div>
         <div className="flex items-center gap-2">
           <Select value={filterStatus} onValueChange={setFilterStatus}>
@@ -214,28 +214,30 @@ export default function MyEnrollmentsPage() {
       </div>
 
       {enrollments.length === 0 ? (
-        <Card>
+        <Card className="bg-[var(--layer02)] ">
           <CardContent className="py-12 text-center">
-            <p className="text-muted-foreground mb-4">수강 신청 내역이 없습니다.</p>
+            <p className="text-[var(--text01)] mb-2 font-medium">주문 기간 내에 구매 내역이 없습니다.</p>
+            <p className="text-[var(--text04)] text-xs mb-1">주문 기간을 변경하여 확인해 보세요.</p>
+            <p className="text-[var(--text04)] text-xs mb-4">(기본 조회 기간: 1년)</p>
             <Button asChild>
               <Link href="/coaches">코치 찾아보기</Link>
             </Button>
           </CardContent>
         </Card>
       ) : (
-        <div className="space-y-4">
+        <div className="space-y-3">
           {enrollments.map((enrollment) => (
-            <Card key={enrollment.id}>
-              <CardContent className="p-6">
+            <Card key={enrollment.id} className="bg-[var(--layer02)]  ">
+              <CardContent className="p-3">
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
-                    <div className="flex items-center gap-3 mb-3">
-                      <h3 className="text-lg font-semibold">{enrollment.coachName} 코치</h3>
+                    <div className="flex items-center gap-3 mb-2">
+                      <h3 className="text-lg font-semibold text-[var(--text01)]">{enrollment.coachName} 코치</h3>
                       {getStatusBadge(enrollment.status)}
                     </div>
-                    <p className="text-sm text-muted-foreground mb-2">{enrollment.coachSpecialty}</p>
+                    <p className="text-xs text-[var(--text04)] mb-2">{enrollment.coachSpecialty}</p>
                     
-                    <div className="flex items-center gap-4 text-sm text-muted-foreground mb-4">
+                    <div className="flex items-center gap-4 text-xs text-[var(--text04)] mb-3">
                       <div className="flex items-center gap-1">
                         <Calendar className="w-4 h-4" />
                         <span>신청일: {format(new Date(enrollment.createdAt), 'yyyy년 MM월 dd일', { locale: ko })}</span>
@@ -263,15 +265,15 @@ export default function MyEnrollmentsPage() {
                       }
 
                       return (
-                        <div className="mb-3 p-3 bg-muted rounded-lg">
+                        <div className="mb-3 p-3 bg-[var(--layer01)] border border-[var(--divider01)] rounded-md">
                           <div className="flex items-center gap-2 mb-1">
-                            <MessageSquare className="w-4 h-4 text-muted-foreground" />
-                            <span className="text-sm font-medium">
+                            <MessageSquare className="w-4 h-4 text-[var(--text04)]" />
+                            <span className="text-xs font-medium text-[var(--text01)]">
                               {isGameInfo ? '내 게임 정보' : '내 메시지'}
                             </span>
                           </div>
                           {isGameInfo ? (
-                            <div className="space-y-2 text-sm text-foreground">
+                            <div className="space-y-2 text-xs text-[var(--text01)]">
                               {gameInfo.rank && (
                                 <p><span className="font-medium">랭크:</span> {getRankLabel(gameInfo.rank)}</p>
                               )}
@@ -287,19 +289,19 @@ export default function MyEnrollmentsPage() {
                               )}
                             </div>
                           ) : (
-                            <p className="text-sm text-foreground">{sanitizeText(enrollment.message)}</p>
+                            <p className="text-xs text-[var(--text01)]">{sanitizeText(enrollment.message)}</p>
                           )}
                         </div>
                       )
                     })()}
 
                     {enrollment.coachMessage && (
-                      <div className="mb-3 p-3 bg-primary/10 rounded-lg">
+                      <div className="mb-3 p-3 bg-[var(--primaryOpacity01)] rounded-md">
                         <div className="flex items-center gap-2 mb-1">
-                          <User className="w-4 h-4 text-primary" />
-                          <span className="text-sm font-medium text-primary">코치 답변</span>
+                          <User className="w-4 h-4 text-[var(--textPrimary)]" />
+                          <span className="text-xs font-medium text-[var(--textPrimary)]">코치 답변</span>
                         </div>
-                        <p className="text-sm text-foreground">{sanitizeText(enrollment.coachMessage)}</p>
+                        <p className="text-xs text-[var(--text01)]">{sanitizeText(enrollment.coachMessage)}</p>
                       </div>
                     )}
 

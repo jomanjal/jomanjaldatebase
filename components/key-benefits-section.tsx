@@ -26,27 +26,20 @@ const benefits = [
 
 export function KeyBenefitsSection() {
   return (
-    <section className="py-20 px-4 bg-white">
-      <div className="max-w-6xl mx-auto">
-        <div className="text-center mb-16">
-          <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">GameCoach.AI만의 특별함</h2>
-          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            AI 기술과 전문 코치의 만남으로 더 효과적인 게임 실력 향상을 경험하세요
-          </p>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+    <section className="py-8 px-4 bg-[var(--layer01)]">
+      <div className="max-w-[1280px] mx-auto">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           {benefits.map((benefit, index) => (
             <Card
               key={index}
-              className="bg-white border border-gray-200 hover:shadow-lg transition-all duration-300 hover:-translate-y-1"
+              className="bg-[var(--layer02)] hover:bg-[var(--layer02Hover)] "
             >
-              <CardContent className="p-6 text-center">
-                <div className="w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                  <benefit.icon className="w-8 h-8 text-primary" />
+              <CardContent className="p-4 text-center">
+                <div className="w-10 h-10 bg-[var(--layer01)] rounded-md flex items-center justify-center mx-auto mb-2">
+                  <benefit.icon className="w-5 h-5 text-[var(--textPrimary)]" />
                 </div>
-                <h3 className="text-xl font-bold mb-3 text-foreground">{benefit.title}</h3>
-                <p className="text-muted-foreground leading-relaxed">{benefit.description}</p>
+                <h3 className="text-sm font-semibold mb-1 text-[var(--text01)]">{benefit.title}</h3>
+                <p className="text-xs text-[var(--text04)] leading-relaxed">{benefit.description}</p>
               </CardContent>
             </Card>
           ))}

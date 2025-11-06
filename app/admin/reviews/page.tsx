@@ -278,12 +278,12 @@ export default function ReviewsManagementPage() {
     : '0.0'
 
   return (
-    <div className="p-8 space-y-8">
+    <div className="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
       {/* 헤더 */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold">리뷰 관리</h1>
-          <p className="text-muted-foreground mt-1">
+          <h1 className="text-xl font-semibold mb-1 text-[var(--text01)]">리뷰 관리</h1>
+          <p className="text-[var(--text04)] text-xs">
             등록된 리뷰를 관리하고 승인할 수 있습니다.
           </p>
         </div>
@@ -300,11 +300,11 @@ export default function ReviewsManagementPage() {
       </div>
 
       {/* 검색 및 필터 */}
-      <Card>
-        <CardContent className="pt-6">
+      <Card className="bg-[var(--layer02)] ">
+        <CardContent className="p-4">
           <div className="flex flex-col md:flex-row gap-4">
             <div className="flex-1 relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-[var(--text04)] w-4 h-4" />
               <Input
                 placeholder="사용자 이름으로 검색... (최대 100자)"
                 value={searchQuery}
@@ -345,41 +345,41 @@ export default function ReviewsManagementPage() {
       </Card>
 
       {/* 통계 */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card>
-          <CardContent className="pt-6">
-            <div className="text-2xl font-bold">{totalReviews}</div>
-            <div className="text-sm text-muted-foreground mt-1">총 리뷰</div>
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
+        <Card className="bg-[var(--layer02)]  ">
+          <CardContent className="p-3">
+            <div className="text-xl font-bold text-[var(--text01)]">{totalReviews}</div>
+            <div className="text-xs text-[var(--text04)] mt-1">총 리뷰</div>
           </CardContent>
         </Card>
-        <Card>
-          <CardContent className="pt-6">
-            <div className="text-2xl font-bold text-orange-600">
+        <Card className="bg-[var(--layer02)]  ">
+          <CardContent className="p-3">
+            <div className="text-xl font-bold text-[var(--systemWarning01)]">
               {pendingReviews}
             </div>
-            <div className="text-sm text-muted-foreground mt-1">승인 대기</div>
+            <div className="text-xs text-[var(--text04)] mt-1">승인 대기</div>
           </CardContent>
         </Card>
-        <Card>
-          <CardContent className="pt-6">
-            <div className="text-2xl font-bold text-green-600">
+        <Card className="bg-[var(--layer02)]  ">
+          <CardContent className="p-3">
+            <div className="text-xl font-bold text-[var(--systemSuccess01)]">
               {verifiedReviews}
             </div>
-            <div className="text-sm text-muted-foreground mt-1">승인 완료</div>
+            <div className="text-xs text-[var(--text04)] mt-1">승인 완료</div>
           </CardContent>
         </Card>
-        <Card>
-          <CardContent className="pt-6">
-            <div className="text-2xl font-bold">
+        <Card className="bg-[var(--layer02)]  ">
+          <CardContent className="p-3">
+            <div className="text-xl font-bold text-[var(--text01)]">
               {avgRating}
             </div>
-            <div className="text-sm text-muted-foreground mt-1">평균 평점</div>
+            <div className="text-xs text-[var(--text04)] mt-1">평균 평점</div>
           </CardContent>
         </Card>
       </div>
 
       {/* 리뷰 목록 */}
-      <Card>
+      <Card className="bg-[var(--layer02)] ">
         <CardHeader>
           <CardTitle>리뷰 목록</CardTitle>
         </CardHeader>
@@ -387,11 +387,11 @@ export default function ReviewsManagementPage() {
           {loading ? (
             <div className="text-center py-12">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
-              <p className="text-muted-foreground mt-4">로딩 중...</p>
+              <p className="text-[var(--text04)] mt-4">로딩 중...</p>
             </div>
           ) : filteredReviews.length === 0 ? (
             <div className="text-center py-12">
-              <p className="text-muted-foreground">검색 결과가 없습니다.</p>
+              <p className="text-[var(--text04)]">검색 결과가 없습니다.</p>
             </div>
           ) : (
             <div className="overflow-x-auto">
@@ -414,9 +414,9 @@ export default function ReviewsManagementPage() {
                         <div className="font-medium">{review.userName}</div>
                       </TableCell>
                       <TableCell>
-                        <div className="text-sm">
+                        <div className="text-xs">
                           <div className="font-medium">{review.coachName}</div>
-                          <div className="text-xs text-muted-foreground">{review.coachSpecialty}</div>
+                          <div className="text-xs text-[var(--text04)]">{review.coachSpecialty}</div>
                         </div>
                       </TableCell>
                       <TableCell>
@@ -426,12 +426,12 @@ export default function ReviewsManagementPage() {
                               key={i}
                               className={`w-4 h-4 ${
                                 i < review.rating
-                                  ? "fill-yellow-400 text-yellow-400"
-                                  : "text-gray-300"
+                                  ? "fill-[var(--textYellow)] text-[var(--textYellow)]"
+                                  : "text-[var(--text04)] opacity-30"
                               }`}
                             />
                           ))}
-                          <span className="ml-1 text-sm font-medium">{review.rating}</span>
+                          <span className="ml-1 text-xs font-medium">{review.rating}</span>
                         </div>
                       </TableCell>
                       <TableCell>
@@ -440,13 +440,13 @@ export default function ReviewsManagementPage() {
                         </div>
                       </TableCell>
                       <TableCell>
-                        <div className="text-sm text-muted-foreground">{review.timeAgo}</div>
+                        <div className="text-xs text-[var(--text04)]">{review.timeAgo}</div>
                       </TableCell>
                       <TableCell>
                         {review.verified ? (
-                          <Badge className="bg-green-500">승인됨</Badge>
+                          <Badge className="bg-[var(--systemSuccess01)]">승인됨</Badge>
                         ) : (
-                          <Badge variant="outline" className="border-orange-500 text-orange-600">
+                          <Badge variant="outline" className="border-[var(--systemWarning01)] text-[var(--systemWarning01)]">
                             대기 중
                           </Badge>
                         )}
@@ -460,7 +460,7 @@ export default function ReviewsManagementPage() {
                               onClick={() => handleVerifyReview(review.id)}
                               title="리뷰 승인"
                             >
-                              <CheckCircle className="w-4 h-4 text-green-600" />
+                              <CheckCircle className="w-4 h-4 text-[var(--systemSuccess01)]" />
                             </Button>
                           )}
                           <Button
@@ -503,25 +503,25 @@ export default function ReviewsManagementPage() {
             <div className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <p className="text-sm text-muted-foreground">사용자</p>
+                  <p className="text-sm text-[var(--text04)]">사용자</p>
                   <p className="font-medium">{selectedReview.userName}</p>
                 </div>
                 <div>
-                  <p className="text-sm text-muted-foreground">코치</p>
+                  <p className="text-sm text-[var(--text04)]">코치</p>
                   <p className="font-medium">{selectedReview.coachName}</p>
-                  <p className="text-xs text-muted-foreground">{selectedReview.coachSpecialty}</p>
+                  <p className="text-xs text-[var(--text04)]">{selectedReview.coachSpecialty}</p>
                 </div>
               </div>
               <div>
-                <p className="text-sm text-muted-foreground mb-2">평점</p>
+                <p className="text-sm text-[var(--text04)] mb-2">평점</p>
                 <div className="flex items-center gap-1">
                   {[...Array(5)].map((_, i) => (
                     <Star
                       key={i}
                       className={`w-5 h-5 ${
                         i < selectedReview.rating
-                          ? "fill-yellow-400 text-yellow-400"
-                          : "text-gray-300"
+                          ? "fill-[var(--textYellow)] text-[var(--textYellow)]"
+                          : "text-[var(--text04)] opacity-30"
                       }`}
                     />
                   ))}
@@ -529,20 +529,20 @@ export default function ReviewsManagementPage() {
                 </div>
               </div>
               <div>
-                <p className="text-sm text-muted-foreground mb-2">리뷰 내용</p>
+                <p className="text-sm text-[var(--text04)] mb-2">리뷰 내용</p>
                 <p className="text-sm whitespace-pre-wrap">{sanitizeText(selectedReview.comment) || '(리뷰 내용 없음)'}</p>
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <p className="text-sm text-muted-foreground">작성 시간</p>
+                  <p className="text-sm text-[var(--text04)]">작성 시간</p>
                   <p className="text-sm">{selectedReview.timeAgo}</p>
                 </div>
                 <div>
-                  <p className="text-sm text-muted-foreground">상태</p>
+                  <p className="text-sm text-[var(--text04)]">상태</p>
                   {selectedReview.verified ? (
-                    <Badge className="bg-green-500">승인됨</Badge>
+                    <Badge className="bg-[var(--systemSuccess01)]">승인됨</Badge>
                   ) : (
-                    <Badge variant="outline" className="border-orange-500 text-orange-600">
+                    <Badge variant="outline" className="border-[var(--systemWarning01)] text-[var(--systemWarning01)]">
                       대기 중
                     </Badge>
                   )}

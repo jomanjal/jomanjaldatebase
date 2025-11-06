@@ -457,7 +457,7 @@ export default function CoachDetailPage({ params }: { params: { id: string } }) 
 
   if (error) {
     return (
-      <main className="min-h-screen bg-background">
+      <main className="min-h-screen bg-[var(--layer01)]" style={{ transition: 'var(--transition)' }}>
         <Header />
         <ErrorDisplay 
           error={error} 
@@ -473,11 +473,11 @@ export default function CoachDetailPage({ params }: { params: { id: string } }) 
 
   if (loading) {
     return (
-      <main className="min-h-screen bg-background">
+      <main className="min-h-screen bg-[var(--layer01)]" style={{ transition: 'var(--transition)' }}>
         <Header />
         <section className="py-16 text-center">
-          <Loader2 className="w-8 h-8 animate-spin text-primary mx-auto mb-4" />
-          <p className="text-muted-foreground">코치 정보를 불러오는 중...</p>
+          <Loader2 className="w-8 h-8 animate-spin text-[var(--textPrimary)] mx-auto mb-4" />
+          <p className="text-[var(--text04)]">코치 정보를 불러오는 중...</p>
         </section>
         <FooterSection />
       </main>
@@ -486,10 +486,10 @@ export default function CoachDetailPage({ params }: { params: { id: string } }) 
 
   if (!coach) {
     return (
-      <main className="min-h-screen bg-background">
+      <main className="min-h-screen bg-[var(--layer01)]" style={{ transition: 'var(--transition)' }}>
         <Header />
         <section className="py-16 text-center">
-          <h1 className="text-2xl font-bold mb-4">코치를 찾을 수 없습니다</h1>
+          <h1 className="text-2xl font-bold mb-4 text-[var(--text01)]">코치를 찾을 수 없습니다</h1>
           <Link href="/coaches">
             <Button>코치 목록으로 돌아가기</Button>
           </Link>
@@ -573,14 +573,14 @@ export default function CoachDetailPage({ params }: { params: { id: string } }) 
   ]
 
   return (
-    <main className="min-h-screen bg-background">
+    <main className="min-h-screen bg-[var(--layer01)]" style={{ transition: 'var(--transition)' }}>
       <Header />
       
       {/* 메인 콘텐츠 */}
-      <section className="py-8">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between mb-8">
-            <h1 className="text-3xl font-bold">{coach.headline || "에임, 피지컬 강의 국내 No.1"}</h1>
+      <section className="py-8" style={{ transition: 'var(--transition)' }}>
+        <div className="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between mb-6">
+            <h1 className="text-2xl font-bold text-[var(--text01)]">{coach.headline || "에임, 피지컬 강의 국내 No.1"}</h1>
             {isOwner && (
               <Button asChild variant="outline">
                 <Link href="/my/course">
@@ -591,26 +591,26 @@ export default function CoachDetailPage({ params }: { params: { id: string } }) 
             )}
           </div>
           
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
             {/* 좌측: 탭 콘텐츠 */}
             <div className="lg:col-span-2">
               <Tabs defaultValue="intro" className="w-full">
-                <TabsList className="mb-6">
+                <TabsList className="mb-4">
                   <TabsTrigger value="intro">강의 소개</TabsTrigger>
                   <TabsTrigger value="curriculum">커리큘럼</TabsTrigger>
                   <TabsTrigger value="reviews">후기 {coach.reviews}</TabsTrigger>
                 </TabsList>
 
                 {/* 강의 소개 탭 */}
-                <TabsContent value="intro" className="space-y-6">
+                <TabsContent value="intro" className="space-y-4">
                   {/* 소개이미지 */}
-                  <div className="w-full rounded-lg overflow-hidden">
+                  <div className="w-full rounded-md overflow-hidden">
                     <Image
                       src={coach.introductionImage || "/uploads/coaches/1762077719977_qq.jpg"}
                       alt="강의 소개 이미지"
                       width={1200}
                       height={0}
-                      className="w-full h-auto rounded-lg"
+                      className="w-full h-auto rounded-md"
                       sizes="(max-width: 768px) 100vw, 66vw"
                       priority
                     />
@@ -618,10 +618,10 @@ export default function CoachDetailPage({ params }: { params: { id: string } }) 
 
                   {/* 강의 소개 */}
                   {otherItems.length > 0 && (
-                  <Card>
-                    <CardContent className="p-6">
-                        <h2 className="text-xl font-bold mb-6">이 강의는 {courseType} 강의로, {coach.headline || "에임, 피지컬 강의 국내 No.1"}</h2>
-                      <div className="space-y-4 text-muted-foreground">
+                  <Card className="border border-[var(--divider01)] shadow-[var(--shadow01)]">
+                    <CardContent className="p-4">
+                        <h2 className="text-lg font-semibold mb-4 text-[var(--text01)]">이 강의는 {courseType} 강의로, {coach.headline || "에임, 피지컬 강의 국내 No.1"}</h2>
+                      <div className="space-y-3 text-[var(--text04)]">
                           {otherItems.map((item, index) => (
                             <div key={index}>
                               {/* 강의 소개 (videoUrl 포함) */}
@@ -640,7 +640,7 @@ export default function CoachDetailPage({ params }: { params: { id: string } }) 
                                           : item.videoUrl.includes('youtu.be')
                                           ? item.videoUrl.replace('youtu.be/', 'youtube.com/embed/')
                                           : item.videoUrl}
-                                        className="w-full aspect-video rounded-lg"
+                                        className="w-full aspect-video rounded-md"
                                         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                                         allowFullScreen
                                       />
@@ -650,18 +650,18 @@ export default function CoachDetailPage({ params }: { params: { id: string } }) 
                               ) : (
                                 /* 기타 항목 (체크마크 리스트) */
                         <div className="flex items-start gap-2">
-                          <Check className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" />
+                          <Check className="w-5 h-5 text-[var(--textGreen)] mt-0.5 flex-shrink-0" />
                                   <div className="flex-1">
                                     {item.content && !item.items && (
                                       <div>
-                                        <span className="font-semibold">{item.title}:</span> {item.content}
+                                        <span className="font-semibold text-[var(--text01)]">{item.title}:</span> <span className="text-[var(--text04)]">{item.content}</span>
                                       </div>
                                     )}
                                     {item.items && item.items.length > 0 && (
                           <div>
-                                        <span className="font-semibold">{item.title}:</span>
-                                        {item.content && <span className="ml-2">{item.content}</span>}
-                                        <ul className="mt-2 ml-4 space-y-1 text-sm">
+                                        <span className="font-semibold text-[var(--text01)]">{item.title}:</span>
+                                        {item.content && <span className="ml-2 text-[var(--text04)]">{item.content}</span>}
+                                        <ul className="mt-2 ml-4 space-y-1 text-sm text-[var(--text04)]">
                                           {item.items.map((subItem, subIndex) => (
                                             <li key={subIndex}>ㆍ {subItem}</li>
                                           ))}
@@ -680,16 +680,16 @@ export default function CoachDetailPage({ params }: { params: { id: string } }) 
 
                   {/* 강의 대상 */}
                   {targetItems.length > 0 && (
-                    <Card>
-                      <CardContent className="p-6">
-                        <div className="flex items-center gap-2 mb-4">
-                          <Clock className="w-5 h-5 text-primary" />
-                          <h2 className="text-xl font-bold">강의 대상은 누가 될까요?</h2>
+                    <Card className="border border-[var(--divider01)] shadow-[var(--shadow01)]">
+                      <CardContent className="p-4">
+                        <div className="flex items-center gap-2 mb-3">
+                          <Clock className="w-5 h-5 text-[var(--textPrimary)]" />
+                          <h2 className="text-lg font-semibold text-[var(--text01)]">강의 대상은 누가 될까요?</h2>
                         </div>
-                        <div className="space-y-2 text-muted-foreground">
+                        <div className="space-y-2 text-[var(--text04)]">
                           {targetItems.map((item, index) => (
                             <div key={index} className="flex items-start gap-2">
-                          <Check className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" />
+                          <Check className="w-5 h-5 text-[var(--textGreen)] mt-0.5 flex-shrink-0" />
                               <div className="flex-1">{item.content}</div>
                           </div>
                           ))}
@@ -700,16 +700,16 @@ export default function CoachDetailPage({ params }: { params: { id: string } }) 
 
                   {/* 강의 효과 */}
                   {effectItems.length > 0 && (
-                    <Card>
-                      <CardContent className="p-6">
-                        <div className="flex items-center gap-2 mb-4">
-                          <Rocket className="w-5 h-5 text-primary" />
-                          <h2 className="text-xl font-bold">강의 효과는 얼마나 될까요?</h2>
+                    <Card className="border border-[var(--divider01)] shadow-[var(--shadow01)]">
+                      <CardContent className="p-4">
+                        <div className="flex items-center gap-2 mb-3">
+                          <Rocket className="w-5 h-5 text-[var(--textPrimary)]" />
+                          <h2 className="text-lg font-semibold text-[var(--text01)]">강의 효과는 얼마나 될까요?</h2>
                         </div>
-                        <div className="space-y-2 text-muted-foreground">
+                        <div className="space-y-2 text-[var(--text04)]">
                           {effectItems.map((item, index) => (
                             <div key={index} className="flex items-start gap-2">
-                          <Check className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" />
+                          <Check className="w-5 h-5 text-[var(--textGreen)] mt-0.5 flex-shrink-0" />
                               <div className="flex-1">{item.content}</div>
                           </div>
                           ))}
@@ -720,14 +720,14 @@ export default function CoachDetailPage({ params }: { params: { id: string } }) 
 
                   {/* 게임 정보 - Accordion */}
                   {(coach.specialty === "발로란트" && (positions.length > 0 || agents.length > 0)) || (coach.specialties && coach.specialties.length > 0) ? (
-                    <Card>
+                    <Card className="border border-[var(--divider01)] shadow-[var(--shadow01)]">
                       <CardContent className="p-0">
                         <Accordion type="single" collapsible className="w-full">
-                          <AccordionItem value="game-info" className="border-0">
-                            <AccordionTrigger className="px-6 py-4 hover:no-underline">
-                              <h2 className="text-xl font-bold">강의 상세 게임 정보</h2>
+                          <AccordionItem value="game-info">
+                            <AccordionTrigger className="px-4 py-3 hover:no-underline">
+                              <h2 className="text-lg font-semibold text-[var(--text01)]">강의 상세 게임 정보</h2>
                             </AccordionTrigger>
-                            <AccordionContent className="px-6 pb-6">
+                            <AccordionContent className="px-4 pb-4">
                               {/* 발로란트 포지션 */}
                               {coach.specialty === "발로란트" && positions.length > 0 && (
                                 <div className="mb-4">
@@ -738,7 +738,8 @@ export default function CoachDetailPage({ params }: { params: { id: string } }) 
                                           key={position.id}
                                           variant="outline"
                                           size="sm"
-                                          className="rounded-lg h-9"
+                                          className="rounded-md h-9"
+                                          style={{ transition: 'var(--transition)' }}
                                         >
                                           <span className="mr-1.5">{position.icon}</span>
                                           {position.name}
@@ -758,7 +759,8 @@ export default function CoachDetailPage({ params }: { params: { id: string } }) 
                                         key={agent}
                                         variant="outline"
                                         size="sm"
-                                        className="rounded-lg h-9 px-3"
+                                        className="rounded-md h-9 px-3"
+                                        style={{ transition: 'var(--transition)' }}
                                       >
                                         {agent}
                                       </Button>
@@ -769,6 +771,7 @@ export default function CoachDetailPage({ params }: { params: { id: string } }) 
                                         size="sm"
                                         className="rounded-lg h-9"
                                         onClick={() => setShowAllAgents(true)}
+                                        style={{ transition: 'var(--transition)' }}
                                       >
                                         더보기 (+{agents.length - 6})
                                       </Button>
@@ -781,7 +784,7 @@ export default function CoachDetailPage({ params }: { params: { id: string } }) 
                               {coach.specialties && coach.specialties.length > 0 && (
                                 <div className="flex flex-wrap gap-2">
                                   {coach.specialties.map((specialty, idx) => (
-                                    <Badge key={idx} variant="outline">{specialty}</Badge>
+                                    <Badge key={idx} variant="outline" className="border-[var(--divider01)] text-[var(--text04)]">{specialty}</Badge>
                                   ))}
                                 </div>
                               )}
@@ -793,14 +796,14 @@ export default function CoachDetailPage({ params }: { params: { id: string } }) 
                   ) : null}
 
                   {/* 취소 및 환불 - Accordion */}
-                  <Card>
+                  <Card className="border border-[var(--divider01)] shadow-[var(--shadow01)]">
                     <CardContent className="p-0">
                       <Accordion type="single" collapsible className="w-full">
-                        <AccordionItem value="refund" className="border-0">
-                          <AccordionTrigger className="px-6 py-4 hover:no-underline">
-                            <h2 className="text-xl font-bold">취소 및 환불</h2>
+                        <AccordionItem value="refund">
+                          <AccordionTrigger className="px-4 py-3 hover:no-underline">
+                            <h2 className="text-lg font-semibold text-[var(--text01)]">취소 및 환불</h2>
                           </AccordionTrigger>
-                          <AccordionContent className="px-6 pb-6 text-muted-foreground">
+                          <AccordionContent className="px-4 pb-4 text-[var(--text04)]">
                             <div className="space-y-2 text-sm">
                               <p>• 강의 구매 후 7일 이내 환불 가능</p>
                               <p>• 강의를 50% 이상 수강한 경우 환불 불가</p>
@@ -815,35 +818,36 @@ export default function CoachDetailPage({ params }: { params: { id: string } }) 
 
                 {/* 커리큘럼 탭 */}
                 <TabsContent value="curriculum">
-                  <Card>
-                    <CardContent className="p-6">
-                      <div className="flex items-center justify-between mb-6">
-                        <h2 className="text-xl font-bold">
+                  <Card className="border border-[var(--divider01)] shadow-[var(--shadow01)]">
+                    <CardContent className="p-4">
+                      <div className="flex items-center justify-between mb-4">
+                        <h2 className="text-lg font-semibold text-[var(--text01)]">
                           커리큘럼 {coach.totalCourseTime ? `총 ${coach.totalCourseTime}` : ''}
                         </h2>
                         {coach.curriculumItems && coach.curriculumItems.length > 0 && (
-                          <Badge variant="outline" className="text-sm">
+                          <Badge variant="outline" className="text-sm border-[var(--divider01)] text-[var(--text04)]">
                             {coach.curriculumItems.length}개 강의
                           </Badge>
                         )}
                       </div>
                       {coach.curriculumItems && coach.curriculumItems.length > 0 ? (
-                        <div className="space-y-3">
+                        <div className="space-y-2">
                           {coach.curriculumItems.map((item, index) => (
                             <div 
                               key={index} 
-                              className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors gap-4"
+                              className="flex items-center justify-between p-3 border border-[var(--divider01)] rounded-md hover:bg-[var(--layer02Hover)] gap-4"
+                              style={{ transition: 'var(--transition)' }}
                             >
                               <div className="flex items-center gap-3 flex-1 min-w-0">
-                                <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary/10 text-primary flex items-center justify-center font-semibold text-sm">
+                                <div className="flex-shrink-0 w-8 h-8 rounded-full bg-[var(--primaryOpacity02)] text-[var(--textPrimary)] flex items-center justify-center font-semibold text-sm">
                                   {index + 1}
                                 </div>
-                                <span className="font-medium text-base truncate">
+                                <span className="font-medium text-base truncate text-[var(--text01)]">
                                   {item.title || `강의 ${index + 1}`}
                                 </span>
                               </div>
                               {item.duration && (
-                                <Badge variant="secondary" className="flex-shrink-0">
+                                <Badge variant="secondary" className="flex-shrink-0 bg-[var(--layerNotNormal)] text-[var(--text01)]">
                                   <Clock className="w-3 h-3 mr-1" />
                                   {item.duration}
                                 </Badge>
@@ -853,7 +857,7 @@ export default function CoachDetailPage({ params }: { params: { id: string } }) 
                         </div>
                       ) : (
                         <div className="text-center py-10">
-                          <p className="text-muted-foreground">등록된 커리큘럼이 없습니다.</p>
+                          <p className="text-[var(--text04)]">등록된 커리큘럼이 없습니다.</p>
                         </div>
                       )}
                     </CardContent>
@@ -862,15 +866,17 @@ export default function CoachDetailPage({ params }: { params: { id: string } }) 
 
                 {/* 후기 탭 */}
                 <TabsContent value="reviews">
-                  <Card>
-                    <CardContent className="p-6">
-                      <div className="flex items-center justify-between mb-6">
-                        <h2 className="text-xl font-bold">후기 {coach.reviews}</h2>
+                  <Card className="border border-[var(--divider01)] shadow-[var(--shadow01)]">
+                    <CardContent className="p-4">
+                      <div className="flex items-center justify-between mb-4">
+                        <h2 className="text-lg font-semibold text-[var(--text01)]">후기 {coach.reviews}</h2>
                         <div className="flex gap-2">
                           <Button
                             variant={sortBy === "latest" ? "default" : "outline"}
                             size="sm"
                             onClick={() => setSortBy("latest")}
+                            className="rounded-md"
+                            style={{ transition: 'var(--transition)' }}
                           >
                             최신순
                           </Button>
@@ -878,6 +884,8 @@ export default function CoachDetailPage({ params }: { params: { id: string } }) 
                             variant={sortBy === "high" ? "default" : "outline"}
                             size="sm"
                             onClick={() => setSortBy("high")}
+                            className="rounded-md"
+                            style={{ transition: 'var(--transition)' }}
                           >
                             평점 높은 순
                           </Button>
@@ -885,6 +893,8 @@ export default function CoachDetailPage({ params }: { params: { id: string } }) 
                             variant={sortBy === "low" ? "default" : "outline"}
                             size="sm"
                             onClick={() => setSortBy("low")}
+                            className="rounded-md"
+                            style={{ transition: 'var(--transition)' }}
                           >
                             평점 낮은 순
                           </Button>
@@ -904,32 +914,32 @@ export default function CoachDetailPage({ params }: { params: { id: string } }) 
                         />
                       ) : reviewsLoading ? (
                         <div className="flex justify-center items-center py-10">
-                          <Loader2 className="w-6 h-6 animate-spin text-primary" />
+                          <Loader2 className="w-6 h-6 animate-spin text-[var(--textPrimary)]" />
                         </div>
                       ) : sortedReviews.length === 0 ? (
                         <div className="text-center py-10">
-                          <p className="text-muted-foreground">아직 등록된 후기가 없습니다.</p>
+                          <p className="text-[var(--text04)]">아직 등록된 후기가 없습니다.</p>
                         </div>
                       ) : (
                       <>
-                        <div className="space-y-6">
+                        <div className="space-y-4">
                           {sortedReviews.map((review) => {
                             const reviewDate = new Date(review.createdAt)
                             const formattedDate = `${reviewDate.getFullYear()}-${String(reviewDate.getMonth() + 1).padStart(2, '0')}-${String(reviewDate.getDate()).padStart(2, '0')}`
                             
                             return (
-                              <div key={review.id} className="border-b pb-6 last:border-0">
+                              <div key={review.id} className="pb-4 last:pb-0 border-b border-[var(--divider01)] last:border-0">
                                 <div className="flex items-center gap-2 mb-2">
                                   <div className="flex gap-1">
                                     {[...Array(review.rating)].map((_, i) => (
-                                      <Star key={i} className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+                                      <Star key={i} className="w-4 h-4 fill-[var(--textYellow)] text-[var(--textYellow)]" />
                                     ))}
                                   </div>
-                                  <span className="font-semibold">{review.userName}</span>
-                                  <span className="text-sm text-muted-foreground">{formattedDate}</span>
+                                  <span className="font-semibold text-[var(--text01)]">{review.userName}</span>
+                                  <span className="text-sm text-[var(--text04)]">{formattedDate}</span>
                                 </div>
                                 {review.comment && (
-                                  <p className="text-muted-foreground">{sanitizeText(review.comment)}</p>
+                                  <p className="text-[var(--text04)]">{sanitizeText(review.comment)}</p>
                                 )}
                               </div>
                             )
@@ -1011,7 +1021,7 @@ export default function CoachDetailPage({ params }: { params: { id: string } }) 
             <div className="lg:col-span-1">
               <div className="sticky top-24 space-y-4">
                 {/* 섬네일 이미지 */}
-                <div className="relative w-full aspect-video rounded-lg overflow-hidden max-h-64">
+                <div className="relative w-full aspect-video rounded-md overflow-hidden max-h-64 shadow-[var(--shadow01)]">
                   <Image
                     src={coach.thumbnailImage || "/uploads/coaches/1762077719977_qq.jpg"}
                     alt="사이드바 이미지"
@@ -1022,54 +1032,55 @@ export default function CoachDetailPage({ params }: { params: { id: string } }) 
                 </div>
 
                 {/* 할인 배너 */}
-                <div className="bg-blue-500 text-white p-4 rounded-lg flex items-center gap-2">
+                <div className="bg-[var(--primary01)] text-white p-4 rounded-md flex items-center gap-2 shadow-[var(--shadow01)]" style={{ transition: 'var(--transition)' }}>
                   <Gift className="w-5 h-5 flex-shrink-0" />
                   <span className="text-sm">최대 10만원 할인! 신규 가입 쿠폰팩 즉시 받기</span>
                 </div>
 
                 {/* 강의 구매 카드 */}
-                <Card>
-                  <CardContent className="p-6">
+                <Card className="border border-[var(--divider01)] shadow-[var(--shadow01)]">
+                  <CardContent className="p-4">
                     {coach.students > 0 && (
-                    <div className="flex items-center gap-2 mb-4">
-                      <Check className="w-5 h-5 text-green-500" />
-                        <span className="text-sm text-muted-foreground">{coach.students}명이 구매한 강의</span>
+                    <div className="flex items-center gap-2 mb-3">
+                      <Check className="w-5 h-5 text-[var(--textGreen)]" />
+                        <span className="text-sm text-[var(--text04)]">{coach.students}명이 구매한 강의</span>
                     </div>
                     )}
                     
-                    <div className="flex gap-2 mb-4">
-                      <Badge variant="outline">온라인</Badge>
+                    <div className="flex gap-2 mb-3">
+                      <Badge variant="outline" className="border-[var(--divider01)] text-[var(--text04)]">온라인</Badge>
                       {coach.verified && (
-                        <Badge variant="secondary">인증됨</Badge>
+                        <Badge variant="secondary" className="bg-[var(--layerNotNormal)] text-[var(--text01)]">인증됨</Badge>
                       )}
                     </div>
 
-                    <h3 className="text-lg font-bold mb-2">
+                    <h3 className="text-base font-semibold mb-2 text-[var(--text01)]">
                       {coach.description || `${coach.name} 코치`}
                     </h3>
 
-                    <div className="flex items-center gap-2 mb-4">
-                      <Star className="w-4 h-4 fill-purple-500 text-purple-500" />
-                      <span className="font-semibold">{coach.rating > 0 ? coach.rating.toFixed(1) : '0.0'}</span>
-                      <span className="text-sm text-muted-foreground">({coach.reviews})</span>
+                    <div className="flex items-center gap-2 mb-3">
+                      <Star className="w-4 h-4 fill-[var(--textYellow)] text-[var(--textYellow)]" />
+                      <span className="font-semibold text-[var(--text01)]">{coach.rating > 0 ? coach.rating.toFixed(1) : '0.0'}</span>
+                      <span className="text-sm text-[var(--text04)]">({coach.reviews})</span>
                     </div>
 
                     {displayPrice && (
                     <div className="mb-4">
-                        <div className="text-3xl font-bold text-green-600 mb-1">
+                        <div className="text-2xl font-bold text-[var(--text01)] mb-1">
                           ₩{displayPrice.toLocaleString()}
                         </div>
                         {discount && discount > 0 && originalPrice && (
                           <div className="flex items-center gap-2">
-                            <span className="inline-block rounded-md bg-destructive text-white text-xs font-medium px-1.5 py-0.5">{discount}%</span>
-                            <span className="text-sm text-muted-foreground line-through">₩{originalPrice.toLocaleString()}</span>
+                            <span className="inline-block rounded-md bg-[var(--discount)] text-white text-xs font-medium px-1.5 py-0.5">{discount}%</span>
+                            <span className="text-sm text-[var(--text04)] line-through">₩{originalPrice.toLocaleString()}</span>
                           </div>
                         )}
                       </div>
                     )}
 
                     <Button 
-                      className="w-full mb-4 bg-gray-800 text-white hover:bg-gray-700"
+                      className="w-full mb-3 bg-[var(--primary01)] text-white hover:bg-[var(--primary02)] rounded-md shadow-[var(--shadow01)] hover:shadow-[var(--shadow02)]"
+                      style={{ transition: 'var(--transition)' }}
                       onClick={() => {
                         if (!currentUser) {
                           // 비회원은 로그인 페이지로 이동
@@ -1090,18 +1101,18 @@ export default function CoachDetailPage({ params }: { params: { id: string } }) 
                       {getEnrollButtonText()}
                     </Button>
 
-                    <div className="space-y-2 text-sm text-muted-foreground">
+                    <div className="space-y-2 text-sm text-[var(--text04)]">
                       <div>• 총 {coach.curriculumItems?.length || 1}개의 커리큘럼 {coach.totalCourseTime ? `(${coach.totalCourseTime})` : '(1시간)'}</div>
                     </div>
                   </CardContent>
                 </Card>
 
                 {/* 코치 정보 */}
-                <Card>
-                  <CardContent className="p-6">
-                    <div className="flex items-center gap-3 mb-4">
+                <Card className="border border-[var(--divider01)] shadow-[var(--shadow01)]">
+                  <CardContent className="p-4">
+                    <div className="flex items-center gap-3 mb-3">
                       {coach.profileImage ? (
-                        <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-primary/20">
+                        <div className="w-12 h-12 rounded-full overflow-hidden border border-[var(--divider01)]">
                           <Image
                             src={coach.profileImage}
                             alt={coach.name}
@@ -1111,28 +1122,29 @@ export default function CoachDetailPage({ params }: { params: { id: string } }) 
                           />
                         </div>
                       ) : (
-                        <div className="w-12 h-12 bg-primary/20 rounded-full flex items-center justify-center">
-                          <span className="font-bold text-primary">{coach.name.charAt(0)}</span>
+                        <div className="w-12 h-12 bg-[var(--primaryOpacity02)] rounded-full flex items-center justify-center">
+                          <span className="font-bold text-[var(--textPrimary)]">{coach.name.charAt(0)}</span>
                         </div>
                       )}
                       <div>
-                        <h4 className="font-bold">{coach.name}</h4>
-                        <p className="text-sm text-muted-foreground">{coach.specialty}</p>
+                        <h4 className="font-semibold text-[var(--text01)]">{coach.name}</h4>
+                        <p className="text-sm text-[var(--text04)]">{coach.specialty}</p>
                       </div>
                     </div>
 
                     <Button 
                       variant="outline" 
-                      className="w-full mb-4"
+                      className="w-full mb-3 rounded-md border-[var(--divider01)] hover:bg-[var(--layer02Hover)]"
+                      style={{ transition: 'var(--transition)' }}
                       onClick={handleKakaoChat}
                     >
                       상담하기
                     </Button>
 
-                    <div className="space-y-2 text-sm">
+                    <div className="space-y-2 text-sm text-[var(--text04)]">
                       <div className="flex items-center gap-2">
-                        <Star className="w-4 h-4 fill-purple-500 text-purple-500" />
-                        <span>{coach.rating > 0 ? coach.rating.toFixed(1) : '0.0'} ({coach.reviews})</span>
+                        <Star className="w-4 h-4 fill-[var(--textYellow)] text-[var(--textYellow)]" />
+                        <span className="text-[var(--text01)]">{coach.rating > 0 ? coach.rating.toFixed(1) : '0.0'} ({coach.reviews})</span>
                       </div>
                       <div>👑 {coach.experience} 경력</div>
                       <div>👥 {coach.students}명의 수강생</div>

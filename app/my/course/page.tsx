@@ -615,7 +615,7 @@ export default function CourseSettingsPage() {
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
           <Loader2 className="w-8 h-8 animate-spin text-primary mx-auto mb-4" />
-          <p className="text-muted-foreground">로딩 중...</p>
+          <p className="text-[var(--text04)]">로딩 중...</p>
         </div>
       </div>
     )
@@ -634,12 +634,12 @@ export default function CourseSettingsPage() {
   ]
 
   return (
-    <div className="p-6">
+    <div className="p-4">
       <div className="mb-8">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold mb-2">강의 수정</h1>
-            <p className="text-muted-foreground">
+            <h1 className="text-xl font-semibold mb-2">강의 수정</h1>
+            <p className="text-[var(--text04)]">
               {hasProfile 
                 ? '강의 정보와 상세 페이지를 수정할 수 있습니다. 관리자 승인 후 공개됩니다.' 
                 : '강의 정보와 상세 페이지를 설정해주세요. 관리자 승인 후 공개됩니다.'}
@@ -652,9 +652,9 @@ export default function CourseSettingsPage() {
       </div>
 
       {coach && !coach.verified && (
-        <Card className="mb-6 border-yellow-500 bg-yellow-50 dark:bg-yellow-900/20">
+        <Card className="mb-6 border-[var(--systemWarning01)] bg-[var(--systemWarning01)]/10">
           <CardContent className="pt-6">
-            <p className="text-sm text-yellow-800 dark:text-yellow-200">
+            <p className="text-sm text-[var(--systemWarning01)]">
               ⚠️ 관리자 승인 대기 중입니다. 승인되기 전까지 프로필이 공개되지 않습니다.
             </p>
           </CardContent>
@@ -674,18 +674,18 @@ export default function CourseSettingsPage() {
                 >
                   {tab.label}
                 </Button>
-                {index < tabs.length - 1 && <span className="mx-2 text-muted-foreground">·</span>}
+                {index < tabs.length - 1 && <span className="mx-2 text-[var(--text04)]">·</span>}
               </div>
             ))}
           </div>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-sm text-[var(--text04)]">
             이 정보는 강의 전문성을 정확하게 전달하기 위해 사용됩니다. 강의 등록에 어려움이 있다면 고객 지원으로 문의해 주세요.
           </p>
         </CardHeader>
         <CardContent>
           {/* a. 게임 정보 */}
           {activeTab === "game-info" && (
-            <div className="space-y-6">
+            <div className="space-y-4">
               <div>
                 <Label htmlFor="game">게임 *</Label>
                 <Select 
@@ -709,7 +709,7 @@ export default function CourseSettingsPage() {
                 </Select>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <Label htmlFor="tier">티어 *</Label>
                   <Select 
@@ -745,16 +745,16 @@ export default function CourseSettingsPage() {
 
               <div>
                 <Label>섬네일</Label>
-                <p className="text-sm text-muted-foreground mb-4">
+                <p className="text-sm text-[var(--text04)] mb-4">
                   강의 상품을 대표할 섬네일을 등록하거나 선택해 주세요. 선택하지 않으면 무작위로 지정됩니다.
                 </p>
                 <div className="w-full max-w-md">
                   <div className="relative">
-                    <label className={`flex items-center justify-center w-full h-48 border-2 border-dashed rounded-lg cursor-pointer hover:border-primary ${uploading ? 'opacity-50 pointer-events-none' : ''}`}>
+                    <label className={`flex items-center justify-center w-full h-48 border-2 border-dashed border-[var(--divider01)] rounded-md cursor-pointer hover:border-[var(--primary01)]/50 ${uploading ? 'opacity-50 pointer-events-none' : ''}`}>
                       {uploadPreview && uploading ? (
                         <div className="relative w-full h-full">
-                          <img src={uploadPreview} alt="업로드 중" className="w-full h-full object-cover rounded-lg opacity-50" />
-                          <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/50 rounded-lg">
+                          <img src={uploadPreview} alt="업로드 중" className="w-full h-full object-cover rounded-md opacity-50" />
+                          <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/50 rounded-md">
                             <Loader2 className="w-8 h-8 text-white animate-spin mb-2" />
                             <span className="text-white text-sm">{Math.round(uploadProgress)}%</span>
                             <div className="w-3/4 h-2 bg-white/20 rounded-full mt-2">
@@ -767,7 +767,7 @@ export default function CourseSettingsPage() {
                         </div>
                       ) : gameInfo.thumbnails[0] ? (
                         <>
-                          <img src={gameInfo.thumbnails[0]} alt="섬네일" className="w-full h-full object-cover rounded-lg" />
+                          <img src={gameInfo.thumbnails[0]} alt="섬네일" className="w-full h-full object-cover rounded-md" />
                           <div className="absolute top-2 left-2 bg-primary text-white rounded-full p-1">
                             <Check className="w-4 h-4" />
                           </div>
@@ -789,8 +789,8 @@ export default function CourseSettingsPage() {
                         </>
                       ) : (
                         <div className="text-center p-4">
-                          <Upload className="w-12 h-12 mx-auto mb-2 text-muted-foreground" />
-                          <span className="text-sm text-muted-foreground">이미지 업로드</span>
+                          <Upload className="w-12 h-12 mx-auto mb-2 text-[var(--text04)]" />
+                          <span className="text-sm text-[var(--text04)]">이미지 업로드</span>
                         </div>
                       )}
                       <input
@@ -803,7 +803,7 @@ export default function CourseSettingsPage() {
                     </label>
                   </div>
                 </div>
-                <div className="mt-4 text-xs text-muted-foreground space-y-1">
+                <div className="mt-4 text-xs text-[var(--text04)] space-y-1">
                   <p>• 권장 사이즈: 1,424 x 1,068px (4:3 비율)</p>
                   <p>• 등록 이미지는 이용약관에 따라 광고 소재로 활용될 수 있음.</p>
                   <p>• 저작권 침해 이미지는 사용 불가.</p>
@@ -873,7 +873,7 @@ export default function CourseSettingsPage() {
                       </Button>
                     </div>
                     <div className="relative mb-4">
-                      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
+                      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-[var(--text04)] w-4 h-4" />
                       <Input
                         placeholder="Q 요원 검색"
                         className="pl-10"
@@ -901,7 +901,7 @@ export default function CourseSettingsPage() {
                 </>
               )}
 
-              <Card className="bg-yellow-50 dark:bg-yellow-900/20 border-yellow-300">
+              <Card className="bg-[var(--systemWarning01)]/10 border-[var(--systemWarning01)]">
                 <CardContent className="pt-6">
                   <p className="font-semibold mb-2">TIP!</p>
                   <p className="text-sm">강의와 관련된 상세 정보는 필수로 선택해 주셔야합니다.</p>
@@ -913,7 +913,7 @@ export default function CourseSettingsPage() {
 
           {/* b. 강의 유형 */}
           {activeTab === "course-type" && (
-            <div className="space-y-6">
+            <div className="space-y-4">
               <div>
                 <Label>유형</Label>
                 <Select value={courseType.type} onValueChange={(value) => setCourseType({ ...courseType, type: value })}>
@@ -932,12 +932,12 @@ export default function CourseSettingsPage() {
 
               <div>
                 <Label>보장성</Label>
-                <p className="text-sm text-muted-foreground mb-4">
+                <p className="text-sm text-[var(--text04)] mb-4">
                   아래와 같이 보장되는 사항이 있을 시 선택해 주세요. (선택)
                 </p>
-                <Card className="mb-4 border-red-500 bg-red-50 dark:bg-red-900/20">
+                <Card className="mb-4 border-[var(--systemWarning01)] bg-[var(--systemWarning01)]/10">
                   <CardContent className="pt-6">
-                    <p className="text-sm text-red-800 dark:text-red-200 flex items-center gap-2">
+                    <p className="text-sm text-[var(--systemWarning01)] flex items-center gap-2">
                       <span>⚠️</span>
                       보장성 강의는 보장이 이루어지지 않을 경우, 전액 환불 또는 Gigs의 내부 규정에 따른 조치가 취해질 수 있습니다.
                     </p>
@@ -968,7 +968,7 @@ export default function CourseSettingsPage() {
 
           {/* c. 강의 요약 */}
           {activeTab === "course-summary" && (
-            <div className="space-y-6">
+            <div className="space-y-4">
               <Card className="mb-4 border-red-500 bg-red-50 dark:bg-red-900/20">
                 <CardContent className="pt-6">
                   <p className="text-sm text-red-800 dark:text-red-200 flex items-center gap-2">
@@ -987,10 +987,10 @@ export default function CourseSettingsPage() {
                   placeholder="예: 에임, 피지컬 강의 국내 No.1"
                   maxLength={100}
                 />
-                <p className="text-xs text-muted-foreground mt-1">
+                <p className="text-xs text-[var(--text04)] mt-1">
                   {courseSummary.headline.length} / 100
                 </p>
-                <p className="text-xs text-muted-foreground">
+                <p className="text-xs text-[var(--text04)]">
                   최소 10자 이상 입력해 주세요.
                 </p>
               </div>
@@ -1023,7 +1023,7 @@ export default function CourseSettingsPage() {
                         </Button>
                       )}
                     </div>
-                    <p className="text-xs text-muted-foreground">
+                    <p className="text-xs text-[var(--text04)]">
                       {target.length} / 60 - 최소 10자 이상 입력해 주세요.
                     </p>
                   </div>
@@ -1067,7 +1067,7 @@ export default function CourseSettingsPage() {
                         삭제
                       </Button>
                     </div>
-                    <p className="text-xs text-muted-foreground">
+                    <p className="text-xs text-[var(--text04)]">
                       {effect.length} / 60 - 최소 10자 이상 입력해 주세요.
                     </p>
                   </div>
@@ -1089,11 +1089,11 @@ export default function CourseSettingsPage() {
 
           {/* d. 커리큘럼 */}
           {activeTab === "curriculum" && (
-            <div className="space-y-6">
+            <div className="space-y-4">
               <div>
                 <Label>커리큘럼</Label>
                 {curriculum.length > 0 && (
-                  <p className="text-sm text-green-600 mb-4 flex items-center gap-2">
+                  <p className="text-sm text-[var(--systemSuccess01)] mb-4 flex items-center gap-2">
                     <Check className="w-4 h-4" />
                     총 {curriculum.reduce((total, item) => {
                       const match = item.duration.match(/(\d+)/)
@@ -1107,10 +1107,10 @@ export default function CourseSettingsPage() {
                       <CardContent className="pt-6">
                         <div className="flex items-start justify-between mb-4">
                           <div className="flex items-center gap-2">
-                            <div className="text-muted-foreground">⋮⋮</div>
+                            <div className="text-[var(--text04)]">⋮⋮</div>
                             <div>
                               <p className="font-semibold">{item.title}</p>
-                              <p className="text-sm text-muted-foreground">{item.duration}</p>
+                              <p className="text-sm text-[var(--text04)]">{item.duration}</p>
                             </div>
                           </div>
                           <div className="flex gap-2">
@@ -1158,7 +1158,7 @@ export default function CourseSettingsPage() {
 
           {/* e. 강의 상세 */}
           {activeTab === "course-detail" && (
-            <div className="space-y-6">
+            <div className="space-y-4">
               <div>
                 <Label htmlFor="price">원가 (원) *</Label>
                 <Input
@@ -1177,14 +1177,14 @@ export default function CourseSettingsPage() {
                   }}
                   placeholder="50000"
                 />
-                <p className="text-xs text-muted-foreground mt-1">
+                <p className="text-xs text-[var(--text04)] mt-1">
                   원가를 숫자로 입력하세요 (예: 50000). 자동으로 포맷팅됩니다.
                 </p>
               </div>
 
               <div>
                 <Label>할인 설정 (선택)</Label>
-                <p className="text-sm text-muted-foreground mb-4">
+                <p className="text-sm text-[var(--text04)] mb-4">
                   할인율을 설정하면 코치 목록에서 할인 배지가 표시됩니다.
                 </p>
                 <div className="flex gap-2">
@@ -1216,22 +1216,22 @@ export default function CourseSettingsPage() {
                   )}
                 </div>
                 {courseDetail.discount && courseDetail.price && (
-                  <div className="mt-4 p-4 bg-muted rounded-lg">
-                    <p className="text-sm text-muted-foreground mb-1">할인 가격 미리보기</p>
+                  <div className="mt-4 p-4 bg-white border border-[var(--divider01)] rounded-md">
+                    <p className="text-sm text-[var(--text04)] mb-1">할인 가격 미리보기</p>
                     <div className="flex items-center gap-2">
                       <span className="text-sm font-medium">원가:</span>
-                      <span className="text-xs line-through text-muted-foreground">
+                      <span className="text-xs line-through text-[var(--text04)]">
                         ₩{courseDetail.price.toLocaleString()}
                       </span>
                       <span className="text-sm font-medium">할인가:</span>
-                      <span className="text-lg font-bold text-green-600">
+                      <span className="text-lg font-bold text-[var(--systemSuccess01)]">
                         ₩{Math.round(courseDetail.price * (1 - courseDetail.discount / 100)).toLocaleString()}
                       </span>
                       <Badge variant="destructive" className="text-xs">
                         {courseDetail.discount}% 할인
                       </Badge>
                     </div>
-                    <p className="text-xs text-muted-foreground mt-2">
+                    <p className="text-xs text-[var(--text04)] mt-2">
                       할인가 ₩{Math.round(courseDetail.price * (1 - courseDetail.discount / 100)).toLocaleString()}가 코치 목록에 표시됩니다.
                     </p>
                   </div>
@@ -1247,7 +1247,7 @@ export default function CourseSettingsPage() {
                   placeholder="예: [인기] 수강생 200+ 이 경험한 에임실력 상승 🔥"
                   maxLength={100}
                 />
-                <p className="text-xs text-muted-foreground mt-1">
+                <p className="text-xs text-[var(--text04)] mt-1">
                   {courseDetail.title.length} / 100
                 </p>
               </div>
@@ -1262,7 +1262,7 @@ export default function CourseSettingsPage() {
                   rows={10}
                   maxLength={500}
                 />
-                <p className="text-xs text-muted-foreground mt-1">
+                <p className="text-xs text-[var(--text04)] mt-1">
                   {courseDetail.content.length} / 500
                 </p>
               </div>
@@ -1285,11 +1285,11 @@ export default function CourseSettingsPage() {
               <div>
                 <Label>강의를 표현할 수 있는 이미지를 등록해 주세요.</Label>
                 <div className="flex gap-4">
-                  <label className={`relative flex items-center justify-center w-32 h-32 border-2 border-dashed rounded-lg cursor-pointer hover:border-primary ${uploading ? 'opacity-50 pointer-events-none' : ''}`}>
+                  <label className={`relative flex items-center justify-center w-32 h-32 border-2 border-dashed border-[var(--divider01)] rounded-md cursor-pointer hover:border-[var(--primary01)]/50 ${uploading ? 'opacity-50 pointer-events-none' : ''}`}>
                     {uploadPreview && uploading ? (
                       <div className="relative w-full h-full">
-                        <img src={uploadPreview} alt="업로드 중" className="w-full h-full object-cover rounded-lg opacity-50" />
-                        <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/50 rounded-lg">
+                        <img src={uploadPreview} alt="업로드 중" className="w-full h-full object-cover rounded-md opacity-50" />
+                        <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/50 rounded-md">
                           <Loader2 className="w-6 h-6 text-white animate-spin mb-1" />
                           <span className="text-white text-xs">{Math.round(uploadProgress)}%</span>
                           <div className="w-2/3 h-1 bg-white/20 rounded-full mt-1">
@@ -1302,7 +1302,7 @@ export default function CourseSettingsPage() {
                       </div>
                     ) : courseDetail.image ? (
                       <>
-                        <img src={courseDetail.image} alt="미리보기" className="w-full h-full object-cover rounded-lg" />
+                        <img src={courseDetail.image} alt="미리보기" className="w-full h-full object-cover rounded-md" />
                         <button
                           type="button"
                           onClick={async () => {
@@ -1320,8 +1320,8 @@ export default function CourseSettingsPage() {
                       </>
                     ) : (
                       <div className="text-center">
-                        <Plus className="w-8 h-8 mx-auto mb-2 text-muted-foreground" />
-                        <span className="text-xs text-muted-foreground">이미지 등록</span>
+                        <Plus className="w-8 h-8 mx-auto mb-2 text-[var(--text04)]" />
+                        <span className="text-xs text-[var(--text04)]">이미지 등록</span>
                       </div>
                     )}
                     <input
@@ -1333,7 +1333,7 @@ export default function CourseSettingsPage() {
                     />
                   </label>
                 </div>
-                <div className="mt-4 text-xs text-muted-foreground space-y-1">
+                <div className="mt-4 text-xs text-[var(--text04)] space-y-1">
                   <p>• 이미지 권장 사이즈: 1,424 x 1,068px (4:3 비율)</p>
                   <p>• 등록하신 이미지는 이용약관에 따라 광고 소재로 활용될 수 있습니다.</p>
                   <p>• 저작권 침해 (무단복제, 도용) 이미지는 사용이 불가합니다.</p>
@@ -1396,10 +1396,10 @@ export default function CourseSettingsPage() {
                     </Badge>
                   ))}
                 </div>
-                <p className="text-xs text-muted-foreground">
+                <p className="text-xs text-[var(--text04)]">
                   {courseDetail.keywords.length} / 6
                 </p>
-                <Card className="mt-4 bg-yellow-50 dark:bg-yellow-900/20 border-yellow-300">
+                <Card className="mt-4 bg-[var(--systemWarning01)]/10 border-[var(--systemWarning01)]">
                   <CardContent className="pt-6">
                     <p className="font-semibold mb-2">TIP!</p>
                     <p className="text-sm">6자까지 입력할 수 있으며, 특수문자 및 이모지는 입력할 수 없습니다.</p>
@@ -1410,7 +1410,7 @@ export default function CourseSettingsPage() {
             </div>
           )}
 
-          <div className="flex items-center justify-between mt-8 pt-6 border-t">
+          <div className="flex items-center justify-between mt-8 pt-6 border-t border-[var(--divider01)]">
             <Button
               type="button"
               variant="outline"

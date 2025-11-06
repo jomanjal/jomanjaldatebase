@@ -5,6 +5,7 @@ import { Users, MessageSquare, ListChecks, TrendingUp, UsersRound, Star, Refresh
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { useEffect, useState } from "react"
+import { checkAuth } from "@/lib/auth"
 
 interface DashboardStats {
   totalCoaches: number
@@ -22,6 +23,15 @@ interface DashboardStats {
 export default function AdminDashboard() {
   const [stats, setStats] = useState<DashboardStats | null>(null)
   const [loading, setLoading] = useState(true)
+  const [currentUser, setCurrentUser] = useState<any>(null)
+
+  useEffect(() => {
+    async function getUser() {
+      const user = await checkAuth()
+      setCurrentUser(user)
+    }
+    getUser()
+  }, [])
 
   const fetchStats = async () => {
     setLoading(true)
@@ -52,39 +62,41 @@ export default function AdminDashboard() {
       title: "총 코치 수", 
       value: stats.totalCoaches.toString(), 
       icon: Users, 
-      color: "text-blue-500",
-      bgColor: "bg-blue-50 dark:bg-blue-950"
+      iconBg: "bg-[var(--primaryOpacity01)]",
+      iconColor: "text-[var(--primary01)]"
     },
     { 
       title: "총 리뷰 수", 
       value: stats.totalReviews.toString(), 
       icon: MessageSquare, 
-      color: "text-green-500",
-      bgColor: "bg-green-50 dark:bg-green-950"
+      iconBg: "bg-[var(--primaryOpacity01)]",
+      iconColor: "text-[var(--systemSuccess01)]"
     },
     { 
       title: "웨이팅 리스트", 
       value: stats.totalWaitlist.toString(), 
       icon: ListChecks, 
-      color: "text-orange-500",
-      bgColor: "bg-orange-50 dark:bg-orange-950"
+      iconBg: "bg-[var(--primaryOpacity01)]",
+      iconColor: "text-[var(--systemWarning01)]"
     },
     { 
       title: "평균 평점", 
       value: stats.averageRating, 
       icon: Star, 
-      color: "text-purple-500",
-      bgColor: "bg-purple-50 dark:bg-purple-950"
+      iconBg: "bg-[var(--primaryOpacity01)]",
+      iconColor: "text-[var(--textYellow)]"
     },
   ] : []
 
   return (
-    <div className="p-8 space-y-8">
-      {/* 헤더 */}
+    <div className="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+      {/* 환영 메시지 */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold">관리자 대시보드</h1>
-          <p className="text-muted-foreground mt-1">
+          <h1 className="text-xl font-semibold mb-1 text-[var(--text01)]">
+            {currentUser?.username || "관리자"}님, 안녕하세요.
+          </h1>
+          <p className="text-[var(--text04)] text-xs">
             GameCoach.AI 통합 관리 패널
           </p>
         </div>
@@ -99,35 +111,35 @@ export default function AdminDashboard() {
       </div>
 
       {/* 통계 카드 */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
         {loading ? (
           Array.from({ length: 4 }).map((_, i) => (
-            <Card key={i} className="relative overflow-hidden">
+            <Card key={i} className="relative overflow-hidden bg-[var(--layer02)]">
               <CardHeader className="flex flex-row items-center justify-between pb-2">
-                <CardTitle className="text-sm font-medium text-muted-foreground">
-                  <div className="h-4 w-20 bg-muted animate-pulse rounded"></div>
+                <CardTitle className="text-xs font-medium text-[var(--text04)]">
+                  <div className="h-4 w-20 bg-[var(--layer01)] animate-pulse rounded"></div>
                 </CardTitle>
-                <div className="p-2 rounded-lg bg-muted animate-pulse w-9 h-9"></div>
+                <div className="p-2 rounded-lg bg-[var(--layer01)] animate-pulse w-9 h-9"></div>
               </CardHeader>
               <CardContent>
-                <div className="h-8 w-16 bg-muted animate-pulse rounded"></div>
+                <div className="h-8 w-16 bg-[var(--layer01)] animate-pulse rounded"></div>
               </CardContent>
             </Card>
           ))
         ) : (
           statCards.map((stat) => (
-          <Card key={stat.title} className="relative overflow-hidden">
+          <Card key={stat.title} className="relative overflow-hidden bg-[var(--layer02)]">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">
+              <CardTitle className="text-xs font-medium text-[var(--text04)]">
                 {stat.title}
               </CardTitle>
-              <div className={`p-2 rounded-lg ${stat.bgColor}`}>
-                <stat.icon className={`h-5 w-5 ${stat.color}`} />
+              <div className={`p-2 rounded-full ${stat.iconBg}`}>
+                <stat.icon className={`h-5 w-5 ${stat.iconColor}`} />
               </div>
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold">{stat.value}</div>
-              <p className="text-xs text-muted-foreground mt-1">
+              <div className="text-xl font-bold text-[var(--text01)]">{stat.value}</div>
+              <p className="text-xs text-[var(--text04)] mt-1">
                 지난주 대비 +12%
               </p>
             </CardContent>
@@ -137,38 +149,38 @@ export default function AdminDashboard() {
       </div>
 
       {/* 최근 활동 & 빠른 액세스 */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
+        <Card className="bg-[var(--layer02)]">
           <CardHeader>
-            <CardTitle>최근 활동</CardTitle>
+            <CardTitle className="text-lg text-[var(--text01)]">최근 활동</CardTitle>
           </CardHeader>
           <CardContent>
             {loading ? (
-              <div className="space-y-4">
+              <div className="space-y-3">
                 {Array.from({ length: 3 }).map((_, i) => (
-                  <div key={i} className="flex items-start gap-4 pb-4 border-b last:border-0">
-                    <div className="p-2 bg-muted animate-pulse rounded-lg w-8 h-8"></div>
+                  <div key={i} className="flex items-start gap-3 pb-3 border-b border-[var(--divider01)] last:border-0">
+                    <div className="p-2 bg-[var(--layer01)] animate-pulse rounded-lg w-8 h-8"></div>
                     <div className="flex-1">
-                      <div className="h-4 w-20 bg-muted animate-pulse rounded mb-2"></div>
-                      <div className="h-3 w-32 bg-muted animate-pulse rounded mb-1"></div>
-                      <div className="h-3 w-16 bg-muted animate-pulse rounded"></div>
+                      <div className="h-4 w-20 bg-[var(--layer01)] animate-pulse rounded mb-2"></div>
+                      <div className="h-3 w-32 bg-[var(--layer01)] animate-pulse rounded mb-1"></div>
+                      <div className="h-3 w-16 bg-[var(--layer01)] animate-pulse rounded"></div>
                     </div>
                   </div>
                 ))}
               </div>
             ) : stats && stats.recentActivities.length > 0 ? (
-              <div className="space-y-4">
+              <div className="space-y-3">
                 {stats.recentActivities.map((activity, index) => (
-                <div key={index} className="flex items-start gap-4 pb-4 border-b last:border-0">
-                  <div className="p-2 bg-primary/10 rounded-lg">
-                    <UsersRound className="w-4 h-4 text-primary" />
+                <div key={index} className="flex items-start gap-3 pb-3 border-b border-[var(--divider01)] last:border-0">
+                  <div className="p-2 bg-[var(--primaryOpacity01)] rounded-lg">
+                    <UsersRound className="w-4 h-4 text-[var(--textPrimary)]" />
                   </div>
                   <div className="flex-1">
-                    <p className="font-medium text-sm">{activity.name}</p>
-                    <p className="text-xs text-muted-foreground">
+                    <p className="font-medium text-xs text-[var(--text01)]">{activity.name}</p>
+                    <p className="text-xs text-[var(--text04)]">
                       {activity.type} · {activity.game}
                     </p>
-                    <p className="text-xs text-muted-foreground mt-1">
+                    <p className="text-xs text-[var(--text04)] mt-1">
                       {activity.timeAgo}
                     </p>
                   </div>
@@ -177,15 +189,15 @@ export default function AdminDashboard() {
               </div>
             ) : (
               <div className="text-center py-8">
-                <p className="text-muted-foreground">최근 활동이 없습니다.</p>
+                <p className="text-[var(--text04)]">최근 활동이 없습니다.</p>
               </div>
             )}
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="bg-[var(--layer02)]">
           <CardHeader>
-            <CardTitle>빠른 액세스</CardTitle>
+            <CardTitle className="text-lg text-[var(--text01)]">빠른 액세스</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
@@ -218,23 +230,23 @@ export default function AdminDashboard() {
       </div>
 
       {/* 성능 지표 */}
-      <Card>
+      <Card className="bg-[var(--layer02)]">
         <CardHeader>
-          <CardTitle>주간 성능 지표</CardTitle>
+          <CardTitle className="text-lg text-[var(--text01)]">주간 성능 지표</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="text-center p-4 bg-muted rounded-lg">
-              <div className="text-2xl font-bold text-primary">68%</div>
-              <div className="text-sm text-muted-foreground mt-1">전환율</div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <div className="text-center p-3 bg-[var(--layer01)] rounded-lg">
+              <div className="text-xl font-bold text-[var(--textPrimary)]">68%</div>
+              <div className="text-xs text-[var(--text04)] mt-1">전환율</div>
             </div>
-            <div className="text-center p-4 bg-muted rounded-lg">
-              <div className="text-2xl font-bold text-green-600">92%</div>
-              <div className="text-sm text-muted-foreground mt-1">만족도</div>
+            <div className="text-center p-3 bg-[var(--layer01)] rounded-lg">
+              <div className="text-xl font-bold text-[var(--systemSuccess01)]">92%</div>
+              <div className="text-xs text-[var(--text04)] mt-1">만족도</div>
             </div>
-            <div className="text-center p-4 bg-muted rounded-lg">
-              <div className="text-2xl font-bold text-blue-600">24시간</div>
-              <div className="text-sm text-muted-foreground mt-1">평균 응답 시간</div>
+            <div className="text-center p-3 bg-[var(--layer01)] rounded-lg">
+              <div className="text-xl font-bold text-[var(--primary01)]">24시간</div>
+              <div className="text-xs text-[var(--text04)] mt-1">평균 응답 시간</div>
             </div>
           </div>
         </CardContent>

@@ -153,13 +153,13 @@ export default function MyStudentsPage() {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'pending':
-        return <Badge variant="outline" className="bg-yellow-50 text-yellow-700 border-yellow-300">대기 중</Badge>
+        return <Badge variant="outline" className="bg-[var(--systemWarning01)]/10 text-[var(--systemWarning01)] border-[var(--systemWarning01)]">대기 중</Badge>
       case 'approved':
-        return <Badge className="bg-green-500">승인됨</Badge>
+        return <Badge className="bg-[var(--systemSuccess01)]">승인됨</Badge>
       case 'rejected':
         return <Badge variant="destructive">거절됨</Badge>
       case 'completed':
-        return <Badge className="bg-blue-500">완료</Badge>
+        return <Badge className="bg-[var(--primary01)]">완료</Badge>
       case 'cancelled':
         return <Badge variant="outline">취소됨</Badge>
       default:
@@ -206,19 +206,19 @@ export default function MyStudentsPage() {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
-          <Loader2 className="w-8 h-8 animate-spin text-primary mx-auto mb-4" />
-          <p className="text-muted-foreground">로딩 중...</p>
+          <Loader2 className="w-8 h-8 animate-spin text-[var(--primary01)] mx-auto mb-4" />
+          <p className="text-[var(--text04)]">로딩 중...</p>
         </div>
       </div>
     )
   }
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-4 space-y-4">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold mb-2">수강생 관리</h1>
-          <p className="text-muted-foreground">수강 신청을 승인하고 수강생을 관리할 수 있습니다.</p>
+          <h1 className="text-xl font-semibold mb-2">수강생 관리</h1>
+          <p className="text-[var(--text04)] text-xs">수강 신청을 승인하고 수강생을 관리할 수 있습니다.</p>
         </div>
         <div className="flex items-center gap-2">
           <Select value={filterStatus} onValueChange={setFilterStatus}>
@@ -240,23 +240,23 @@ export default function MyStudentsPage() {
       {enrollments.length === 0 ? (
         <Card>
           <CardContent className="py-12 text-center">
-            <p className="text-muted-foreground">수강 신청이 없습니다.</p>
+            <p className="text-[var(--text04)]">수강 신청이 없습니다.</p>
           </CardContent>
         </Card>
       ) : (
         <div className="space-y-4">
           {enrollments.map((enrollment) => (
             <Card key={enrollment.id}>
-              <CardContent className="p-6">
+              <CardContent className="p-3">
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
                     <div className="flex items-center gap-3 mb-3">
                       <h3 className="text-lg font-semibold">{enrollment.userName}</h3>
                       {getStatusBadge(enrollment.status)}
                     </div>
-                    <p className="text-sm text-muted-foreground mb-2">{enrollment.userEmail}</p>
+                    <p className="text-xs text-[var(--text04)] mb-2">{enrollment.userEmail}</p>
                     
-                    <div className="flex items-center gap-4 text-sm text-muted-foreground mb-4">
+                    <div className="flex items-center gap-4 text-xs text-[var(--text04)] mb-4">
                       <div className="flex items-center gap-1">
                         <Calendar className="w-4 h-4" />
                         <span>신청일: {format(new Date(enrollment.createdAt), 'yyyy년 MM월 dd일', { locale: ko })}</span>
@@ -284,9 +284,9 @@ export default function MyStudentsPage() {
                       }
 
                       return (
-                        <div className="mb-3 p-3 bg-muted rounded-lg">
+                        <div className="mb-3 p-3 bg-muted rounded-md">
                           <div className="flex items-center gap-2 mb-1">
-                            <MessageSquare className="w-4 h-4 text-muted-foreground" />
+                            <MessageSquare className="w-4 h-4 text-[var(--text04)]" />
                             <span className="text-sm font-medium">
                               {isGameInfo ? '학생 게임 정보' : '수강생 메시지'}
                             </span>
@@ -315,7 +315,7 @@ export default function MyStudentsPage() {
                     })()}
 
                     {enrollment.coachMessage && (
-                      <div className="mb-3 p-3 bg-primary/10 rounded-lg">
+                      <div className="mb-3 p-3 bg-primary/10 rounded-md">
                         <div className="flex items-center gap-2 mb-1">
                           <User className="w-4 h-4 text-primary" />
                           <span className="text-sm font-medium text-primary">내 답변</span>
@@ -386,7 +386,7 @@ export default function MyStudentsPage() {
                 rows={4}
                 maxLength={500}
               />
-              <p className="text-xs text-muted-foreground mt-1">
+              <p className="text-xs text-[var(--text04)] mt-1">
                 {coachMessage.length}/500자
               </p>
             </div>

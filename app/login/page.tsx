@@ -35,12 +35,12 @@ export default function LoginPage() {
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
           <div className="flex items-center justify-center space-x-2 mb-4">
-            <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center">
+            <div className="w-8 h-8 bg-[var(--primary01)] rounded-md flex items-center justify-center">
               <span className="text-white font-bold text-sm">G</span>
             </div>
             <span className="text-xl font-bold text-foreground">GameCoach.AI</span>
           </div>
-          <CardTitle className="text-2xl">로그인</CardTitle>
+          <CardTitle className="text-xl">로그인</CardTitle>
           <CardDescription>
             계정에 로그인하여 게임 코칭을 시작하세요
           </CardDescription>
@@ -48,7 +48,7 @@ export default function LoginPage() {
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
             {error && (
-              <div className="bg-red-50 text-red-600 text-sm p-3 rounded-md border border-red-200">
+              <div className="bg-[var(--systemWarning01)]/10 text-[var(--systemWarning01)] text-sm p-3 rounded-md border border-[var(--systemWarning01)]/30">
                 {error}
               </div>
             )}
@@ -81,13 +81,13 @@ export default function LoginPage() {
           </form>
           
           <div className="mt-6 text-center space-y-2">
-            <p className="text-sm text-muted-foreground">
+            <p className="text-sm text-[var(--text04)]">
               계정이 없으신가요?{" "}
-              <Link href="/signup" className="text-primary hover:underline">
+              <Link href="/signup" className="text-[var(--primary01)] hover:underline">
                 회원가입
               </Link>
             </p>
-            <Link href="/" className="text-sm text-muted-foreground hover:underline">
+            <Link href="/" className="text-sm text-[var(--text04)] hover:underline">
               홈으로 돌아가기
             </Link>
           </div>

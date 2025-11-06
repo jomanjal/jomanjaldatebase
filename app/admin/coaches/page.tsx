@@ -230,12 +230,12 @@ export default function CoachesManagementPage() {
   const filteredCoaches = coaches
 
   return (
-    <div className="p-8 space-y-8">
+    <div className="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
       {/* 헤더 */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold">코치 관리</h1>
-          <p className="text-muted-foreground mt-1">
+          <h1 className="text-xl font-semibold mb-1 text-[var(--text01)]">코치 관리</h1>
+          <p className="text-[var(--text04)] text-xs">
             등록된 코치를 관리하고 새로운 코치를 추가할 수 있습니다.
           </p>
         </div>
@@ -252,11 +252,11 @@ export default function CoachesManagementPage() {
       </div>
 
       {/* 검색 및 필터 */}
-      <Card>
+      <Card className="bg-[var(--layer02)] ">
         <CardContent className="pt-6">
           <div className="flex flex-col md:flex-row gap-4">
             <div className="flex-1 relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-[var(--text04)] w-4 h-4" />
               <Input
                 placeholder="코치 이름 또는 게임으로 검색... (최대 100자)"
                 value={searchQuery}
@@ -286,53 +286,53 @@ export default function CoachesManagementPage() {
       </Card>
 
       {/* 통계 */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card>
-          <CardContent className="pt-6">
-            <div className="text-2xl font-bold">{filteredCoaches.length}</div>
-            <div className="text-sm text-muted-foreground mt-1">총 코치 수</div>
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
+        <Card className="bg-[var(--layer02)]  ">
+          <CardContent className="p-3">
+            <div className="text-xl font-bold text-[var(--text01)]">{filteredCoaches.length}</div>
+            <div className="text-xs text-[var(--text04)] mt-1">총 코치 수</div>
           </CardContent>
         </Card>
-        <Card>
-          <CardContent className="pt-6">
-            <div className="text-2xl font-bold">
+        <Card className="bg-[var(--layer02)]  ">
+          <CardContent className="p-3">
+            <div className="text-xl font-bold text-[var(--text01)]">
               {filteredCoaches.reduce((sum, c) => sum + (c.students || 0), 0)}
             </div>
-            <div className="text-sm text-muted-foreground mt-1">총 수강생</div>
+            <div className="text-xs text-[var(--text04)] mt-1">총 수강생</div>
           </CardContent>
         </Card>
-        <Card>
-          <CardContent className="pt-6">
-            <div className="text-2xl font-bold">
+        <Card className="bg-[var(--layer02)]  ">
+          <CardContent className="p-3">
+            <div className="text-xl font-bold text-[var(--text01)]">
               {(filteredCoaches.reduce((sum, c) => sum + c.rating, 0) / filteredCoaches.length || 0).toFixed(1)}
             </div>
-            <div className="text-sm text-muted-foreground mt-1">평균 평점</div>
+            <div className="text-xs text-[var(--text04)] mt-1">평균 평점</div>
           </CardContent>
         </Card>
-        <Card>
-          <CardContent className="pt-6">
-            <div className="text-2xl font-bold">
+        <Card className="bg-[var(--layer02)]  ">
+          <CardContent className="p-3">
+            <div className="text-xl font-bold text-[var(--text01)]">
               {filteredCoaches.reduce((sum, c) => sum + c.reviews, 0)}
             </div>
-            <div className="text-sm text-muted-foreground mt-1">총 리뷰 수</div>
+            <div className="text-xs text-[var(--text04)] mt-1">총 리뷰 수</div>
           </CardContent>
         </Card>
       </div>
 
       {/* 코치 목록 */}
-      <Card>
+      <Card className="bg-[var(--layer02)] ">
         <CardHeader>
-          <CardTitle>코치 목록</CardTitle>
+          <CardTitle className="text-lg text-[var(--text01)]">코치 목록</CardTitle>
         </CardHeader>
         <CardContent>
           {loading ? (
             <div className="text-center py-12">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
-              <p className="text-muted-foreground mt-4">로딩 중...</p>
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[var(--primary01)] mx-auto"></div>
+              <p className="text-[var(--text04)] mt-4">로딩 중...</p>
             </div>
           ) : filteredCoaches.length === 0 ? (
             <div className="text-center py-12">
-              <p className="text-muted-foreground">검색 결과가 없습니다.</p>
+              <p className="text-[var(--text04)]">검색 결과가 없습니다.</p>
             </div>
           ) : (
             <div className="overflow-x-auto">
@@ -358,43 +358,43 @@ export default function CoachesManagementPage() {
                       </TableCell>
                       <TableCell>
                         <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-                            <span className="text-sm font-bold text-primary">
+                          <div className="w-10 h-10 rounded-full bg-[var(--primaryOpacity01)] flex items-center justify-center">
+                            <span className="text-xs font-bold text-[var(--textPrimary)]">
                               {coach.name.charAt(0)}
                             </span>
                           </div>
                           <div>
-                            <div className="font-medium">{coach.name}</div>
-                            <div className="text-xs text-muted-foreground">
+                            <div className="text-sm font-medium text-[var(--text01)]">{coach.name}</div>
+                            <div className="text-xs text-[var(--text04)]">
                               {coach.experience} 경력
                             </div>
                           </div>
                         </div>
                       </TableCell>
                       <TableCell>
-                        <Badge variant="outline">{coach.specialty}</Badge>
+                        <Badge variant="outline" className="border-[var(--divider01)] text-[var(--text01)]">{coach.specialty}</Badge>
                       </TableCell>
-                      <TableCell>{coach.tier}</TableCell>
+                      <TableCell className="text-[var(--text01)]">{coach.tier}</TableCell>
                       <TableCell>
                         <div className="flex items-center gap-1">
-                          <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-                          <span className="font-medium">{coach.rating.toFixed(1)}</span>
+                          <Star className="w-4 h-4 fill-[var(--textYellow)] text-[var(--textYellow)]" />
+                          <span className="font-medium text-[var(--text01)]">{coach.rating.toFixed(1)}</span>
                         </div>
                       </TableCell>
-                      <TableCell>{coach.students || 0}명</TableCell>
-                      <TableCell>{coach.reviews}건</TableCell>
+                      <TableCell className="text-[var(--text01)]">{coach.students || 0}명</TableCell>
+                      <TableCell className="text-[var(--text01)]">{coach.reviews}건</TableCell>
                       <TableCell>
                         <div className="flex flex-col gap-1">
                           {coach.verified ? (
-                            <Badge className="bg-green-500">인증됨</Badge>
+                            <Badge className="bg-[var(--systemSuccess01)] text-white">인증됨</Badge>
                           ) : (
-                            <Badge variant="outline">미인증</Badge>
+                            <Badge variant="outline" className="text-[var(--text04)] border-[var(--divider01)]">미인증</Badge>
                           )}
                           {coach.active !== undefined && (
                             coach.active ? (
-                              <Badge className="bg-blue-500">활성</Badge>
+                              <Badge className="bg-[var(--primary01)] text-white">활성</Badge>
                             ) : (
-                              <Badge variant="outline" className="bg-gray-100">비활성</Badge>
+                              <Badge variant="outline" className="bg-[var(--layer01)] text-[var(--text04)] border-[var(--divider01)]">비활성</Badge>
                             )
                           )}
                         </div>
@@ -502,7 +502,7 @@ export default function CoachesManagementPage() {
                 }}
                 placeholder="50000"
               />
-              <p className="text-xs text-muted-foreground mt-1">
+              <p className="text-xs text-[var(--text04)] mt-1">
                 원가를 숫자로 입력하세요 (예: 50000). 자동으로 포맷팅됩니다.
               </p>
             </div>
@@ -635,7 +635,7 @@ export default function CoachesManagementPage() {
                 }}
                 placeholder="50000"
               />
-              <p className="text-xs text-muted-foreground mt-1">
+              <p className="text-xs text-[var(--text04)] mt-1">
                 원가를 숫자로 입력하세요 (예: 50000). 자동으로 포맷팅됩니다.
               </p>
             </div>

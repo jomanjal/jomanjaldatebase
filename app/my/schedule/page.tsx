@@ -148,18 +148,18 @@ export default function SchedulePage() {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
-          <Loader2 className="w-12 h-12 animate-spin text-primary mx-auto mb-4" />
-          <p className="text-muted-foreground">로딩 중...</p>
+          <Loader2 className="w-12 h-12 animate-spin text-[var(--primary01)] mx-auto mb-4" />
+          <p className="text-[var(--text04)]">로딩 중...</p>
         </div>
       </div>
     )
   }
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-4xl">
+    <div className="container mx-auto px-4 py-6 max-w-4xl">
       <div className="mb-6">
-        <h1 className="text-3xl font-bold mb-2">일정 관리</h1>
-        <p className="text-muted-foreground">
+        <h1 className="text-xl font-semibold mb-2">일정 관리</h1>
+        <p className="text-[var(--text04)] text-xs">
           주간 일정을 설정하여 학생들이 예약할 수 있는 시간을 관리할 수 있습니다.
         </p>
       </div>
@@ -167,11 +167,11 @@ export default function SchedulePage() {
       <div className="space-y-4 mb-6">
         {schedules.map((schedule) => (
           <Card key={schedule.dayOfWeek} className="bg-card">
-            <CardContent className="p-6">
+            <CardContent className="p-3">
               <div className="flex items-center justify-between">
                 <div className="flex-1">
                   <h3 className="text-lg font-semibold mb-2">{dayNames[schedule.dayOfWeek]}</h3>
-                  <p className="text-sm text-muted-foreground">
+                  <p className="text-xs text-[var(--text04)]">
                     {schedule.startTime} ~ {schedule.endTime}
                   </p>
                 </div>
@@ -233,7 +233,7 @@ export default function SchedulePage() {
                 <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
                   취소
                 </Button>
-                <Button onClick={handleSaveSettings} className="bg-purple-600 hover:bg-purple-700">
+                <Button onClick={handleSaveSettings} className="bg-[var(--primary01)] hover:bg-[var(--primary02)]">
                   저장
                 </Button>
               </div>
@@ -242,7 +242,7 @@ export default function SchedulePage() {
           <div className="py-4">
             <div className="flex items-start gap-2">
               <div className="flex-1">
-                <Label className="text-sm text-muted-foreground mb-2 block">시작</Label>
+                <Label className="text-sm text-[var(--text04)] mb-2 block">시작</Label>
                 <Select value={tempStartTime} onValueChange={setTempStartTime}>
                   <SelectTrigger className="w-full">
                     <SelectValue>{tempStartTime}</SelectValue>
@@ -256,9 +256,9 @@ export default function SchedulePage() {
                   </SelectContent>
                 </Select>
               </div>
-              <span className="text-muted-foreground mt-8">~</span>
+              <span className="text-[var(--text04)] mt-8">~</span>
               <div className="flex-1">
-                <Label className="text-sm text-muted-foreground mb-2 block">종료</Label>
+                <Label className="text-sm text-[var(--text04)] mb-2 block">종료</Label>
                 <Select value={tempEndTime} onValueChange={setTempEndTime}>
                   <SelectTrigger className="w-full">
                     <SelectValue>{tempEndTime}</SelectValue>

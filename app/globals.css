@@ -1,78 +1,272 @@
 @import "tailwindcss";
 @import "tw-animate-css";
+@import url("https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css");
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700&display=swap');
 
 @custom-variant dark (&:is(.dark *));
 
 :root {
-  /* GameCoach.AI Color Palette */
-  --background: oklch(0.98 0 0); /* White background */
-  --foreground: oklch(0.15 0.02 240); /* Dark text */
-  --card: oklch(0.98 0 0);
-  --card-foreground: oklch(0.15 0.02 240);
-  --popover: oklch(0.98 0 0);
-  --popover-foreground: oklch(0.15 0.02 240);
-  --primary: oklch(0.45 0.15 240); /* Professional blue */
-  --primary-foreground: oklch(0.98 0 0);
-  --secondary: oklch(0.95 0.01 240); /* Light gray */
-  --secondary-foreground: oklch(0.15 0.02 240);
-  --muted: oklch(0.96 0.01 240);
-  --muted-foreground: oklch(0.45 0.02 240);
-  --accent: oklch(0.55 0.2 200); /* Accent blue */
-  --accent-foreground: oklch(0.98 0 0);
-  --destructive: oklch(0.577 0.245 27.325);
-  --destructive-foreground: oklch(0.98 0 0);
-  --border: oklch(0.9 0.01 240);
-  --input: oklch(0.96 0.01 240);
-  --ring: oklch(0.45 0.15 240);
-  --chart-1: oklch(0.45 0.15 240);
-  --chart-2: oklch(0.55 0.2 200);
-  --chart-3: oklch(0.6 0.2 160);
-  --chart-4: oklch(0.65 0.2 120);
-  --chart-5: oklch(0.7 0.2 80);
-  --radius: 0.75rem;
-  --sidebar: oklch(0.98 0 0);
-  --sidebar-foreground: oklch(0.15 0.02 240);
-  --sidebar-primary: oklch(0.45 0.15 240);
-  --sidebar-primary-foreground: oklch(0.98 0 0);
-  --sidebar-accent: oklch(0.95 0.01 240);
-  --sidebar-accent-foreground: oklch(0.15 0.02 240);
-  --sidebar-border: oklch(0.9 0.01 240);
-  --sidebar-ring: oklch(0.45 0.15 240);
+  /* Gigs-inspired Color System - Light Theme */
+  /* Gray Scale */
+  --gray0: #FFFFFF;
+  --gray1: #F4F4F6;
+  --gray2: #E8E8ED;
+  --gray3: #DCDCE5;
+  --gray4: #A8A8BD;
+  --gray5: #8D8DA5;
+  --gray6: #73738C;
+  --gray7: #57576B;
+  --gray8: #3A3A4A;
+  --gray9: #2C2C3A;
+  --gray10: #21212C;
+  --gray11: #16161D;
+
+  /* Blue Iris Palette */
+  --blueIris0: #E6E5FF;
+  --blueIris1: #AAA9FF;
+  --blueIris2: #7E7EFF;
+  --blueIris3: #6A67FF;
+  --blueIris4: #31317D;
+  --blueIris5: #1D1D3E;
+
+  /* Primary Colors */
+  --primary01: #6A67FF;
+  --primary02: #7E7EFF;
+  --primary03: #31317D;
+  --primary04: #1D1D3E;
+  --primaryOpacity01: rgba(106, 103, 255, 0.05);
+  --primaryOpacity02: rgba(106, 103, 255, 0.10);
+  --primaryOpacity03: rgba(106, 103, 255, 0.20);
+
+  /* Layer System */
+  --layer01: #FFFFFF;
+  --layer02: #F4F4F6;
+  --layerNotNormal: #E8E8ED;
+  --layer02Hover: #E8E8ED;
+  --layerNotNormalHover: #DCDCE5;
+
+  /* Text Colors */
+  --text01: #16161D;
+  --text02: #21212C;
+  --text03: #2C2C3A;
+  --text04: #57576B;
+  --text05: #73738C;
+  --textPrimary: #6A67FF;
+  --textGreen: #31BA94;
+  --textYellow: #FFD04D;
+
+  /* Dividers */
+  --divider01: #E8E8ED;
+  --divider02: #DCDCE5;
+  --divider03: #A8A8BD;
+
+  /* Input States */
+  --inputPress: #F4F4F6;
+  --inputReadonly: #E8E8ED;
+
+  /* Dimmed Colors */
+  --dimmed01: #A8A8BD;
+  --dimmed02: #8D8DA5;
+  --dimmed03: #73738C;
+
+  /* System Colors */
+  --systemSuccess: #31BA94;
+  --systemSuccess01: #31BA94;
+  --systemWarning01: #FFD04D;
+  --systemDanger01: #EC5651;
+  --systemDanger02: #530B09;
+  --discount: #FF3B5C;
+
+  /* Spacing System - Gigs Style (4px base unit) */
+  --spacing-xs: 4px;    /* 0.25rem */
+  --spacing-sm: 8px;    /* 0.5rem */
+  --spacing-md: 12px;   /* 0.75rem */
+  --spacing-lg: 16px;   /* 1rem */
+  --spacing-xl: 24px;   /* 1.5rem */
+  --spacing-2xl: 32px;  /* 2rem */
+  --spacing-3xl: 48px;  /* 3rem */
+
+  /* Shadows - Enhanced Gigs Style */
+  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.04);
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 2px 6px rgba(0, 0, 0, 0.06);
+  --shadow-lg: 0 4px 12px rgba(0, 0, 0, 0.08);
+  --shadow-xl: 0 8px 24px rgba(0, 0, 0, 0.10);
+  --shadow01: rgba(0, 0, 0, 0.05);
+  --shadow02: rgba(0, 0, 0, 0.08);
+  --modalBackground: rgba(0, 0, 0, 0.40);
+  --toastMessage: rgba(0, 0, 0, 0.85);
+
+  /* Transition - Faster for Gigs Style */
+  --transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-fast: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-slow: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* Font System */
+  --font-korean: 'Noto Sans KR', -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Pretendard', system-ui, sans-serif;
+  --font-heading: -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Pretendard', system-ui, sans-serif;
+
+  /* GameCoach.AI Color Palette (mapped to gigs system) */
+  --background: var(--layer01);
+  --foreground: var(--text01);
+  --card: var(--layer02);
+  --card-foreground: var(--text01);
+  --popover: var(--layer01);
+  --popover-foreground: var(--text01);
+  --primary: var(--primary01);
+  --primary-foreground: #FFFFFF;
+  --secondary: var(--layer02);
+  --secondary-foreground: var(--text01);
+  --muted: var(--layerNotNormal);
+  --muted-foreground: var(--text04);
+  --accent: var(--primary02);
+  --accent-foreground: #FFFFFF;
+  --destructive: var(--systemDanger01);
+  --destructive-foreground: #FFFFFF;
+  --border: var(--divider01);
+  --input: var(--inputPress);
+  --ring: var(--primary01);
+  --chart-1: var(--primary01);
+  --chart-2: var(--primary02);
+  --chart-3: var(--textGreen);
+  --chart-4: var(--textYellow);
+  --chart-5: var(--discount);
+  --radius: 0.5rem; /* 8px - 더 둥근 모서리 */
+  --sidebar: var(--layer02);
+  --sidebar-foreground: var(--text01);
+  --sidebar-primary: var(--primary01);
+  --sidebar-primary-foreground: #FFFFFF;
+  --sidebar-accent: var(--layerNotNormal);
+  --sidebar-accent-foreground: var(--text01);
+  --sidebar-border: var(--divider01);
+  --sidebar-ring: var(--primary01);
 }
 
 .dark {
-  --background: oklch(0.05 0.02 240);
-  --foreground: oklch(0.98 0 0);
-  --card: oklch(0.08 0.02 240);
-  --card-foreground: oklch(0.98 0 0);
-  --popover: oklch(0.08 0.02 240);
-  --popover-foreground: oklch(0.98 0 0);
-  --primary: oklch(0.75 0.35 130);
-  --primary-foreground: oklch(0.05 0.02 240);
-  --secondary: oklch(0.65 0.25 280);
-  --secondary-foreground: oklch(0.98 0 0);
-  --muted: oklch(0.15 0.02 240);
-  --muted-foreground: oklch(0.7 0 0);
-  --accent: oklch(0.75 0.35 130);
-  --accent-foreground: oklch(0.05 0.02 240);
-  --destructive: oklch(0.577 0.245 27.325);
-  --destructive-foreground: oklch(0.98 0 0);
-  --border: oklch(0.2 0.02 240);
-  --input: oklch(0.15 0.02 240);
-  --ring: oklch(0.75 0.35 130);
-  --chart-1: oklch(0.75 0.35 130);
-  --chart-2: oklch(0.65 0.25 280);
-  --chart-3: oklch(0.6 0.2 200);
-  --chart-4: oklch(0.7 0.3 160);
-  --chart-5: oklch(0.8 0.2 60);
-  --sidebar: oklch(0.08 0.02 240);
-  --sidebar-foreground: oklch(0.98 0 0);
-  --sidebar-primary: oklch(0.75 0.35 130);
-  --sidebar-primary-foreground: oklch(0.05 0.02 240);
-  --sidebar-accent: oklch(0.15 0.02 240);
-  --sidebar-accent-foreground: oklch(0.98 0 0);
-  --sidebar-border: oklch(0.2 0.02 240);
-  --sidebar-ring: oklch(0.75 0.35 130);
+  /* Gigs-inspired Color System - Dark Theme */
+  /* Gray Scale */
+  --gray0: #16161D;
+  --gray1: #21212C;
+  --gray2: #2C2C3A;
+  --gray3: #3A3A4A;
+  --gray4: #57576B;
+  --gray5: #73738C;
+  --gray6: #8D8DA5;
+  --gray7: #A8A8BD;
+  --gray8: #DCDCE5;
+  --gray9: #E8E8ED;
+  --gray10: #F4F4F6;
+  --gray11: #FFFFFF;
+
+  /* Blue Iris Palette */
+  --blueIris0: #1D1D3E;
+  --blueIris1: #31317D;
+  --blueIris2: #6A67FF;
+  --blueIris3: #7E7EFF;
+  --blueIris4: #AAA9FF;
+  --blueIris5: #E6E5FF;
+
+  /* Primary Colors */
+  --primary01: #6A67FF;
+  --primary02: #7E7EFF;
+  --primary03: #31317D;
+  --primary04: #1D1D3E;
+  --primaryOpacity01: rgba(106, 103, 255, 0.05);
+  --primaryOpacity02: rgba(106, 103, 255, 0.10);
+  --primaryOpacity03: rgba(106, 103, 255, 0.20);
+
+  /* Layer System */
+  --layer01: #21212C;
+  --layer02: #2C2C3A;
+  --layerNotNormal: #3A3A4A;
+  --layer02Hover: #3A3A4A;
+  --layerNotNormalHover: #57576B;
+
+  /* Text Colors */
+  --text01: #FFFFFF;
+  --text02: #E8E8ED;
+  --text03: #DCDCE5;
+  --text04: #A8A8BD;
+  --text05: #57576B;
+  --textPrimary: #7E7EFF;
+  --textGreen: #3CCCA5;
+  --textYellow: #FFDD7D;
+
+  /* Dividers */
+  --divider01: #3A3A4A;
+  --divider02: #57576B;
+  --divider03: #73738C;
+
+  /* Input States */
+  --inputPress: #16161D;
+  --inputReadonly: #2C2C3A;
+
+  /* Dimmed Colors */
+  --dimmed01: #3A3A4A;
+  --dimmed02: #57576B;
+  --dimmed03: #73738C;
+
+  /* System Colors */
+  --systemSuccess: #3CCCA5;
+  --systemSuccess01: #3CCCA5;
+  --systemWarning01: #FFD04D;
+  --systemDanger01: #EC5651;
+  --systemDanger02: #530B09;
+  --discount: #FF3B5C;
+
+  /* Spacing System - Gigs Style (4px base unit) */
+  --spacing-xs: 4px;
+  --spacing-sm: 8px;
+  --spacing-md: 12px;
+  --spacing-lg: 16px;
+  --spacing-xl: 24px;
+  --spacing-2xl: 32px;
+  --spacing-3xl: 48px;
+
+  /* Shadows - Enhanced Gigs Style */
+  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.15);
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.18);
+  --shadow-md: 0 2px 6px rgba(0, 0, 0, 0.20);
+  --shadow-lg: 0 4px 12px rgba(0, 0, 0, 0.22);
+  --shadow-xl: 0 8px 24px rgba(0, 0, 0, 0.25);
+  --shadow01: rgba(0, 0, 0, 0.15);
+  --shadow02: rgba(0, 0, 0, 0.20);
+  --modalBackground: rgba(0, 0, 0, 0.60);
+  --toastMessage: rgba(0, 0, 0, 0.90);
+
+  /* GameCoach.AI Color Palette (mapped to gigs system) */
+  --background: var(--layer01);
+  --foreground: var(--text01);
+  --card: var(--layer02);
+  --card-foreground: var(--text01);
+  --popover: var(--layer02);
+  --popover-foreground: var(--text01);
+  --primary: var(--primary01);
+  --primary-foreground: #FFFFFF;
+  --secondary: var(--layer02);
+  --secondary-foreground: var(--text01);
+  --muted: var(--layerNotNormal);
+  --muted-foreground: var(--text04);
+  --accent: var(--primary02);
+  --accent-foreground: #FFFFFF;
+  --destructive: var(--systemDanger01);
+  --destructive-foreground: #FFFFFF;
+  --border: var(--divider01);
+  --input: var(--inputReadonly);
+  --ring: var(--primary01);
+  --chart-1: var(--primary01);
+  --chart-2: var(--primary02);
+  --chart-3: var(--textGreen);
+  --chart-4: var(--textYellow);
+  --chart-5: var(--discount);
+  --sidebar: var(--layer02);
+  --sidebar-foreground: var(--text01);
+  --sidebar-primary: var(--primary01);
+  --sidebar-primary-foreground: #FFFFFF;
+  --sidebar-accent: var(--layerNotNormal);
+  --sidebar-accent-foreground: var(--text01);
+  --sidebar-border: var(--divider01);
+  --sidebar-ring: var(--primary01);
 }
 
 @theme inline {
@@ -118,70 +312,312 @@
 
 @layer base {
   * {
-    @apply border-border outline-ring/50;
+    @apply outline-ring/50;
   }
+  html {
+    overflow-x: hidden;
+    overflow-y: hidden;
+    height: 100%;
+  }
+  
   body {
     @apply bg-background text-foreground;
+    font-family: var(--font-korean);
+    font-size: 16px;
+    line-height: 1.5;
+    font-weight: 400;
+    letter-spacing: -0.01em;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    width: 100%;
+    overflow-x: hidden;
+    overflow-y: scroll;
+    min-height: 100%;
+    height: 100%;
+  }
+
+  /* 모바일 폰트 크기 조정 (768px 미만) */
+  @media (max-width: 767px) {
+    body {
+      font-size: 0.9rem; /* 14.4px */
+    }
+  }
+  
+  /* 스크롤바 숨기기 유틸리티 */
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* 드롭다운이 열릴 때 스크롤바 공간 유지 및 레이아웃 안정화 */
+  body[data-scroll-locked] {
+    overflow-y: scroll !important;
+    overflow-x: hidden !important;
+    padding-right: 0 !important;
+    margin-right: 0 !important;
+    position: relative !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+  }
+  
+  /* html도 함께 안정화 */
+  html[data-scroll-locked] {
+    overflow-y: hidden !important;
+    overflow-x: hidden !important;
+  }
+  
+  /* Select Portal이 레이아웃에 영향을 주지 않도록 */
+  [data-radix-portal] {
+    contain: layout style paint;
+  }
+  
+  /* 메인 컨테이너 레이아웃 안정화 */
+  main {
+    contain: layout;
+  }
+  
+  /* 필터 섹션 레이아웃 안정화 */
+  section[class*="border-b"] {
+    contain: layout;
+  }
+
+  /* 스크롤바 너비 계산 및 저장 (기본값은 Windows 기본 스크롤바 너비) */
+  html {
+    --scrollbar-width: 17px;
+  }
+
+  /* Smooth scroll snap */
+  .scroll-smooth {
+    scroll-behavior: smooth;
+  }
+
+  .snap-x {
+    scroll-snap-type: x mandatory;
+  }
+
+  .snap-start {
+    scroll-snap-align: start;
+  }
+  
+  /* 타이포그래피 스케일 - Gigs Style (더 정확한 크기) */
+  h1 {
+    font-size: 28px;
+    font-weight: 700;
+    line-height: 1.4;
+    letter-spacing: -0.01em;
+    font-family: var(--font-korean);
+  }
+  
+  h2 {
+    font-size: 22px;
+    font-weight: 700;
+    line-height: 1.4;
+    letter-spacing: -0.01em;
+    font-family: var(--font-korean);
+  }
+  
+  h3 {
+    font-size: 18px;
+    font-weight: 600;
+    line-height: 1.4;
+    letter-spacing: -0.005em;
+  }
+  
+  h4 {
+    font-size: 16px;
+    font-weight: 600;
+    line-height: 1.5;
+    letter-spacing: -0.005em;
+  }
+  
+  h5 {
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 1.5;
+  }
+  
+  h6 {
+    font-size: 13px;
+    font-weight: 600;
+    line-height: 1.5;
+  }
+  
+  p {
+    font-size: 14px;
+    line-height: 1.6;
+    font-family: var(--font-korean);
+  }
+  
+  /* 적용 권장 영역: 본문 설명 텍스트 */
+  .description,
+  .review-content,
+  .text-content {
+    font-family: var(--font-korean);
+  }
+  
+  /* 적용 권장 영역: 카드 설명 */
+  [data-slot="card-description"],
+  .text-muted-foreground {
+    font-family: var(--font-korean);
+  }
+  
+  /* 적용 권장 영역: 버튼 텍스트 */
+  [data-slot="button"] {
+    font-family: var(--font-korean);
+  }
+  
+  /* 적용 권장 영역: 입력 필드 */
+  [data-slot="input"],
+  [data-slot="textarea"],
+  input[type="text"],
+  input[type="email"],
+  input[type="password"],
+  input[type="search"],
+  textarea {
+    font-family: var(--font-korean);
+  }
+  
+  /* 적용 권장 영역: 리뷰 본문 */
+  .review-text,
+  .review-body {
+    font-family: var(--font-korean);
+  }
+  
+  /* 네비게이션 링크 */
+  nav a,
+  header nav a,
+  [role="navigation"] a,
+  nav[aria-label] a {
+    font-family: var(--font-korean);
+  }
+  
+  /* 강의/카드 제목 (h3, h4 등 - 한글 포함) */
+  h3, h4, h5, h6 {
+    font-family: var(--font-korean);
+  }
+  
+  /* 배지 텍스트 */
+  [data-slot="badge"] {
+    font-family: var(--font-korean);
+  }
+  
+  /* 작은 설명 텍스트 및 기타 한글 텍스트 */
+  span.text-xs,
+  span.text-sm,
+  small,
+  .coach-name,
+  .price-info,
+  .stats-text,
+  label {
+    font-family: var(--font-korean);
+  }
+  
+  /* 필터 및 라벨 */
+  .filter-label,
+  .filter-button {
+    font-family: var(--font-korean);
+  }
+
+  /* Smooth scroll behavior */
+  html {
+    scroll-behavior: smooth;
+  }
+
+  /* Blur backdrop support */
+  .backdrop-blur-xl {
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+  }
+
+  .backdrop-blur-sm {
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+  }
+
+
+  /* Card hover effects - Gigs Style (no transform) */
+  .card-hover {
+    transition: var(--transition);
+  }
+
+  .card-hover:hover {
+    box-shadow: var(--shadow-md);
+  }
+
+  /* FlightMenu - 모든 애니메이션 완전 제거 (모든 상태와 케이스 커버) */
+  [data-flight-menu],
+  [data-flight-menu][data-state],
+  [data-flight-menu][data-state="open"],
+  [data-flight-menu][data-state="closed"],
+  [data-flight-menu].animate-in,
+  [data-flight-menu].animate-out,
+  [data-flight-menu][class*="animate-"] {
+    animation: none !important;
+    animation-duration: 0s !important;
+    animation-delay: 0s !important;
+    animation-fill-mode: none !important;
+    animation-play-state: paused !important;
+    transition: none !important;
+    transition-duration: 0s !important;
+    transition-delay: 0s !important;
+    will-change: auto !important;
+  }
+  
+  /* Radix UI의 wrapper 요소 - transition만 제거 (transform은 위치 계산에 필요) */
+  [data-radix-popper-content-wrapper]:has([data-flight-menu]),
+  [data-radix-popper-content-wrapper]:has([data-flight-menu])[style*="transform"] {
+    animation: none !important;
+    transition: none !important;
+    transition-duration: 0s !important;
+    transition-property: none !important;
+  }
+  
+  /* Portal 내부의 모든 애니메이션 제거 */
+  [data-radix-portal]:has([data-flight-menu]) [data-flight-menu],
+  [data-radix-portal]:has([data-flight-menu]) [data-radix-popper-content-wrapper] {
+    animation: none !important;
+    transition: none !important;
+  }
+
+  /* Select - 모든 애니메이션 완전 제거 */
+  [data-slot="select-content"],
+  [data-slot="select-content"][data-state],
+  [data-slot="select-content"][data-state="open"],
+  [data-slot="select-content"][data-state="closed"],
+  [data-slot="select-content"].animate-in,
+  [data-slot="select-content"].animate-out,
+  [data-slot="select-content"][class*="animate-"] {
+    animation: none !important;
+    animation-duration: 0s !important;
+    animation-delay: 0s !important;
+    animation-fill-mode: none !important;
+    animation-play-state: paused !important;
+    transition: none !important;
+    transition-duration: 0s !important;
+    transition-delay: 0s !important;
+    will-change: auto !important;
+  }
+  
+  /* Radix UI Select의 wrapper 요소 - transition만 제거 (transform은 위치 계산에 필요) */
+  [data-radix-popper-content-wrapper]:has([data-slot="select-content"]),
+  [data-radix-popper-content-wrapper]:has([data-slot="select-content"])[style*="transform"] {
+    animation: none !important;
+    transition: none !important;
+    transition-duration: 0s !important;
+    transition-property: none !important;
+  }
+  
+  /* Portal 내부의 Select 애니메이션 제거 */
+  [data-radix-portal]:has([data-slot="select-content"]) [data-slot="select-content"],
+  [data-radix-portal]:has([data-slot="select-content"]) [data-radix-popper-content-wrapper] {
+    animation: none !important;
+    transition: none !important;
   }
 }
 
-/* Custom animations for gaming aesthetic */
-@keyframes glow {
-  0%,
-  100% {
-    box-shadow: 0 0 20px oklch(0.75 0.35 130 / 0.5);
-  }
-  50% {
-    box-shadow: 0 0 30px oklch(0.75 0.35 130 / 0.8);
-  }
-}
-
-.glow-animation {
-  animation: glow 2s ease-in-out infinite;
-}
-
-@keyframes float {
-  0%,
-  100% {
-    transform: translateY(0px);
-  }
-  50% {
-    transform: translateY(-10px);
-  }
-}
-
-.float-animation {
-  animation: float 3s ease-in-out infinite;
-}
-
-/* Updated animations to be more subtle for professional look */
-@keyframes subtle-glow {
-  0%,
-  100% {
-    box-shadow: 0 0 10px oklch(0.45 0.15 240 / 0.2);
-  }
-  50% {
-    box-shadow: 0 0 15px oklch(0.45 0.15 240 / 0.3);
-  }
-}
-
-.subtle-glow-animation {
-  animation: subtle-glow 3s ease-in-out infinite;
-}
-
-@keyframes gentle-float {
-  0%,
-  100% {
-    transform: translateY(0px);
-  }
-  50% {
-    transform: translateY(-5px);
-  }
-}
-
-.gentle-float-animation {
-  animation: gentle-float 4s ease-in-out infinite;
-}
 
 /* 텍스트 선택 및 우클릭 방지 */
 .no-select {
@@ -200,22 +636,3 @@
   user-select: none;
 }
 
-/* 개발자도구 감지 및 경고 */
-body {
-  position: relative;
-}
-
-body::before {
-  content: "개발자도구 사용이 감지되었습니다. 콘텐츠 수정을 금지합니다.";
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  background: #ff4444;
-  color: white;
-  padding: 10px;
-  text-align: center;
-  z-index: 9999;
-  display: none;
-  font-weight: bold;
-}
