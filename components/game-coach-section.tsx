@@ -44,17 +44,17 @@ export function GameCoachSection() {
   }
 
   return (
-    <section className="py-8 px-4 bg-[var(--layer01)]">
-      <div className="max-w-[1280px] mx-auto">
-        <div className="text-center mb-6">
+    <section className="py-12 sm:py-16 lg:py-20 bg-[var(--layer01)]">
+      <div className="max-w-[1400px] mx-auto px-4 sm:px-6 md:px-8 lg:px-12 xl:px-24 2xl:px-32">
+        <div className="text-center mb-8 sm:mb-12">
           <h2 className="mb-2 text-balance text-[var(--text01)]">전 프로와 코치 출신에게 직접 배우는 게 가능할까요?</h2>
           <p className="text-sm text-[var(--text04)]">프로는 가르치는 방식부터 다릅니다. 압도적인 티어 상승을 경험하세요.</p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
           {gameCategories.map((game) => (
             <div key={game.id} className="group cursor-pointer" onClick={() => handleGameClick(game.name)}>
-              <Card className="relative h-48 md:h-56 overflow-hidden rounded-md ">
+              <Card className="relative h-40 md:h-44 overflow-hidden rounded-md ">
                 {/* Background Image */}
                 <div className="absolute inset-0">
                   <Image
@@ -64,14 +64,14 @@ export function GameCoachSection() {
                     className="object-cover"
                     sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 25vw"
                   />
-                  {/* Overlay Gradient */}
-                  <div className={`absolute inset-0 ${game.bgColor} opacity-80 group-hover:opacity-70 transition-opacity`} style={{ transition: 'var(--transition)' }} />
+                  {/* Overlay Gradient - 최소화 */}
+                  <div className={`absolute inset-0 ${game.bgColor} opacity-60 group-hover:opacity-50 transition-opacity`} style={{ transition: 'var(--transition)' }} />
                 </div>
                 
                 {/* Content */}
-                <div className="relative z-10 h-full flex flex-col justify-between p-4">
+                <div className="relative z-10 h-full flex flex-col justify-between p-5 sm:p-6">
                   <div className="flex-1 flex flex-col justify-center items-center text-center">
-                    <h3 className="text-2xl md:text-3xl font-bold text-white mb-2 drop-shadow-lg">
+                    <h3 className="text-2xl md:text-3xl font-bold text-white mb-2">
                       {game.nameEn}
                     </h3>
                     <p className="text-sm md:text-base text-white/90 font-medium">

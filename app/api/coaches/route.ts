@@ -121,6 +121,14 @@ export async function GET(request: NextRequest) {
     // 정렬 옵션
     let orderByClause
     switch (sortBy) {
+      case 'ranking':
+        // 랭킹순: 평점 높은순
+        orderByClause = desc(coaches.rating)
+        break
+      case 'reviews':
+        // 후기순: 리뷰 수 많은순
+        orderByClause = desc(coaches.reviews)
+        break
       case 'rating-high':
         orderByClause = desc(coaches.rating)
         break

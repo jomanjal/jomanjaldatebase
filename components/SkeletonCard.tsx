@@ -3,9 +3,9 @@ import { Skeleton } from "@/components/ui/skeleton"
 
 export function SkeletonCard() {
   return (
-    <Card className="overflow-hidden h-full shadow-[var(--shadow-sm)] border-[var(--divider01)]">
+    <Card className="overflow-hidden h-full border border-[var(--divider01)]">
       {/* 이미지 영역 */}
-      <div className="relative h-36 overflow-hidden rounded-t-md">
+      <div className="relative h-32 overflow-hidden rounded-t-md">
         <Skeleton className="w-full h-full" />
       </div>
 

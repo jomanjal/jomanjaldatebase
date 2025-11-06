@@ -49,9 +49,9 @@ export function InstructorProfileSection() {
 
   if (loading) {
     return (
-      <section className="py-8 px-4 bg-[var(--layer01)]">
-        <div className="max-w-[1280px] mx-auto">
-          <div className="text-center mb-6">
+      <section className="py-12 sm:py-16 lg:py-20 bg-[var(--layer01)]" style={{ transition: 'var(--transition)' }}>
+        <div className="max-w-[1400px] mx-auto px-4 sm:px-6 md:px-8 lg:px-12 xl:px-24 2xl:px-32">
+        <div className="text-center mb-8 sm:mb-12">
             <h2 className="mb-2 text-balance text-[var(--text01)]">
               검증된 <span className="text-[var(--textPrimary)]">프로 강사진</span>
             </h2>
@@ -72,9 +72,9 @@ export function InstructorProfileSection() {
   }
 
   return (
-    <section className="py-8 px-4 bg-[var(--layer01)]" style={{ transition: 'var(--transition)' }}>
-      <div className="max-w-[1280px] mx-auto">
-        <div className="text-center mb-6">
+      <section className="py-12 sm:py-16 lg:py-20 bg-[var(--layer01)]" style={{ transition: 'var(--transition)' }}>
+        <div className="max-w-[1400px] mx-auto px-4 sm:px-6 md:px-8 lg:px-12 xl:px-24 2xl:px-32">
+        <div className="text-center mb-8 sm:mb-12">
           <h2 className="mb-2 text-balance text-[var(--text01)]">
             검증된 <span className="text-[var(--textPrimary)]">프로 강사진</span>
           </h2>
@@ -84,11 +84,11 @@ export function InstructorProfileSection() {
         </div>
 
         <div className="flex justify-center mb-6">
-          <div className="grid grid-cols-1 gap-3 max-w-md">
+          <div className="grid grid-cols-1 gap-4 sm:gap-6 max-w-md">
             {instructors.map((instructor) => (
               <Link href={`/coaches/${instructor.id}`} key={instructor.id} className="block">
-                  <Card className="bg-[var(--layer02)] hover:bg-[var(--layer02Hover)] cursor-pointer ">
-                  <CardContent className="p-4">
+                  <Card className="bg-transparent hover:border-[var(--primary01)] border border-[var(--divider01)] cursor-pointer transition-colors">
+                  <CardContent className="p-4 sm:p-5">
                     <div className="text-center mb-2.5">
                       <div className="relative w-32 h-32 mx-auto mb-2.5">
                         <Image
@@ -104,7 +104,7 @@ export function InstructorProfileSection() {
                     </div>
 
                     <div className="space-y-2 mb-2.5">
-                      <Badge variant="secondary" className="text-xs bg-[var(--layerNotNormal)] text-[var(--text01)]">
+                      <Badge variant="secondary" className="text-xs bg-transparent border border-[var(--divider01)] text-[var(--text01)]">
                         {instructor.tier}
                       </Badge>
                       {instructor.specialties && instructor.specialties.length > 0 && (

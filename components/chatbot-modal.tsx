@@ -603,7 +603,7 @@ export function ChatbotModal({ isOpen, onClose }: ChatbotModalProps) {
               </div>
             ) : showInstructorCard && matchedInstructor ? (
               <div className="space-y-3">
-                <div className="border border-[var(--divider01)] rounded-lg p-4 bg-[var(--layer02)] shadow-[var(--shadow-sm)]">
+                <div className="border border-[var(--divider01)] rounded-lg p-4 bg-[var(--layer02)]">
                   <div className="flex items-start gap-3">
                     <div className="w-16 h-16 bg-gradient-to-br from-primary/20 to-primary/10 rounded-full flex items-center justify-center flex-shrink-0 overflow-hidden border-2 border-primary/30 shadow-lg">
                       <img 

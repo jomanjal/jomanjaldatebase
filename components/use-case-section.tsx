@@ -31,9 +31,9 @@ const useCases = [
 
 export function UseCaseSection() {
   return (
-    <section className="py-8 px-4 bg-[var(--layer01)]">
-      <div className="max-w-[1280px] mx-auto">
-        <div className="text-center mb-6">
+    <section className="py-12 sm:py-16 lg:py-20 bg-[var(--layer01)]">
+      <div className="max-w-[1400px] mx-auto px-4 sm:px-6 md:px-8 lg:px-12 xl:px-24 2xl:px-32">
+        <div className="text-center mb-8 sm:mb-12">
           <h2 className="mb-2 text-balance text-[var(--text01)]">
             <span className="text-[var(--textPrimary)]">성공 스토리</span>
           </h2>
@@ -42,16 +42,16 @@ export function UseCaseSection() {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
           {useCases.map((useCase, index) => (
-            <Card key={index} className="bg-[var(--layer02)] hover:bg-[var(--layer02Hover)] ">
-              <CardContent className="p-4">
+            <Card key={index} className="bg-transparent hover:border-[var(--primary01)] border border-[var(--divider01)] transition-colors">
+              <CardContent className="p-4 sm:p-5">
                 <div className="flex items-center gap-3 mb-2.5">
-                  <div className="w-10 h-10 bg-[var(--layer01)] rounded-md flex items-center justify-center">
+                  <div className="w-10 h-10 bg-transparent border border-[var(--divider01)] rounded-md flex items-center justify-center">
                     <useCase.icon className="w-5 h-5 text-[var(--textPrimary)]" />
                   </div>
                   <div>
-                    <Badge variant="secondary" className="text-xs mb-1 bg-[var(--layerNotNormal)] text-[var(--text01)]">
+                    <Badge variant="secondary" className="text-xs mb-1 bg-transparent border border-[var(--divider01)] text-[var(--text01)]">
                       {useCase.badge}
                     </Badge>
                     <h3 className="font-semibold text-base text-[var(--text01)]">{useCase.title}</h3>

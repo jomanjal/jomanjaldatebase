@@ -44,9 +44,9 @@ export function CoachCard({
 
   return (
     <Link href={`/coaches/${coach.id}`} className="block group" aria-label={`${coach.name} 코치 상세보기`}>
-      <Card className="overflow-hidden hover:bg-[var(--layer02)] cursor-pointer h-full shadow-[var(--shadow-sm)] border-[var(--divider01)]">
+      <Card className="overflow-hidden hover:border-[var(--primary01)] cursor-pointer h-full border border-[var(--divider01)] transition-colors">
         {/* 헤더 이미지 영역 */}
-        <div className="relative h-40 overflow-hidden rounded-t-md">
+        <div className="relative h-32 overflow-hidden rounded-t-md">
           {!imageLoaded && (
             <div className="absolute inset-0 bg-[var(--layer02)] animate-pulse" />
           )}
@@ -62,7 +62,7 @@ export function CoachCard({
           />
           {discount && discount > 0 && (
             <div className="absolute top-3 right-3" aria-label={`${discount}% 할인`}>
-              <Badge className="bg-[var(--discount)] text-white text-xs px-2.5 py-1 border-0 rounded-md shadow-[var(--shadow-md)] font-semibold">
+              <Badge className="bg-[var(--discount)] text-white text-xs px-2.5 py-1 border-0 rounded-md font-semibold">
                 <Percent className="w-3 h-3 mr-1" aria-hidden="true" />
                 {discount}% OFF
               </Badge>
@@ -73,14 +73,14 @@ export function CoachCard({
         <CardContent className="relative p-4 flex flex-col">
           {/* 배지 */}
           <div className="flex items-center gap-2 mb-2 flex-wrap">
-            <Badge className="bg-[var(--layer02)] text-[var(--text01)] text-xs px-2.5 py-1 border border-[var(--divider01)] rounded-md font-medium">
+            <Badge className="bg-transparent text-[var(--text01)] text-xs px-2.5 py-1 border border-[var(--divider01)] rounded-md font-medium">
               <MapPin className="w-3 h-3 mr-1" aria-hidden="true" />
               온라인
             </Badge>
           </div>
 
           {/* 제목 */}
-          <h3 className="text-base font-semibold text-[var(--text01)] mb-2 leading-tight line-clamp-2 group-hover:text-[var(--textPrimary)] transition-colors">
+          <h3 className="text-base font-semibold text-[var(--text01)] mb-3 leading-tight line-clamp-2 transition-colors">
             {searchQuery && highlightSearchTerm
               ? highlightSearchTerm(coach.description || `${coach.name} 코치`, searchQuery)
               : (coach.description || `${coach.name} 코치`)
@@ -88,7 +88,7 @@ export function CoachCard({
           </h3>
 
           {/* 평점과 인원수 */}
-          <div className="flex items-center gap-2 mb-2">
+          <div className="flex items-center gap-2 mb-3">
             <div className="flex items-center gap-1.5" aria-label={`평점 ${coach.rating > 0 ? coach.rating.toFixed(1) : '0.0'}, 리뷰 ${coach.reviews}개`}>
               <Star className="w-4 h-4 fill-[var(--textYellow)] text-[var(--textYellow)] flex-shrink-0" aria-hidden="true" />
               <span className="text-sm font-semibold whitespace-nowrap text-[var(--text01)]">
@@ -103,7 +103,7 @@ export function CoachCard({
           </div>
 
           {/* 코치 이름 */}
-          <p className="text-sm text-[var(--text04)] mb-2 truncate font-medium">
+          <p className="text-sm text-[var(--text04)] mb-3 truncate font-medium">
             {searchQuery && highlightSearchTerm
               ? highlightSearchTerm(coach.name, searchQuery)
               : coach.name

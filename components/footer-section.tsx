@@ -2,8 +2,8 @@ import { Github, Twitter, Youtube } from "lucide-react"
 
 export function FooterSection() {
   return (
-    <footer className="py-10 px-4 bg-[var(--layer01)] border-t border-[var(--divider01)]">
-      <div className="max-w-[1280px] mx-auto">
+    <footer className="py-12 sm:py-16 bg-[var(--layer01)] border-t border-[var(--divider01)]">
+      <div className="max-w-[1400px] mx-auto px-4 sm:px-6 md:px-8 lg:px-12 xl:px-24 2xl:px-32">
         <div className="text-center mb-6">
           <h3 className="text-lg font-bold text-[var(--textPrimary)] mb-2">GameCoach.AI</h3>
           <p className="text-[var(--text04)] text-sm max-w-md mx-auto">

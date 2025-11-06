@@ -8,8 +8,8 @@ export function CTAHighlightSection() {
   const [isChatbotOpen, setIsChatbotOpen] = useState(false)
 
   return (
-    <section className="py-8 px-4 bg-[var(--layer01)]">
-      <div className="max-w-[1280px] mx-auto text-center">
+    <section className="py-12 sm:py-16 lg:py-20 bg-[var(--layer01)]">
+      <div className="max-w-[1400px] mx-auto px-4 sm:px-6 md:px-8 lg:px-12 xl:px-24 2xl:px-32 text-center">
         <h2 className="mb-2 text-balance text-[var(--text01)]">
           AI 코칭, 지금 바로 <span className="text-[var(--textPrimary)]">경험해보세요</span>
         </h2>

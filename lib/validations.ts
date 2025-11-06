@@ -158,7 +158,7 @@ export const coachSearchSchema = z.object({
       return isNaN(num) ? undefined : num
     })
     .optional(),
-  sortBy: z.enum(['latest', 'rating-high', 'rating-low', 'price-high', 'price-low', 'students']).optional(),
+  sortBy: z.enum(['latest', 'ranking', 'reviews', 'rating-high', 'rating-low', 'price-high', 'price-low', 'students']).optional(),
   page: paginationSchema.shape.page,
   limit: paginationSchema.shape.limit,
 })

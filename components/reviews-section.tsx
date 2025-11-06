@@ -28,9 +28,9 @@ const reviews = [
 
 export function ReviewsSection() {
   return (
-    <section className="py-8 px-4 bg-[var(--layer01)]">
-      <div className="max-w-[1280px] mx-auto">
-        <div className="text-center mb-6">
+    <section className="py-12 sm:py-16 lg:py-20 bg-[var(--layer01)]">
+      <div className="max-w-[1400px] mx-auto px-4 sm:px-6 md:px-8 lg:px-12 xl:px-24 2xl:px-32">
+        <div className="text-center mb-8 sm:mb-12">
           <h2 className="mb-2 text-balance text-[var(--text01)]">
             실제 <span className="text-[var(--textPrimary)]">성과</span>와 후기
           </h2>
@@ -40,21 +40,21 @@ export function ReviewsSection() {
         </div>
 
         {/* Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-6">
-          <Card className="bg-[var(--layer02)] text-center ">
-            <CardContent className="p-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6 mb-8 sm:mb-12">
+          <Card className="bg-transparent border border-[var(--divider01)] text-center">
+            <CardContent className="p-4 sm:p-5">
               <div className="text-xl font-bold text-[var(--text01)] mb-2">평균 2.3티어</div>
               <p className="text-xs text-[var(--text04)]">상승 효과</p>
             </CardContent>
           </Card>
-          <Card className="bg-[var(--layer02)] text-center ">
-            <CardContent className="p-4">
+          <Card className="bg-transparent border border-[var(--divider01)] text-center">
+            <CardContent className="p-4 sm:p-5">
               <div className="text-xl font-bold text-[var(--text01)] mb-2">6주</div>
               <p className="text-xs text-[var(--text04)]">평균 목표 달성</p>
             </CardContent>
           </Card>
-          <Card className="bg-[var(--layer02)] text-center ">
-            <CardContent className="p-4">
+          <Card className="bg-transparent border border-[var(--divider01)] text-center">
+            <CardContent className="p-4 sm:p-5">
               <div className="text-xl font-bold text-[var(--text01)] mb-2">98%</div>
               <p className="text-xs text-[var(--text04)]">만족도</p>
             </CardContent>
@@ -62,10 +62,10 @@ export function ReviewsSection() {
         </div>
 
         {/* Reviews */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
           {reviews.map((review, index) => (
-            <Card key={index} className="bg-[var(--layer02)] hover:bg-[var(--layer02Hover)] ">
-              <CardContent className="p-4">
+            <Card key={index} className="bg-transparent hover:border-[var(--primary01)] border border-[var(--divider01)] transition-colors">
+              <CardContent className="p-4 sm:p-5">
                 <div className="flex items-center justify-between mb-3">
                   <div>
                     <h4 className="font-semibold text-[var(--text01)]">{review.name}</h4>

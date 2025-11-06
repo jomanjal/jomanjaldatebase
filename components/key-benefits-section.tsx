@@ -26,16 +26,16 @@ const benefits = [
 
 export function KeyBenefitsSection() {
   return (
-    <section className="py-8 px-4 bg-[var(--layer01)]">
-      <div className="max-w-[1280px] mx-auto">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+    <section className="py-12 sm:py-16 lg:py-20 bg-[var(--layer01)]">
+      <div className="max-w-[1400px] mx-auto px-4 sm:px-6 md:px-8 lg:px-12 xl:px-24 2xl:px-32">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6">
           {benefits.map((benefit, index) => (
             <Card
               key={index}
-              className="bg-[var(--layer02)] hover:bg-[var(--layer02Hover)] "
+              className="bg-transparent hover:border-[var(--primary01)] border border-[var(--divider01)] transition-colors"
             >
-              <CardContent className="p-4 text-center">
-                <div className="w-10 h-10 bg-[var(--layer01)] rounded-md flex items-center justify-center mx-auto mb-2">
+              <CardContent className="p-4 sm:p-5 text-center">
+                <div className="w-10 h-10 bg-transparent border border-[var(--divider01)] rounded-md flex items-center justify-center mx-auto mb-3">
                   <benefit.icon className="w-5 h-5 text-[var(--textPrimary)]" />
                 </div>
                 <h3 className="text-sm font-semibold mb-1 text-[var(--text01)]">{benefit.title}</h3>

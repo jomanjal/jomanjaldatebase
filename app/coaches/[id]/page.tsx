@@ -578,7 +578,7 @@ export default function CoachDetailPage({ params }: { params: { id: string } }) 
       
       {/* 메인 콘텐츠 */}
       <section className="py-8" style={{ transition: 'var(--transition)' }}>
-        <div className="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-[1400px] mx-auto px-4 sm:px-6 md:px-8 lg:px-12 xl:px-24 2xl:px-32">
           <div className="flex items-center justify-between mb-6">
             <h1 className="text-2xl font-bold text-[var(--text01)]">{coach.headline || "에임, 피지컬 강의 국내 No.1"}</h1>
             {isOwner && (
@@ -618,7 +618,7 @@ export default function CoachDetailPage({ params }: { params: { id: string } }) 
 
                   {/* 강의 소개 */}
                   {otherItems.length > 0 && (
-                  <Card className="border border-[var(--divider01)] shadow-[var(--shadow01)]">
+                  <Card className="border border-[var(--divider01)]">
                     <CardContent className="p-4">
                         <h2 className="text-lg font-semibold mb-4 text-[var(--text01)]">이 강의는 {courseType} 강의로, {coach.headline || "에임, 피지컬 강의 국내 No.1"}</h2>
                       <div className="space-y-3 text-[var(--text04)]">
@@ -680,7 +680,7 @@ export default function CoachDetailPage({ params }: { params: { id: string } }) 
 
                   {/* 강의 대상 */}
                   {targetItems.length > 0 && (
-                    <Card className="border border-[var(--divider01)] shadow-[var(--shadow01)]">
+                    <Card className="border border-[var(--divider01)]">
                       <CardContent className="p-4">
                         <div className="flex items-center gap-2 mb-3">
                           <Clock className="w-5 h-5 text-[var(--textPrimary)]" />
@@ -700,7 +700,7 @@ export default function CoachDetailPage({ params }: { params: { id: string } }) 
 
                   {/* 강의 효과 */}
                   {effectItems.length > 0 && (
-                    <Card className="border border-[var(--divider01)] shadow-[var(--shadow01)]">
+                    <Card className="border border-[var(--divider01)]">
                       <CardContent className="p-4">
                         <div className="flex items-center gap-2 mb-3">
                           <Rocket className="w-5 h-5 text-[var(--textPrimary)]" />
@@ -720,7 +720,7 @@ export default function CoachDetailPage({ params }: { params: { id: string } }) 
 
                   {/* 게임 정보 - Accordion */}
                   {(coach.specialty === "발로란트" && (positions.length > 0 || agents.length > 0)) || (coach.specialties && coach.specialties.length > 0) ? (
-                    <Card className="border border-[var(--divider01)] shadow-[var(--shadow01)]">
+                    <Card className="border border-[var(--divider01)]">
                       <CardContent className="p-0">
                         <Accordion type="single" collapsible className="w-full">
                           <AccordionItem value="game-info">
@@ -796,7 +796,7 @@ export default function CoachDetailPage({ params }: { params: { id: string } }) 
                   ) : null}
 
                   {/* 취소 및 환불 - Accordion */}
-                  <Card className="border border-[var(--divider01)] shadow-[var(--shadow01)]">
+                  <Card className="border border-[var(--divider01)]">
                     <CardContent className="p-0">
                       <Accordion type="single" collapsible className="w-full">
                         <AccordionItem value="refund">
@@ -818,7 +818,7 @@ export default function CoachDetailPage({ params }: { params: { id: string } }) 
 
                 {/* 커리큘럼 탭 */}
                 <TabsContent value="curriculum">
-                  <Card className="border border-[var(--divider01)] shadow-[var(--shadow01)]">
+                  <Card className="border border-[var(--divider01)]">
                     <CardContent className="p-4">
                       <div className="flex items-center justify-between mb-4">
                         <h2 className="text-lg font-semibold text-[var(--text01)]">
@@ -866,7 +866,7 @@ export default function CoachDetailPage({ params }: { params: { id: string } }) 
 
                 {/* 후기 탭 */}
                 <TabsContent value="reviews">
-                  <Card className="border border-[var(--divider01)] shadow-[var(--shadow01)]">
+                  <Card className="border border-[var(--divider01)]">
                     <CardContent className="p-4">
                       <div className="flex items-center justify-between mb-4">
                         <h2 className="text-lg font-semibold text-[var(--text01)]">후기 {coach.reviews}</h2>
@@ -1021,7 +1021,7 @@ export default function CoachDetailPage({ params }: { params: { id: string } }) 
             <div className="lg:col-span-1">
               <div className="sticky top-24 space-y-4">
                 {/* 섬네일 이미지 */}
-                <div className="relative w-full aspect-video rounded-md overflow-hidden max-h-64 shadow-[var(--shadow01)]">
+                <div className="relative w-full aspect-video rounded-md overflow-hidden max-h-64 border border-[var(--divider01)]">
                   <Image
                     src={coach.thumbnailImage || "/uploads/coaches/1762077719977_qq.jpg"}
                     alt="사이드바 이미지"
@@ -1032,13 +1032,13 @@ export default function CoachDetailPage({ params }: { params: { id: string } }) 
                 </div>
 
                 {/* 할인 배너 */}
-                <div className="bg-[var(--primary01)] text-white p-4 rounded-md flex items-center gap-2 shadow-[var(--shadow01)]" style={{ transition: 'var(--transition)' }}>
+                <div className="bg-[var(--primary01)] text-white p-4 rounded-md flex items-center gap-2" style={{ transition: 'var(--transition)' }}>
                   <Gift className="w-5 h-5 flex-shrink-0" />
                   <span className="text-sm">최대 10만원 할인! 신규 가입 쿠폰팩 즉시 받기</span>
                 </div>
 
                 {/* 강의 구매 카드 */}
-                <Card className="border border-[var(--divider01)] shadow-[var(--shadow01)]">
+                <Card className="border border-[var(--divider01)]">
                   <CardContent className="p-4">
                     {coach.students > 0 && (
                     <div className="flex items-center gap-2 mb-3">
@@ -1079,7 +1079,7 @@ export default function CoachDetailPage({ params }: { params: { id: string } }) 
                     )}
 
                     <Button 
-                      className="w-full mb-3 bg-[var(--primary01)] text-white hover:bg-[var(--primary02)] rounded-md shadow-[var(--shadow01)] hover:shadow-[var(--shadow02)]"
+                      className="w-full mb-3 bg-[var(--primary01)] text-white hover:bg-[var(--primary02)] rounded-md"
                       style={{ transition: 'var(--transition)' }}
                       onClick={() => {
                         if (!currentUser) {
@@ -1108,7 +1108,7 @@ export default function CoachDetailPage({ params }: { params: { id: string } }) 
                 </Card>
 
                 {/* 코치 정보 */}
-                <Card className="border border-[var(--divider01)] shadow-[var(--shadow01)]">
+                <Card className="border border-[var(--divider01)]">
                   <CardContent className="p-4">
                     <div className="flex items-center gap-3 mb-3">
                       {coach.profileImage ? (

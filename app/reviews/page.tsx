@@ -204,7 +204,7 @@ export default function ReviewsPage() {
       
       {/* 페이지 헤더 */}
       <section className="bg-gradient-to-r from-primary/10 to-accent/10 py-16">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-[1400px] mx-auto px-4 sm:px-6 md:px-8 lg:px-12 xl:px-24 2xl:px-32">
           <div className="text-center">
             <h1 className="text-xl font-semibold text-foreground mb-4">
               {totalCount > 0 ? `${totalCount.toLocaleString()}개의 후기로 증명된 강의 만족도` : "24,676개의 후기로 증명된 강의 만족도"}
@@ -214,7 +214,7 @@ export default function ReviewsPage() {
             </p>
             
             {/* 성과 후기만 보기 체크박스 */}
-            <div className="flex justify-end">
+            <div className="flex justify-center">
               <label className="flex items-center space-x-2 cursor-pointer">
                 <input
                   type="checkbox"
@@ -231,9 +231,9 @@ export default function ReviewsPage() {
 
       {/* 게임 카테고리 필터 및 정렬 */}
       <section className="py-8 bg-white border-b dark:bg-card">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-[1400px] mx-auto px-4 sm:px-6 md:px-8 lg:px-12 xl:px-24 2xl:px-32">
           {/* 정렬 옵션 */}
-          <div className="flex items-center justify-end gap-2 mb-4">
+          <div className="flex items-center justify-center gap-2 mb-4">
             <SlidersHorizontal className="w-4 h-4 text-[var(--text04)]" />
             <Select value={sortBy} onValueChange={(value: "latest" | "rating-high" | "rating-low") => setSortBy(value)}>
               <SelectTrigger className="w-[140px]">
@@ -250,7 +250,7 @@ export default function ReviewsPage() {
           </div>
 
           {/* 게임 카테고리 필터 */}
-          <div className="flex items-center space-x-4 overflow-x-auto pb-4">
+          <div className="flex items-center space-x-4 overflow-x-auto pb-4 justify-center">
             {gameCategories.map((category) => (
               <Button
                 key={category.id}
@@ -272,7 +272,7 @@ export default function ReviewsPage() {
 
       {/* 수업후기 목록 */}
       <section className="py-8">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-[1400px] mx-auto px-4 sm:px-6 md:px-8 lg:px-12 xl:px-24 2xl:px-32">
           {error ? (
             <ErrorDisplay 
               error={error} 
@@ -298,7 +298,7 @@ export default function ReviewsPage() {
             <>
               <div className="space-y-4">
                 {filteredAndSortedReviews.map((review) => (
-                  <Card key={review.id} className="overflow-hidden hover:shadow-[var(--shadow-md)] transition-shadow">
+                  <Card key={review.id} className="overflow-hidden hover:border-[var(--primary01)] border border-[var(--divider01)] transition-colors">
                     <CardContent className="p-3">
                       {/* 후기 헤더 */}
                       <div className="flex items-center justify-between mb-4">

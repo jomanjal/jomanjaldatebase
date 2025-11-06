@@ -408,7 +408,7 @@ export default function PurchasePage({ params }: { params: { id: string } }) {
             <h1 className="text-xl font-semibold mb-6">강의 구매</h1>
 
             {/* 강의 정보 카드 */}
-            <Card className="border border-[var(--divider01)] shadow-[var(--shadow-sm)]">
+            <Card className="border border-[var(--divider01)]">
               <CardContent className="p-4">
                 <div className="flex gap-4">
                   <div className="w-48 h-32 rounded-md overflow-hidden bg-white border border-[var(--divider01)] flex-shrink-0">
@@ -514,7 +514,7 @@ export default function PurchasePage({ params }: { params: { id: string } }) {
             )}
 
             {/* 예약 일정 섹션 */}
-            <Card className="border border-[var(--divider01)] shadow-[var(--shadow-sm)]">
+            <Card className="border border-[var(--divider01)]">
               <CardHeader>
                 <CardTitle className="text-xl">희망 일정</CardTitle>
                 <CardDescription className="text-sm">
@@ -631,7 +631,7 @@ export default function PurchasePage({ params }: { params: { id: string } }) {
             </Card>
 
             {/* 내 게임 정보 섹션 */}
-            <Card className="border border-[var(--divider01)] shadow-[var(--shadow-sm)]">
+            <Card className="border border-[var(--divider01)]">
               <CardHeader>
                 <CardTitle>내 게임 정보 <span className="text-sm font-normal text-[var(--text04)]">(선택사항)</span></CardTitle>
                 <CardDescription>
@@ -790,7 +790,7 @@ export default function PurchasePage({ params }: { params: { id: string } }) {
             </Card>
 
             {/* 환불 규정 및 자주 묻는 질문 */}
-            <Card className="border border-[var(--divider01)] shadow-[var(--shadow-sm)] p-0">
+            <Card className="border border-[var(--divider01)] p-0">
               <CardContent className="p-0">
                 <Accordion type="single" collapsible>
                   <AccordionItem value="refund" className="border-b border-[var(--divider01)]">
@@ -830,7 +830,7 @@ export default function PurchasePage({ params }: { params: { id: string } }) {
 
           {/* 오른쪽 결제 정보 사이드바 */}
           <div className="w-80 flex-shrink-0">
-            <Card className="border border-[var(--divider01)] shadow-[var(--shadow-sm)] sticky top-4">
+            <Card className="border border-[var(--divider01)] sticky top-4">
               <CardHeader>
                 <CardTitle>결제 정보</CardTitle>
               </CardHeader>

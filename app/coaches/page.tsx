@@ -64,14 +64,9 @@ const priceRanges = [
 // 정렬 옵션
 const sortOptions = [
   { id: "latest", name: "최신순" },
-  { id: "rating-high", name: "평점 높은순" },
-  { id: "rating-low", name: "평점 낮은순" },
-  { id: "price-low", name: "가격 낮은순" },
-  { id: "price-high", name: "가격 높은순" },
-  { id: "students", name: "수강생 많은순" },
+  { id: "ranking", name: "랭킹순" },
+  { id: "reviews", name: "후기순" },
 ]
-
-
 
 interface Coach {
   id: number
@@ -325,20 +320,20 @@ function CoachesPageContent() {
       <Header />
       
       {/* 페이지 헤더 */}
-      <section className="bg-[var(--layer01)] py-6" style={{ transition: 'var(--transition)' }}>
-        <div className="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8">
-          <h1 className="mb-2 text-xl font-semibold text-[var(--text01)]">
+      <section className="bg-[var(--layer01)] pt-6 sm:pt-8 lg:pt-10 pb-0" style={{ transition: 'var(--transition)' }}>
+        <div className="max-w-[1400px] mx-auto px-4 sm:px-6 md:px-8 lg:px-12 xl:px-24 2xl:px-32">
+          <h1 className="mb-0 text-xl font-semibold text-[var(--text01)] text-center">
             전문 코치 목록
           </h1>
         </div>
       </section>
 
       {/* 검색 및 필터 */}
-      <section className="py-4 bg-[var(--layer01)] border-b border-[var(--divider01)]" style={{ transition: 'var(--transition)' }}>
-        <div className="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8">
+      <section className="pt-0 pb-8 sm:pb-12 bg-[var(--layer01)]" style={{ transition: 'var(--transition)' }}>
+        <div className="max-w-[1400px] mx-auto px-4 sm:px-6 md:px-8 lg:px-12 xl:px-24 2xl:px-32">
           {/* 강의 검색 */}
-          <div className="mb-4 min-h-[40px]">
-            <div className="flex-1 relative max-w-md">
+          <div className="mb-2 min-h-[40px] flex justify-start">
+            <div className="relative max-w-lg">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-[var(--text04)] w-4 h-4" aria-hidden="true" />
               {searching && (
                 <Loader2 className="absolute right-3 top-1/2 transform -translate-y-1/2 text-[var(--text04)] w-4 h-4 animate-spin" aria-hidden="true" />
@@ -358,65 +353,45 @@ function CoachesPageContent() {
             </div>
           </div>
 
-          {/* 필터 버튼들 */}
-          <div className="flex items-start gap-2 mb-4 flex-wrap" style={{ minHeight: '40px' }}>
-            {/* 전체 초기화 버튼 - 활성 필터가 하나라도 있을 때 표시 */}
-            {(selectedGame !== 'all' || selectedPriceRange !== 'all' || sortBy !== 'latest') && (
+          {/* 필터 버튼 줄 (게임 카테고리 + 가격) */}
+          <div className="flex items-center gap-1.5 sm:gap-2 mb-2 overflow-x-auto pb-2 scrollbar-hide scroll-smooth snap-x snap-mandatory justify-start" style={{ minHeight: '40px' }}>
+            {/* 게임 카테고리 버튼들 */}
+            {gameCategories.map((game) => (
               <Button
-                onClick={() => {
-                  setSelectedGame("all")
-                  setSelectedPriceRange("all")
-                  setSortBy("latest")
+                key={game.id}
+                variant={selectedGame === game.id ? "default" : "outline"}
+                onClick={(e) => {
+                  e.preventDefault()
+                  const newGame = game.id === selectedGame ? "all" : game.id
+                  setSelectedGame(newGame)
+                  // URL 업데이트
+                  if (newGame === "all") {
+                    router.push("/coaches")
+                  } else {
+                    router.push(`/coaches?specialty=${encodeURIComponent(newGame)}`)
+                  }
                 }}
-                variant="outline"
-                className="border-[var(--divider01)] hover:bg-[var(--layer02Hover)] text-[var(--text04)] hover:text-[var(--text01)] rounded-md px-3 py-1.5 h-auto text-sm shrink-0"
-                aria-label="모든 필터 초기화"
+                className={`whitespace-nowrap rounded-md snap-start shrink-0 h-8 px-3 text-xs ${
+                  selectedGame === game.id 
+                    ? "bg-[var(--primary01)] text-white hover:bg-[var(--primary02)] !border-0" 
+                    : "bg-[var(--layer02)] text-[var(--text01)] !border !border-[var(--divider01)] hover:bg-[var(--layer02Hover)]"
+                }`}
+                style={{ transition: 'var(--transition)' }}
+                aria-label={`${game.name} 필터 ${selectedGame === game.id ? '해제' : '적용'}`}
+                aria-pressed={selectedGame === game.id}
               >
-                <X className="w-3 h-3 mr-1.5" />
-                전체 초기화
+                {game.name}
               </Button>
-            )}
+            ))}
             
-            {/* 활성 필터 버튼들 (Gigs 스타일) */}
-            {selectedGame !== 'all' && (
-              <Button
-                onClick={() => setSelectedGame("all")}
-                className="bg-[var(--primary01)] text-white hover:bg-[var(--primary02)] rounded-md px-3 py-1.5 h-auto text-sm shrink-0"
-                aria-label={`${gameCategories.find(g => g.id === selectedGame)?.name} 필터 제거`}
-              >
-                {gameCategories.find(g => g.id === selectedGame)?.name}
-                <X className="w-3 h-3 ml-1.5" />
-              </Button>
-            )}
-            {selectedPriceRange !== 'all' && (
-              <Button
-                onClick={() => setSelectedPriceRange("all")}
-                className="bg-[var(--primary01)] text-white hover:bg-[var(--primary02)] rounded-md px-3 py-1.5 h-auto text-sm shrink-0"
-                aria-label={`${priceRanges.find(r => r.id === selectedPriceRange)?.name} 필터 제거`}
-              >
-                {priceRanges.find(r => r.id === selectedPriceRange)?.name}
-                <X className="w-3 h-3 ml-1.5" />
-              </Button>
-            )}
-            {sortBy !== 'latest' && (
-              <Button
-                onClick={() => setSortBy("latest")}
-                className="bg-[var(--primary01)] text-white hover:bg-[var(--primary02)] rounded-md px-3 py-1.5 h-auto text-sm shrink-0"
-                aria-label={`${sortOptions.find(o => o.id === sortBy)?.name} 필터 제거`}
-              >
-                {sortOptions.find(o => o.id === sortBy)?.name}
-                <X className="w-3 h-3 ml-1.5" />
-              </Button>
-            )}
-            
-            {/* 비활성 필터 드롭다운들 */}
+            {/* 가격 드롭다운 */}
             {selectedPriceRange === 'all' && (
               <FlightMenu
                 value={selectedPriceRange}
                 onValueChange={setSelectedPriceRange}
                 placeholder="가격"
-                triggerClassName="w-[140px] shrink-0"
-                contentClassName="w-[140px]"
+                triggerClassName="w-[100px] h-8 text-xs shrink-0 snap-start"
+                contentClassName="w-[100px]"
               >
                 {priceRanges
                   .filter(range => range.id !== "all")
@@ -429,13 +404,61 @@ function CoachesPageContent() {
             )}
           </div>
 
-          {/* 강의 개수 및 정렬 */}
-          <div className="flex items-center justify-between mb-4 min-h-[32px]">
+          {/* 활성 필터 태그 섹션 (Gigs 스타일) */}
+          {(selectedGame !== 'all' || selectedPriceRange !== 'all') && (
+            <div className="flex items-center gap-2 mb-2 flex-wrap">
+              {/* 활성 필터 태그들 */}
+              {selectedGame !== 'all' && (
+                <div className="flex items-center gap-1.5 bg-[var(--layer02)] text-[var(--text01)] rounded-md px-2.5 py-1 h-7 text-xs border border-[var(--divider01)]">
+                  <span>{gameCategories.find(g => g.id === selectedGame)?.name}</span>
+                  <button
+                    onClick={() => setSelectedGame("all")}
+                    className="hover:opacity-70 transition-opacity"
+                    aria-label={`${gameCategories.find(g => g.id === selectedGame)?.name} 필터 제거`}
+                  >
+                    <X className="w-3 h-3 text-[var(--text04)]" />
+                  </button>
+                </div>
+              )}
+              {selectedPriceRange !== 'all' && (
+                <div className="flex items-center gap-1.5 bg-[var(--layer02)] text-[var(--text01)] rounded-md px-2.5 py-1 h-7 text-xs border border-[var(--divider01)]">
+                  <span>{priceRanges.find(r => r.id === selectedPriceRange)?.name}</span>
+                  <button
+                    onClick={() => setSelectedPriceRange("all")}
+                    className="hover:opacity-70 transition-opacity"
+                    aria-label={`${priceRanges.find(r => r.id === selectedPriceRange)?.name} 필터 제거`}
+                  >
+                    <X className="w-3 h-3 text-[var(--text04)]" />
+                  </button>
+                </div>
+              )}
+              
+              {/* 초기화 버튼 */}
+              <Button
+                onClick={() => {
+                  setSelectedGame("all")
+                  setSelectedPriceRange("all")
+                  setSortBy("latest")
+                }}
+                variant="ghost"
+                className="h-7 px-2 text-xs text-[var(--text04)] hover:text-[var(--text01)] hover:bg-[var(--layer02Hover)]"
+                aria-label="모든 필터 초기화"
+              >
+                <svg className="w-3.5 h-3.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                </svg>
+                초기화
+              </Button>
+            </div>
+          )}
+
+          {/* 강의 개수 및 정렬 줄 */}
+          <div className="flex items-center justify-between gap-4 min-h-[32px]">
             <div className="min-w-[100px]">
               {loading && coaches.length === 0 ? (
                 <div className="h-5 w-24 bg-[var(--layer02)] animate-pulse rounded" />
               ) : (
-                <p className="text-sm text-[var(--text04)]">
+                <p className="text-xs text-[var(--text04)]">
                   {coaches.length}개의 강의
                 </p>
               )}
@@ -445,57 +468,23 @@ function CoachesPageContent() {
                 value={sortBy}
                 onValueChange={setSortBy}
                 placeholder="정렬"
-                triggerClassName="w-[120px]"
-                contentClassName="w-[120px]"
+                triggerClassName="w-[110px] h-8 text-xs whitespace-nowrap"
+                contentClassName="w-[110px] min-w-[110px]"
               >
                 {sortOptions.map((option) => (
                   <FlightMenuItem key={option.id} value={option.id}>
-                    {option.name}
+                    <span className="whitespace-nowrap">{option.name}</span>
                   </FlightMenuItem>
                 ))}
               </FlightMenu>
-            </div>
-          </div>
-
-
-          {/* 게임별 필터 */}
-          <div style={{ minHeight: '44px' }}>
-            <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-hide scroll-smooth snap-x snap-mandatory" role="group" aria-label="게임 카테고리 필터">
-              {gameCategories.map((game) => (
-                <Button
-                  key={game.id}
-                  variant={selectedGame === game.id ? "default" : "outline"}
-                  onClick={(e) => {
-                    e.preventDefault()
-                    const newGame = game.id === selectedGame ? "all" : game.id
-                    setSelectedGame(newGame)
-                    // URL 업데이트
-                    if (newGame === "all") {
-                      router.push("/coaches")
-                    } else {
-                      router.push(`/coaches?specialty=${encodeURIComponent(newGame)}`)
-                    }
-                  }}
-                  className={`whitespace-nowrap rounded-md snap-start shrink-0 ${
-                    selectedGame === game.id 
-                      ? "bg-[var(--primary01)] text-white hover:bg-[var(--primary02)] !border-0" 
-                      : "bg-[var(--layer02)] text-[var(--text01)] !border !border-[var(--divider01)] hover:bg-[var(--layer02Hover)]"
-                  }`}
-                  style={{ transition: 'var(--transition)' }}
-                  aria-label={`${game.name} 필터 ${selectedGame === game.id ? '해제' : '적용'}`}
-                  aria-pressed={selectedGame === game.id}
-                >
-                  {game.name}
-                </Button>
-              ))}
             </div>
           </div>
         </div>
       </section>
 
       {/* 코치 목록 */}
-      <section className="py-6" style={{ transition: 'var(--transition)' }}>
-        <div className="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8">
+      <section className="py-8 sm:py-12 lg:py-16" style={{ transition: 'var(--transition)' }}>
+        <div className="max-w-[1400px] mx-auto px-4 sm:px-6 md:px-8 lg:px-12 xl:px-24 2xl:px-32">
           {error ? (
             <ErrorDisplay 
               error={error} 
@@ -506,7 +495,7 @@ function CoachesPageContent() {
               }} 
             />
           ) : loading && coaches.length === 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-5 gap-3">
+            <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-5 gap-4 sm:gap-6">
               {Array.from({ length: 12 }).map((_, index) => (
                 <SkeletonCard key={index} />
               ))}
@@ -523,7 +512,7 @@ function CoachesPageContent() {
               }}
             />
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-5 gap-3">
+            <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-5 gap-4 sm:gap-6">
               {coachesWithPrices.map((coach) => (
                 <CoachCard
                   key={coach.id}
@@ -614,9 +603,9 @@ export default function CoachesPage() {
     <Suspense fallback={
       <main className="min-h-screen bg-[var(--layer01)]">
         <Header />
-        <div className="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        <div className="max-w-[1400px] mx-auto px-4 sm:px-6 md:px-8 lg:px-12 xl:px-20 2xl:px-24 py-8 sm:py-12">
           <div className="h-8 w-48 bg-[var(--layer02)] animate-pulse rounded mb-4" />
-          <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-5 gap-3">
+          <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-5 gap-4 sm:gap-6">
             {Array.from({ length: 12 }).map((_, index) => (
               <SkeletonCard key={index} />
             ))}

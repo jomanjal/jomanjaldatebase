@@ -53,7 +53,7 @@ function MainNavigation() {
     hoverTimeoutRef.current = setTimeout(() => {
       setIsCoachesMenuOpen(false)
       hoverTimeoutRef.current = null
-    }, 150) // 150ms 지연
+    }, 150)
   }
 
   // 컴포넌트 언마운트 시 timeout 정리
@@ -67,7 +67,7 @@ function MainNavigation() {
 
   return (
     <nav className="border-t border-[var(--divider01)] bg-[var(--layer01)]">
-      <div className="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="max-w-[1400px] mx-auto px-4 sm:px-6 md:px-8 lg:px-12 xl:px-24 2xl:px-32">
         <div className="flex items-center gap-6 h-12">
           {/* 홈 */}
           <Link
@@ -114,28 +114,28 @@ function MainNavigation() {
                 onMouseEnter={handleMouseEnter}
                 onMouseLeave={handleMouseLeave}
               >
-              <div className="flex flex-col gap-0.5">
-                {gameCategories.map((game) => {
-                  const isActive = currentGame === game.id
-                  
-                  return (
-                    <Link
-                      key={game.id}
-                      href={game.id === 'all' ? '/coaches' : `/coaches?specialty=${encodeURIComponent(game.id)}`}
-                      onClick={() => setIsCoachesMenuOpen(false)}
-                      className={`px-3 py-1.5 rounded-md text-sm transition-colors ${
-                        isActive
-                          ? 'bg-[var(--primaryOpacity01)] text-[var(--primary01)] font-medium'
-                          : 'text-[var(--text01)] hover:bg-[var(--layer02Hover)]'
-                      }`}
-                    >
-                      {game.name}
-                    </Link>
-                  )
-                })}
-              </div>
-            </PopoverContent>
-          </Popover>
+                <div className="flex flex-col gap-0.5">
+                  {gameCategories.map((game) => {
+                    const isActive = currentGame === game.id
+                    
+                    return (
+                      <Link
+                        key={game.id}
+                        href={game.id === 'all' ? '/coaches' : `/coaches?specialty=${encodeURIComponent(game.id)}`}
+                        onClick={() => setIsCoachesMenuOpen(false)}
+                        className={`px-3 py-1.5 rounded-md text-sm transition-colors ${
+                          isActive
+                            ? 'bg-[var(--primaryOpacity01)] text-[var(--primary01)] font-medium'
+                            : 'text-[var(--text01)] hover:bg-[var(--layer02Hover)]'
+                        }`}
+                      >
+                        {game.name}
+                      </Link>
+                    )
+                  })}
+                </div>
+              </PopoverContent>
+            </Popover>
           </div>
 
           {/* 후기 */}
@@ -236,7 +236,7 @@ export function Header() {
         }`}
       >
         {/* Top Header Section */}
-        <div className="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-[1400px] mx-auto px-4 sm:px-6 md:px-8 lg:px-12 xl:px-24 2xl:px-32">
           <div className="flex items-center justify-between h-16 gap-4">
             {/* Logo */}
             <Link 
@@ -357,7 +357,7 @@ export function Header() {
         {/* Main Navigation */}
         <Suspense fallback={
           <div className="border-t border-[var(--divider01)] bg-[var(--layer01)]">
-            <div className="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="max-w-[1400px] mx-auto px-4 sm:px-6 md:px-8 lg:px-12 xl:px-24 2xl:px-32">
               <div className="flex items-center gap-6 h-12">
                 <div className="h-4 w-16 bg-[var(--layer02)] rounded animate-pulse" />
               </div>
