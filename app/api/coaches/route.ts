@@ -4,6 +4,7 @@ import { coaches } from '@/lib/db/schema'
 import { eq, desc, asc, and, sql, count } from 'drizzle-orm'
 import { getAuthenticatedUser } from '@/lib/auth-server'
 import { coachSearchSchema, sanitizeSearchQuery } from '@/lib/validations'
+import { handleError } from '@/lib/error-handler'
 
 /**
  * 코치 목록 조회 (GET)
@@ -191,21 +192,11 @@ export async function GET(request: NextRequest) {
         hasPrevPage: page > 1,
       }
     }, { status: 200 })
-  } catch (error: any) {
-    if (process.env.NODE_ENV === 'development') {
-      console.error('Coaches GET error:', error)
-      console.error('Error details:', {
-        message: error.message,
-        code: error.code,
-        stack: error.stack,
-      })
-    } else {
-      console.error('Coaches GET error:', error.message)
-    }
-    return NextResponse.json({
-      success: false,
-      message: '코치 조회 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.'
-    }, { status: 500 })
+  } catch (error) {
+    return handleError(error, {
+      path: '/api/coaches',
+      method: 'GET',
+    })
   }
 }
 

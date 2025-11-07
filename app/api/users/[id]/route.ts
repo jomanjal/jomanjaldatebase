@@ -4,6 +4,7 @@ import { users } from '@/lib/db/schema'
 import { eq } from 'drizzle-orm'
 import { requireAdmin } from '@/lib/auth-server'
 import { rateLimit } from '@/lib/rate-limit'
+import { handleError, validationError, notFoundError, forbiddenError, conflictError, rateLimitExceededError } from '@/lib/error-handler'
 
 /**
  * 유저 상세 조회 (GET)
@@ -13,32 +14,19 @@ export async function GET(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
-  // Rate Limiting: IP당 30회/분
-  const rateLimitResult = rateLimit(30, 60000)(request)
-  if (!rateLimitResult.allowed) {
-    return NextResponse.json({
-      success: false,
-      message: '너무 많은 요청이 발생했습니다. 잠시 후 다시 시도해주세요.',
-    }, {
-      status: 429,
-      headers: {
-        'X-RateLimit-Limit': '30',
-        'X-RateLimit-Remaining': rateLimitResult.remaining.toString(),
-        'X-RateLimit-Reset': new Date(rateLimitResult.resetTime).toISOString(),
-      },
-    })
-  }
-
   try {
+    // Rate Limiting: IP당 30회/분
+    const rateLimitResult = rateLimit(30, 60000)(request)
+    if (!rateLimitResult.allowed) {
+      throw rateLimitExceededError()
+    }
+
     // 관리자 권한 확인
     await requireAdmin(request)
 
     const id = parseInt(params.id)
     if (isNaN(id)) {
-      return NextResponse.json({
-        success: false,
-        message: '유효하지 않은 ID입니다.'
-      }, { status: 400 })
+      throw validationError('유효하지 않은 ID입니다.')
     }
 
     const [user] = await db.select()
@@ -47,10 +35,7 @@ export async function GET(
       .limit(1)
 
     if (!user) {
-      return NextResponse.json({
-        success: false,
-        message: '유저를 찾을 수 없습니다.'
-      }, { status: 404 })
+      throw notFoundError('유저를 찾을 수 없습니다.')
     }
 
     // 비밀번호는 응답에서 제외
@@ -60,21 +45,11 @@ export async function GET(
       success: true,
       data: userWithoutPassword
     }, { status: 200 })
-  } catch (error: any) {
-    console.error('User GET error:', error)
-    
-    // requireAdmin에서 throw한 에러 처리
-    if (error.message === '인증이 필요합니다.' || error.message === '관리자 권한이 필요합니다.') {
-      return NextResponse.json({
-        success: false,
-        message: error.message
-      }, { status: 403 })
-    }
-    
-    return NextResponse.json({
-      success: false,
-      message: '유저 조회 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.'
-    }, { status: 500 })
+  } catch (error) {
+    return handleError(error, {
+      path: '/api/users/[id]',
+      method: 'GET',
+    })
   }
 }
 
@@ -87,32 +62,19 @@ export async function PATCH(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
-  // Rate Limiting: IP당 20회/분
-  const rateLimitResult = rateLimit(20, 60000)(request)
-  if (!rateLimitResult.allowed) {
-    return NextResponse.json({
-      success: false,
-      message: '너무 많은 요청이 발생했습니다. 잠시 후 다시 시도해주세요.',
-    }, {
-      status: 429,
-      headers: {
-        'X-RateLimit-Limit': '20',
-        'X-RateLimit-Remaining': rateLimitResult.remaining.toString(),
-        'X-RateLimit-Reset': new Date(rateLimitResult.resetTime).toISOString(),
-      },
-    })
-  }
-
   try {
+    // Rate Limiting: IP당 20회/분
+    const rateLimitResult = rateLimit(20, 60000)(request)
+    if (!rateLimitResult.allowed) {
+      throw rateLimitExceededError()
+    }
+
     // 관리자 권한 확인
-    const adminUser = await requireAdmin(request)
+    await requireAdmin(request)
 
     const id = parseInt(params.id)
     if (isNaN(id)) {
-      return NextResponse.json({
-        success: false,
-        message: '유효하지 않은 ID입니다.'
-      }, { status: 400 })
+      throw validationError('유효하지 않은 ID입니다.')
     }
 
     const body = await request.json()
@@ -126,10 +88,7 @@ export async function PATCH(
     if (role !== undefined) {
       // 역할 유효성 검증
       if (!['user', 'admin', 'coach'].includes(role)) {
-        return NextResponse.json({
-          success: false,
-          message: '유효하지 않은 역할입니다.'
-        }, { status: 400 })
+        throw validationError('유효하지 않은 역할입니다.')
       }
       updateData.role = role
     }
@@ -137,10 +96,7 @@ export async function PATCH(
     if (username !== undefined) {
       // 닉네임 길이 검증
       if (username.length < 2 || username.length > 20) {
-        return NextResponse.json({
-          success: false,
-          message: '닉네임은 2자 이상 20자 이하여야 합니다.'
-        }, { status: 400 })
+        throw validationError('닉네임은 2자 이상 20자 이하여야 합니다.')
       }
       updateData.username = username
     }
@@ -149,10 +105,7 @@ export async function PATCH(
       // 이메일 형식 검증
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
       if (!emailRegex.test(email)) {
-        return NextResponse.json({
-          success: false,
-          message: '올바른 이메일 형식을 입력해주세요.'
-        }, { status: 400 })
+        throw validationError('올바른 이메일 형식을 입력해주세요.')
       }
       updateData.email = email
     }
@@ -164,10 +117,7 @@ export async function PATCH(
       .returning()
 
     if (!updated) {
-      return NextResponse.json({
-        success: false,
-        message: '유저를 찾을 수 없습니다.'
-      }, { status: 404 })
+      throw notFoundError('유저를 찾을 수 없습니다.')
     }
 
     // 비밀번호는 응답에서 제외
@@ -178,37 +128,21 @@ export async function PATCH(
       data: userWithoutPassword,
       message: '유저 정보가 업데이트되었습니다.'
     }, { status: 200 })
-  } catch (error: any) {
-    console.error('User PATCH error:', error)
-
-    // requireAdmin에서 throw한 에러 처리
-    if (error.message === '인증이 필요합니다.' || error.message === '관리자 권한이 필요합니다.') {
-      return NextResponse.json({
-        success: false,
-        message: error.message
-      }, { status: 403 })
-    }
-
+  } catch (error) {
     // 중복 키 오류 처리
-    if (error.code === '23505') {
+    if (error instanceof Error && 'code' in error && error.code === '23505') {
       if (error.message.includes('email')) {
-        return NextResponse.json({
-          success: false,
-          message: '이미 사용 중인 이메일입니다.'
-        }, { status: 409 })
+        throw conflictError('이미 사용 중인 이메일입니다.')
       }
       if (error.message.includes('username')) {
-        return NextResponse.json({
-          success: false,
-          message: '이미 사용 중인 닉네임입니다.'
-        }, { status: 409 })
+        throw conflictError('이미 사용 중인 닉네임입니다.')
       }
     }
-
-    return NextResponse.json({
-      success: false,
-      message: '유저 수정 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.'
-    }, { status: 500 })
+    
+    return handleError(error, {
+      path: '/api/users/[id]',
+      method: 'PATCH',
+    })
   }
 }
 
@@ -220,40 +154,24 @@ export async function DELETE(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
-  // Rate Limiting: IP당 10회/분 (삭제는 더 엄격하게)
-  const rateLimitResult = rateLimit(10, 60000)(request)
-  if (!rateLimitResult.allowed) {
-    return NextResponse.json({
-      success: false,
-      message: '너무 많은 요청이 발생했습니다. 잠시 후 다시 시도해주세요.',
-    }, {
-      status: 429,
-      headers: {
-        'X-RateLimit-Limit': '10',
-        'X-RateLimit-Remaining': rateLimitResult.remaining.toString(),
-        'X-RateLimit-Reset': new Date(rateLimitResult.resetTime).toISOString(),
-      },
-    })
-  }
-
   try {
+    // Rate Limiting: IP당 10회/분 (삭제는 더 엄격하게)
+    const rateLimitResult = rateLimit(10, 60000)(request)
+    if (!rateLimitResult.allowed) {
+      throw rateLimitExceededError()
+    }
+
     // 관리자 권한 확인
     const adminUser = await requireAdmin(request)
 
     const id = parseInt(params.id)
     if (isNaN(id)) {
-      return NextResponse.json({
-        success: false,
-        message: '유효하지 않은 ID입니다.'
-      }, { status: 400 })
+      throw validationError('유효하지 않은 ID입니다.')
     }
 
     // 자기 자신은 삭제 불가
     if (id === adminUser.userId) {
-      return NextResponse.json({
-        success: false,
-        message: '자기 자신은 삭제할 수 없습니다.'
-      }, { status: 400 })
+      throw validationError('자기 자신은 삭제할 수 없습니다.')
     }
 
     // 삭제 전에 유저 존재 확인
@@ -263,10 +181,7 @@ export async function DELETE(
       .limit(1)
 
     if (!userToDelete) {
-      return NextResponse.json({
-        success: false,
-        message: '유저를 찾을 수 없습니다.'
-      }, { status: 404 })
+      throw notFoundError('유저를 찾을 수 없습니다.')
     }
 
     // 유저 삭제
@@ -277,21 +192,11 @@ export async function DELETE(
       success: true,
       message: '유저가 삭제되었습니다.'
     }, { status: 200 })
-  } catch (error: any) {
-    console.error('User DELETE error:', error)
-    
-    // requireAdmin에서 throw한 에러 처리
-    if (error.message === '인증이 필요합니다.' || error.message === '관리자 권한이 필요합니다.') {
-      return NextResponse.json({
-        success: false,
-        message: error.message
-      }, { status: 403 })
-    }
-    
-    return NextResponse.json({
-      success: false,
-      message: '유저 삭제 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.'
-    }, { status: 500 })
+  } catch (error) {
+    return handleError(error, {
+      path: '/api/users/[id]',
+      method: 'DELETE',
+    })
   }
 }
 

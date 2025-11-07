@@ -5,6 +5,7 @@ import { eq } from 'drizzle-orm'
 import bcrypt from 'bcryptjs'
 import { rateLimit, getClientIp } from '@/lib/rate-limit'
 import { signupSchema } from '@/lib/validations'
+import { handleError, validationError, conflictError } from '@/lib/error-handler'
 
 export async function POST(request: NextRequest) {
   // Rate Limiting: IP당 3회/시간
@@ -32,10 +33,7 @@ export async function POST(request: NextRequest) {
     const validationResult = signupSchema.safeParse(body)
     if (!validationResult.success) {
       const firstError = validationResult.error.errors[0]
-      return NextResponse.json({
-        success: false,
-        message: firstError.message || '입력값이 올바르지 않습니다.'
-      }, { status: 400 })
+      throw validationError(firstError.message || '입력값이 올바르지 않습니다.')
     }
 
     const { email, nickname, password, game, level } = validationResult.data
@@ -47,10 +45,7 @@ export async function POST(request: NextRequest) {
       .limit(1)
 
     if (existingEmail) {
-      return NextResponse.json({
-        success: false,
-        message: '이미 사용 중인 이메일입니다.'
-      }, { status: 409 })
+      throw conflictError('이미 사용 중인 이메일입니다.')
     }
 
     // 닉네임 중복 확인
@@ -60,10 +55,7 @@ export async function POST(request: NextRequest) {
       .limit(1)
 
     if (existingNickname) {
-      return NextResponse.json({
-        success: false,
-        message: '이미 사용 중인 닉네임입니다.'
-      }, { status: 409 })
+      throw conflictError('이미 사용 중인 닉네임입니다.')
     }
 
     // 비밀번호 해싱
@@ -85,48 +77,11 @@ export async function POST(request: NextRequest) {
       user: userWithoutPassword,
       message: '회원가입이 완료되었습니다.'
     }, { status: 201 })
-  } catch (error: any) {
-    // 개발 환경에서만 상세 에러 로깅
-    if (process.env.NODE_ENV === 'development') {
-      console.error('Signup error:', error)
-      console.error('Error details:', {
-        message: error.message,
-        code: error.code,
-        stack: error.stack,
-      })
-    } else {
-      // 프로덕션에서는 민감한 정보 없이 로깅
-      console.error('Signup error:', error.message)
-    }
-
-    // 데이터베이스 연결 오류
-    if (error.code === 'ECONNREFUSED' || error.code === 'ENOTFOUND' || error.message?.includes('connect')) {
-      return NextResponse.json({
-        success: false,
-        message: '데이터베이스 연결에 실패했습니다. 잠시 후 다시 시도해주세요.'
-      }, { status: 503 })
-    }
-
-    // 중복 키 오류 처리
-    if (error.code === '23505') {
-      if (error.message.includes('email')) {
-        return NextResponse.json({
-          success: false,
-          message: '이미 사용 중인 이메일입니다.'
-        }, { status: 409 })
-      }
-      if (error.message.includes('username')) {
-        return NextResponse.json({
-          success: false,
-          message: '이미 사용 중인 닉네임입니다.'
-        }, { status: 409 })
-      }
-    }
-
-    return NextResponse.json({
-      success: false,
-      message: '회원가입 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.'
-    }, { status: 500 })
+  } catch (error) {
+    return handleError(error, {
+      path: '/api/auth/signup',
+      method: 'POST',
+    })
   }
 }
 

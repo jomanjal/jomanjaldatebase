@@ -2,7 +2,7 @@
 
 export function initSecurityProtection() {
   // 개발자도구 열림 감지
-  let devtools = {
+  const devtools = {
     open: false,
     orientation: null
   };

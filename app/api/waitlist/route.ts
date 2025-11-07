@@ -3,6 +3,7 @@ import { db } from '@/lib/db'
 import { waitlist } from '@/lib/db/schema'
 import { eq, desc, or, like } from 'drizzle-orm'
 import { getAuthenticatedUser } from '@/lib/auth-server'
+import { handleError, forbiddenError, validationError } from '@/lib/error-handler'
 
 /**
  * 웨이팅 리스트 조회 (GET)
@@ -13,10 +14,7 @@ export async function GET(request: NextRequest) {
     // 인증 확인
     const user = await getAuthenticatedUser(request)
     if (!user || !user.isAdmin) {
-      return NextResponse.json({ 
-        success: false, 
-        message: '관리자 권한이 필요합니다.' 
-      }, { status: 403 })
+      throw forbiddenError('관리자 권한이 필요합니다.')
     }
 
     // 쿼리 파라미터
@@ -27,10 +25,7 @@ export async function GET(request: NextRequest) {
 
     // 검색어 길이 제한
     if (search.length > 100) {
-      return NextResponse.json({
-        success: false,
-        message: '검색어는 100자를 초과할 수 없습니다.'
-      }, { status: 400 })
+      throw validationError('검색어는 100자를 초과할 수 없습니다.')
     }
 
     // 쿼리 빌드
@@ -67,11 +62,10 @@ export async function GET(request: NextRequest) {
       count: results.length
     }, { status: 200 })
   } catch (error) {
-    console.error('Waitlist GET error:', error)
-    return NextResponse.json({ 
-      success: false, 
-      message: '웨이팅 리스트 조회 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.' 
-    }, { status: 500 })
+    return handleError(error, {
+      path: '/api/waitlist',
+      method: 'GET',
+    })
   }
 }
 

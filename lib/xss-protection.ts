@@ -13,7 +13,7 @@ export function sanitizeHtml(input: string): string {
   }
 
   // HTML 태그 제거
-  let sanitized = input
+  const sanitized = input
     .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '') // <script> 태그 제거
     .replace(/<iframe\b[^<]*(?:(?!<\/iframe>)<[^<]*)*<\/iframe>/gi, '') // <iframe> 태그 제거
     .replace(/<object\b[^<]*(?:(?!<\/object>)<[^<]*)*<\/object>/gi, '') // <object> 태그 제거

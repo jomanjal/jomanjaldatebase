@@ -5,6 +5,7 @@ import { eq, and } from 'drizzle-orm'
 import { getAuthenticatedUser } from '@/lib/auth-server'
 import { sql } from 'drizzle-orm'
 import { idSchema, reviewStatusUpdateSchema } from '@/lib/validations'
+import { handleError, validationError, notFoundError, forbiddenError } from '@/lib/error-handler'
 
 /**
  * 리뷰 조회 (GET)
@@ -17,10 +18,7 @@ export async function GET(
     // ID 검증
     const idValidation = idSchema.safeParse(params.id)
     if (!idValidation.success) {
-      return NextResponse.json({
-        success: false,
-        message: '유효하지 않은 ID입니다.'
-      }, { status: 400 })
+      throw validationError('유효하지 않은 ID입니다.')
     }
     const id = idValidation.data
 
@@ -42,10 +40,7 @@ export async function GET(
       .limit(1)
 
     if (!review) {
-      return NextResponse.json({
-        success: false,
-        message: '리뷰를 찾을 수 없습니다.'
-      }, { status: 404 })
+      throw notFoundError('리뷰를 찾을 수 없습니다.')
     }
 
     return NextResponse.json({
@@ -53,11 +48,10 @@ export async function GET(
       data: review
     }, { status: 200 })
   } catch (error) {
-    console.error('Review GET error:', error)
-    return NextResponse.json({
-      success: false,
-      message: '리뷰 조회 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.'
-    }, { status: 500 })
+    return handleError(error, {
+      path: '/api/reviews/[id]',
+      method: 'GET',
+    })
   }
 }
 
@@ -73,19 +67,13 @@ export async function PATCH(
     // 인증 확인
     const user = await getAuthenticatedUser(request)
     if (!user || !user.isAdmin) {
-      return NextResponse.json({
-        success: false,
-        message: '관리자 권한이 필요합니다.'
-      }, { status: 403 })
+      throw forbiddenError('관리자 권한이 필요합니다.')
     }
 
     // ID 검증
     const idValidation = idSchema.safeParse(params.id)
     if (!idValidation.success) {
-      return NextResponse.json({
-        success: false,
-        message: '유효하지 않은 ID입니다.'
-      }, { status: 400 })
+      throw validationError('유효하지 않은 ID입니다.')
     }
     const id = idValidation.data
 
@@ -95,10 +83,7 @@ export async function PATCH(
     const validationResult = reviewStatusUpdateSchema.safeParse(body)
     if (!validationResult.success) {
       const firstError = validationResult.error.errors[0]
-      return NextResponse.json({
-        success: false,
-        message: firstError.message || '입력값이 올바르지 않습니다.'
-      }, { status: 400 })
+      throw validationError(firstError.message || '입력값이 올바르지 않습니다.')
     }
 
     const { verified } = validationResult.data
@@ -116,13 +101,11 @@ export async function PATCH(
       .returning()
 
     if (!updated) {
-      return NextResponse.json({
-        success: false,
-        message: '리뷰를 찾을 수 없습니다.'
-      }, { status: 404 })
+      throw notFoundError('리뷰를 찾을 수 없습니다.')
     }
 
     // 리뷰가 승인되거나 평점이 변경되면 코치의 평점 업데이트
+    const rating = undefined // PATCH에서 rating은 지원하지 않음
     if ((verified === true && updated.verified) || rating !== undefined) {
       // 코치의 평균 평점 계산 (소수점 1자리까지)
       const [coachStats] = await db.select({
@@ -151,11 +134,10 @@ export async function PATCH(
       message: '리뷰가 업데이트되었습니다.'
     }, { status: 200 })
   } catch (error) {
-    console.error('Review PATCH error:', error)
-    return NextResponse.json({
-      success: false,
-      message: '리뷰 수정 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.'
-    }, { status: 500 })
+    return handleError(error, {
+      path: '/api/reviews/[id]',
+      method: 'PATCH',
+    })
   }
 }
 
@@ -171,19 +153,13 @@ export async function DELETE(
     // 인증 확인
     const user = await getAuthenticatedUser(request)
     if (!user || !user.isAdmin) {
-      return NextResponse.json({
-        success: false,
-        message: '관리자 권한이 필요합니다.'
-      }, { status: 403 })
+      throw forbiddenError('관리자 권한이 필요합니다.')
     }
 
     // ID 검증
     const idValidation = idSchema.safeParse(params.id)
     if (!idValidation.success) {
-      return NextResponse.json({
-        success: false,
-        message: '유효하지 않은 ID입니다.'
-      }, { status: 400 })
+      throw validationError('유효하지 않은 ID입니다.')
     }
     const id = idValidation.data
 
@@ -196,10 +172,7 @@ export async function DELETE(
       .limit(1)
 
     if (!reviewToDelete) {
-      return NextResponse.json({
-        success: false,
-        message: '리뷰를 찾을 수 없습니다.'
-      }, { status: 404 })
+      throw notFoundError('리뷰를 찾을 수 없습니다.')
     }
 
     // 리뷰 삭제
@@ -231,11 +204,10 @@ export async function DELETE(
       message: '리뷰가 삭제되었습니다.'
     }, { status: 200 })
   } catch (error) {
-    console.error('Review DELETE error:', error)
-    return NextResponse.json({
-      success: false,
-      message: '리뷰 삭제 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.'
-    }, { status: 500 })
+    return handleError(error, {
+      path: '/api/reviews/[id]',
+      method: 'DELETE',
+    })
   }
 }
 

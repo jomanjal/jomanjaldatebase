@@ -19,7 +19,7 @@ export function EmptyState({ type, searchQuery, onResetFilters }: EmptyStateProp
           검색 결과가 없습니다
         </h3>
         <p className="text-sm text-[var(--text04)] text-center mb-6 max-w-md">
-          "{searchQuery}"에 대한 검색 결과를 찾을 수 없습니다.<br />
+          &quot;{searchQuery}&quot;에 대한 검색 결과를 찾을 수 없습니다.<br />
           다른 검색어를 시도해보세요.
         </p>
         <div className="flex flex-col sm:flex-row gap-3">
@@ -80,6 +80,10 @@ export function EmptyState({ type, searchQuery, onResetFilters }: EmptyStateProp
     </div>
   )
 }
+
+
+
+
 
 
 

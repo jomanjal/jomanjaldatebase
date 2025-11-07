@@ -4,6 +4,7 @@ import { users } from '@/lib/db/schema'
 import { eq, like, or, desc } from 'drizzle-orm'
 import { requireAdmin } from '@/lib/auth-server'
 import { rateLimit } from '@/lib/rate-limit'
+import { handleError } from '@/lib/error-handler'
 
 /**
  * 유저 목록 조회 (GET)
@@ -83,21 +84,11 @@ export async function GET(request: NextRequest) {
       data: formattedResults,
       totalCount: formattedResults.length
     }, { status: 200 })
-  } catch (error: any) {
-    console.error('Users GET error:', error)
-    
-    // requireAdmin에서 throw한 에러 처리
-    if (error.message === '인증이 필요합니다.' || error.message === '관리자 권한이 필요합니다.') {
-      return NextResponse.json({
-        success: false,
-        message: error.message
-      }, { status: 403 })
-    }
-    
-    return NextResponse.json({
-      success: false,
-      message: '유저 조회 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.'
-    }, { status: 500 })
+  } catch (error) {
+    return handleError(error, {
+      path: '/api/users',
+      method: 'GET',
+    })
   }
 }
 

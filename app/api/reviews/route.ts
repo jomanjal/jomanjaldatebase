@@ -6,6 +6,7 @@ import { getAuthenticatedUser, requireAdmin } from '@/lib/auth-server'
 import { sql } from 'drizzle-orm'
 import { reviewSchema, sanitizeSearchQuery, idSchema, ratingSchema } from '@/lib/validations'
 import { verifyCsrfToken } from '@/lib/csrf'
+import { handleError, validationError, notFoundError, conflictError, forbiddenError } from '@/lib/error-handler'
 
 /**
  * 리뷰 목록 조회 (GET)
@@ -32,10 +33,7 @@ export async function GET(request: NextRequest) {
     if (isAdmin) {
       user = await getAuthenticatedUser(request)
       if (!user || !user.isAdmin) {
-        return NextResponse.json({ 
-          success: false, 
-          message: '관리자 권한이 필요합니다.' 
-        }, { status: 403 })
+        throw forbiddenError('관리자 권한이 필요합니다.')
       }
     }
 
@@ -73,10 +71,7 @@ export async function GET(request: NextRequest) {
     if (rating) {
       const ratingValidation = ratingSchema.safeParse(rating)
       if (!ratingValidation.success) {
-        return NextResponse.json({
-          success: false,
-          message: '유효하지 않은 평점입니다.'
-        }, { status: 400 })
+        throw validationError('유효하지 않은 평점입니다.')
       }
       conditions.push(eq(reviews.rating, ratingValidation.data))
     }
@@ -84,10 +79,7 @@ export async function GET(request: NextRequest) {
     if (coachId) {
       const coachIdValidation = idSchema.safeParse(coachId)
       if (!coachIdValidation.success) {
-        return NextResponse.json({
-          success: false,
-          message: '유효하지 않은 코치 ID입니다.'
-        }, { status: 400 })
+        throw validationError('유효하지 않은 코치 ID입니다.')
       }
       conditions.push(eq(reviews.coachId, coachIdValidation.data))
     }
@@ -143,11 +135,10 @@ export async function GET(request: NextRequest) {
       }
     }, { status: 200 })
   } catch (error) {
-    console.error('Reviews GET error:', error)
-    return NextResponse.json({
-      success: false,
-      message: '리뷰 조회 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.'
-    }, { status: 500 })
+    return handleError(error, {
+      path: '/api/reviews',
+      method: 'GET',
+    })
   }
 }
 
@@ -163,10 +154,7 @@ export async function POST(request: NextRequest) {
     // CSRF 토큰 검증
     const csrfToken = request.headers.get('X-CSRF-Token')
     if (!await verifyCsrfToken(csrfToken)) {
-      return NextResponse.json({
-        success: false,
-        message: 'CSRF 토큰이 유효하지 않습니다.'
-      }, { status: 403 })
+      throw forbiddenError('CSRF 토큰이 유효하지 않습니다.')
     }
 
     const body = await request.json()
@@ -175,10 +163,7 @@ export async function POST(request: NextRequest) {
     const validationResult = reviewSchema.safeParse(body)
     if (!validationResult.success) {
       const firstError = validationResult.error.errors[0]
-      return NextResponse.json({
-        success: false,
-        message: firstError.message || '입력값이 올바르지 않습니다.'
-      }, { status: 400 })
+      throw validationError(firstError.message || '입력값이 올바르지 않습니다.')
     }
 
     const { coachId, userId, rating, comment, verified = false } = validationResult.data
@@ -190,10 +175,7 @@ export async function POST(request: NextRequest) {
       .limit(1)
 
     if (!coach) {
-      return NextResponse.json({
-        success: false,
-        message: '코치를 찾을 수 없습니다.'
-      }, { status: 404 })
+      throw notFoundError('코치를 찾을 수 없습니다.')
     }
 
     // 사용자 존재 확인
@@ -203,10 +185,7 @@ export async function POST(request: NextRequest) {
       .limit(1)
 
     if (!user) {
-      return NextResponse.json({
-        success: false,
-        message: '사용자를 찾을 수 없습니다.'
-      }, { status: 404 })
+      throw notFoundError('사용자를 찾을 수 없습니다.')
     }
 
     // 중복 리뷰 체크 (같은 사용자가 같은 코치에게 이미 리뷰를 작성했는지 확인)
@@ -219,10 +198,7 @@ export async function POST(request: NextRequest) {
       .limit(1)
 
     if (existingReview.length > 0) {
-      return NextResponse.json({
-        success: false,
-        message: '이미 이 코치에 대한 리뷰를 작성하셨습니다. 리뷰를 수정하려면 관리자에게 문의하세요.'
-      }, { status: 400 })
+      throw conflictError('이미 이 코치에 대한 리뷰를 작성하셨습니다. 리뷰를 수정하려면 관리자에게 문의하세요.')
     }
 
     // 리뷰 추가
@@ -262,21 +238,11 @@ export async function POST(request: NextRequest) {
       data: newReview,
       message: '리뷰가 추가되었습니다.'
     }, { status: 201 })
-  } catch (error: any) {
-    console.error('Reviews POST error:', error)
-    
-    // requireAdmin에서 throw한 에러 처리
-    if (error.message === '인증이 필요합니다.' || error.message === '관리자 권한이 필요합니다.') {
-      return NextResponse.json({
-        success: false,
-        message: error.message
-      }, { status: 403 })
-    }
-
-    return NextResponse.json({
-      success: false,
-      message: '리뷰 추가 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.'
-    }, { status: 500 })
+  } catch (error) {
+    return handleError(error, {
+      path: '/api/reviews',
+      method: 'POST',
+    })
   }
 }
 

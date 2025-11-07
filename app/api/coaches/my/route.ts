@@ -3,6 +3,7 @@ import { db } from '@/lib/db'
 import { coaches } from '@/lib/db/schema'
 import { eq } from 'drizzle-orm'
 import { getAuthenticatedUser } from '@/lib/auth-server'
+import { handleError, unauthorizedError, forbiddenError, notFoundError, validationError } from '@/lib/error-handler'
 
 /**
  * 현재 로그인한 코치의 프로필 조회 (GET)
@@ -13,18 +14,12 @@ export async function GET(request: NextRequest) {
     // 인증 확인
     const user = await getAuthenticatedUser(request)
     if (!user) {
-      return NextResponse.json({
-        success: false,
-        message: '인증이 필요합니다.'
-      }, { status: 401 })
+      throw unauthorizedError()
     }
 
     // 코치 권한 확인
     if (user.role !== 'coach') {
-      return NextResponse.json({
-        success: false,
-        message: '코치 권한이 필요합니다.'
-      }, { status: 403 })
+      throw forbiddenError('코치 권한이 필요합니다.')
     }
 
     // userId로 코치 찾기
@@ -76,11 +71,10 @@ export async function GET(request: NextRequest) {
       hasProfile: true
     }, { status: 200 })
   } catch (error) {
-    console.error('My Coach GET error:', error)
-    return NextResponse.json({
-      success: false,
-      message: '코치 프로필 조회 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.'
-    }, { status: 500 })
+    return handleError(error, {
+      path: '/api/coaches/my',
+      method: 'GET',
+    })
   }
 }
 
@@ -93,18 +87,12 @@ export async function POST(request: NextRequest) {
     // 인증 확인
     const user = await getAuthenticatedUser(request)
     if (!user) {
-      return NextResponse.json({
-        success: false,
-        message: '인증이 필요합니다.'
-      }, { status: 401 })
+      throw unauthorizedError()
     }
 
     // 코치 권한 확인
     if (user.role !== 'coach') {
-      return NextResponse.json({
-        success: false,
-        message: '코치 권한이 필요합니다.'
-      }, { status: 403 })
+      throw forbiddenError('코치 권한이 필요합니다.')
     }
 
     const body = await request.json()
@@ -120,6 +108,7 @@ export async function POST(request: NextRequest) {
       thumbnailImage,
       profileImage,
       headline,
+      coachIntroduction,
       introductionImage,
       introductionContent,
       curriculumItems,
@@ -128,10 +117,7 @@ export async function POST(request: NextRequest) {
 
     // 필수 필드 검증
     if (!name || !specialty || !tier || !experience) {
-      return NextResponse.json({
-        success: false,
-        message: '이름, 전문 분야, 티어, 경력은 필수 입력 항목입니다.'
-      }, { status: 400 })
+      throw validationError('이름, 전문 분야, 티어, 경력은 필수 입력 항목입니다.')
     }
 
     // 기존 프로필 확인
@@ -166,6 +152,7 @@ export async function POST(request: NextRequest) {
           thumbnailImage: thumbnailImage || null,
           profileImage: profileImage || null,
           headline: headline || null,
+          coachIntroduction: coachIntroduction || null,
           introductionImage: introductionImage || null,
           introductionContent: introductionContent || null,
           curriculumItems: curriculumItems ? JSON.stringify(curriculumItems) : JSON.stringify([]),
@@ -224,6 +211,7 @@ export async function POST(request: NextRequest) {
         thumbnailImage: thumbnailImage || null,
         profileImage: profileImage || null,
         headline: headline || null,
+        coachIntroduction: coachIntroduction || null,
         introductionImage: introductionImage || null,
         introductionContent: introductionContent || null,
         curriculumItems: curriculumItems ? JSON.stringify(curriculumItems) : JSON.stringify([]),
@@ -263,13 +251,11 @@ export async function POST(request: NextRequest) {
         message: '코치 프로필이 생성되었습니다. 관리자 승인 후 공개됩니다.'
       }, { status: 201 })
     }
-  } catch (error: any) {
-    console.error('My Coach POST error:', error)
-    
-    return NextResponse.json({
-      success: false,
-      message: '코치 프로필 저장 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.'
-    }, { status: 500 })
+  } catch (error) {
+    return handleError(error, {
+      path: '/api/coaches/my',
+      method: 'POST',
+    })
   }
 }
 
@@ -282,28 +268,19 @@ export async function PATCH(request: NextRequest) {
     // 인증 확인
     const user = await getAuthenticatedUser(request)
     if (!user) {
-      return NextResponse.json({
-        success: false,
-        message: '인증이 필요합니다.'
-      }, { status: 401 })
+      throw unauthorizedError()
     }
 
     // 코치 권한 확인
     if (user.role !== 'coach') {
-      return NextResponse.json({
-        success: false,
-        message: '코치 권한이 필요합니다.'
-      }, { status: 403 })
+      throw forbiddenError('코치 권한이 필요합니다.')
     }
 
     const body = await request.json()
     const { active } = body
 
     if (typeof active !== 'boolean') {
-      return NextResponse.json({
-        success: false,
-        message: '활성화 상태는 boolean 값이어야 합니다.'
-      }, { status: 400 })
+      throw validationError('활성화 상태는 boolean 값이어야 합니다.')
     }
 
     // 활성화 상태 업데이트
@@ -316,10 +293,7 @@ export async function PATCH(request: NextRequest) {
       .returning()
 
     if (!updated) {
-      return NextResponse.json({
-        success: false,
-        message: '코치 프로필을 찾을 수 없습니다.'
-      }, { status: 404 })
+      throw notFoundError('코치 프로필을 찾을 수 없습니다.')
     }
 
     return NextResponse.json({
@@ -327,13 +301,11 @@ export async function PATCH(request: NextRequest) {
       data: updated,
       message: active ? '강의가 활성화되었습니다.' : '강의가 비활성화되었습니다.'
     }, { status: 200 })
-  } catch (error: any) {
-    console.error('My Coach PATCH error:', error)
-    
-    return NextResponse.json({
-      success: false,
-      message: '활성화 상태 업데이트 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.'
-    }, { status: 500 })
+  } catch (error) {
+    return handleError(error, {
+      path: '/api/coaches/my',
+      method: 'PATCH',
+    })
   }
 }
 

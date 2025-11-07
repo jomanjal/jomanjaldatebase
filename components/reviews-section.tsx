@@ -28,9 +28,9 @@ const reviews = [
 
 export function ReviewsSection() {
   return (
-    <section className="py-12 sm:py-16 lg:py-20 bg-[var(--layer01)]">
+    <section className="py-6 sm:py-8 lg:py-12 bg-[var(--layer01)]">
       <div className="max-w-[1400px] mx-auto px-4 sm:px-6 md:px-8 lg:px-12 xl:px-24 2xl:px-32">
-        <div className="text-center mb-8 sm:mb-12">
+        <div className="text-center mb-4 sm:mb-6">
           <h2 className="mb-2 text-balance text-[var(--text01)]">
             실제 <span className="text-[var(--textPrimary)]">성과</span>와 후기
           </h2>
@@ -40,7 +40,7 @@ export function ReviewsSection() {
         </div>
 
         {/* Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6 mb-8 sm:mb-12">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6 mb-4 sm:mb-6">
           <Card className="bg-transparent border border-[var(--divider01)] text-center">
             <CardContent className="p-4 sm:p-5">
               <div className="text-xl font-bold text-[var(--text01)] mb-2">평균 2.3티어</div>
@@ -81,7 +81,7 @@ export function ReviewsSection() {
                   </div>
                 </div>
 
-                <p className="text-[var(--text04)] text-sm leading-relaxed mb-2.5">"{review.comment}"</p>
+                <p className="text-[var(--text04)] text-sm leading-relaxed mb-2.5">&quot;{review.comment}&quot;</p>
 
                 <div className="text-xs text-[var(--textPrimary)]">{review.weeks}주 코칭 후기</div>
               </CardContent>

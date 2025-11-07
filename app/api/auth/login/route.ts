@@ -6,6 +6,7 @@ import bcrypt from 'bcryptjs'
 import { generateToken } from '@/lib/jwt'
 import { rateLimit, getClientIp } from '@/lib/rate-limit'
 import { loginSchema } from '@/lib/validations'
+import { handleError, validationError } from '@/lib/error-handler'
 
 export async function POST(request: NextRequest) {
   // Rate Limiting: IP당 5회/분
@@ -33,10 +34,7 @@ export async function POST(request: NextRequest) {
     const validationResult = loginSchema.safeParse(body)
     if (!validationResult.success) {
       const firstError = validationResult.error.errors[0]
-      return NextResponse.json({ 
-        success: false, 
-        message: firstError.message || '입력값이 올바르지 않습니다.' 
-      }, { status: 400 })
+      throw validationError(firstError.message || '입력값이 올바르지 않습니다.')
     }
 
     const { email, password } = validationResult.data
@@ -94,32 +92,11 @@ export async function POST(request: NextRequest) {
     })
 
     return response
-  } catch (error: any) {
-    // 개발 환경에서만 상세 에러 로깅
-    if (process.env.NODE_ENV === 'development') {
-      console.error('Login error:', error)
-      console.error('Error details:', {
-        message: error.message,
-        code: error.code,
-        stack: error.stack,
-      })
-    } else {
-      // 프로덕션에서는 민감한 정보 없이 로깅
-      console.error('Login error:', error.message)
-    }
-
-    // 데이터베이스 연결 오류
-    if (error.code === 'ECONNREFUSED' || error.code === 'ENOTFOUND' || error.message?.includes('connect')) {
-      return NextResponse.json({ 
-        success: false, 
-        message: '데이터베이스 연결에 실패했습니다. 잠시 후 다시 시도해주세요.'
-      }, { status: 503 })
-    }
-
-    return NextResponse.json({ 
-      success: false, 
-      message: '로그인 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.'
-    }, { status: 500 })
+  } catch (error) {
+    return handleError(error, {
+      path: '/api/auth/login',
+      method: 'POST',
+    })
   }
 }
 

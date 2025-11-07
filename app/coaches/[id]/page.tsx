@@ -42,6 +42,7 @@ interface Coach {
   specialties: string[]
   description: string | null
   headline: string | null
+  coachIntroduction: string | null
   thumbnailImage: string | null
   profileImage: string | null
   introductionImage: string | null
@@ -78,7 +79,6 @@ export default function CoachDetailPage({ params }: { params: { id: string } }) 
   const [sortBy, setSortBy] = useState<"latest" | "high" | "low">("latest")
   const [currentUser, setCurrentUser] = useState<User | null>(null)
   const [isOwner, setIsOwner] = useState(false)
-  const [showAllAgents, setShowAllAgents] = useState(false)
   const [reviewsPage, setReviewsPage] = useState(1)
   const [reviewsPagination, setReviewsPagination] = useState({
     page: 1,
@@ -520,15 +520,16 @@ export default function CoachDetailPage({ params }: { params: { id: string } }) 
   const effectItems = coach.introductionItems?.filter(item => item.title === "강의 효과") || []
   const otherItems = coach.introductionItems?.filter(item => item.title !== "강의 대상" && item.title !== "강의 효과" && !item.title.startsWith("__")) || []
   
-  // 포지션과 요원 정보 파싱
-  const positionsItem = coach.introductionItems?.find(item => item.title === "__positions__")
-  const agentsItem = coach.introductionItems?.find(item => item.title === "__agents__")
-  const courseTypeItem = coach.introductionItems?.find(item => item.title === "__courseType__")
-  let positions: string[] = []
-  let agents: string[] = []
-  let courseType = "온라인" // 기본값
+  // 코치 소개 (별도 컬럼에서 가져오기, 없으면 기존 JSON에서 파싱)
+  const coachIntroduction = coach.coachIntroduction || (() => {
+    const coachIntroItem = coach.introductionItems?.find(item => item.title === "__coachIntroduction__")
+    return coachIntroItem?.content || ""
+  })()
   
   // 강의 유형 파싱
+  const courseTypeItem = coach.introductionItems?.find(item => item.title === "__courseType__")
+  let courseType = "온라인" // 기본값
+  
   if (courseTypeItem?.content) {
     try {
       const courseTypeData = JSON.parse(courseTypeItem.content)
@@ -541,36 +542,6 @@ export default function CoachDetailPage({ params }: { params: { id: string } }) 
       // 파싱 실패 시 기본값 사용
     }
   }
-  
-  if (positionsItem?.content) {
-    try {
-      positions = JSON.parse(positionsItem.content)
-    } catch {
-      positions = []
-    }
-  }
-  
-  if (agentsItem?.content) {
-    try {
-      agents = JSON.parse(agentsItem.content)
-    } catch {
-      agents = []
-    }
-  }
-  
-  // 발로란트 포지션 및 요원 정의 (강의 관리 페이지와 동일)
-  const valorantPositions = [
-    { id: "sentinel", name: "감시자", icon: "🛡️" },
-    { id: "controller", name: "전략가", icon: "🎯" },
-    { id: "initiator", name: "척후대", icon: "⬆️" },
-    { id: "duelist", name: "타격대", icon: "⚔️" },
-  ]
-  
-  const valorantAgents = [
-    "게코", "네온", "데드록", "레이나", "레이즈", "바이퍼", "브리치", "브림스톤",
-    "사이퍼", "세이지", "소바", "스카이", "아스트라", "아이소", "오멘", "요루",
-    "제트", "체임버", "케이/오", "클로브", "킬조이", "페이드", "피닉스", "하버"
-  ]
 
   return (
     <main className="min-h-screen bg-[var(--layer01)]" style={{ transition: 'var(--transition)' }}>
@@ -718,76 +689,19 @@ export default function CoachDetailPage({ params }: { params: { id: string } }) 
                     </Card>
                   )}
 
-                  {/* 게임 정보 - Accordion */}
-                  {(coach.specialty === "발로란트" && (positions.length > 0 || agents.length > 0)) || (coach.specialties && coach.specialties.length > 0) ? (
+                  {/* 코치 소개 - Accordion */}
+                  {coachIntroduction ? (
                     <Card className="border border-[var(--divider01)]">
                       <CardContent className="p-0">
                         <Accordion type="single" collapsible className="w-full">
-                          <AccordionItem value="game-info">
+                          <AccordionItem value="coach-intro">
                             <AccordionTrigger className="px-4 py-3 hover:no-underline">
-                              <h2 className="text-lg font-semibold text-[var(--text01)]">강의 상세 게임 정보</h2>
+                              <h2 className="text-lg font-semibold text-[var(--text01)]">코치 소개</h2>
                             </AccordionTrigger>
                             <AccordionContent className="px-4 pb-4">
-                              {/* 발로란트 포지션 */}
-                              {coach.specialty === "발로란트" && positions.length > 0 && (
-                                <div className="mb-4">
-                                  <div className="flex flex-wrap gap-2">
-                                    {valorantPositions.map((position) => (
-                                      positions.includes(position.id) && (
-                                        <Button
-                                          key={position.id}
-                                          variant="outline"
-                                          size="sm"
-                                          className="rounded-md h-9"
-                                          style={{ transition: 'var(--transition)' }}
-                                        >
-                                          <span className="mr-1.5">{position.icon}</span>
-                                          {position.name}
-                                        </Button>
-                                      )
-                                    ))}
-                                  </div>
-                                </div>
-                              )}
-                              
-                              {/* 발로란트 요원 */}
-                              {coach.specialty === "발로란트" && agents.length > 0 && (
-                                <div className="mb-4">
-                                  <div className="flex flex-wrap gap-2">
-                                    {(showAllAgents ? agents : agents.slice(0, 6)).map((agent) => (
-                                      <Button
-                                        key={agent}
-                                        variant="outline"
-                                        size="sm"
-                                        className="rounded-md h-9 px-3"
-                                        style={{ transition: 'var(--transition)' }}
-                                      >
-                                        {agent}
-                                      </Button>
-                                    ))}
-                                    {agents.length > 6 && !showAllAgents && (
-                                      <Button
-                                        variant="outline"
-                                        size="sm"
-                                        className="rounded-lg h-9"
-                                        onClick={() => setShowAllAgents(true)}
-                                        style={{ transition: 'var(--transition)' }}
-                                      >
-                                        더보기 (+{agents.length - 6})
-                                      </Button>
-                                    )}
-                                  </div>
-                                </div>
-                              )}
-                              
-                              {/* 키워드 */}
-                              {coach.specialties && coach.specialties.length > 0 && (
-                                <div className="flex flex-wrap gap-2">
-                                  {coach.specialties.map((specialty, idx) => (
-                                    <Badge key={idx} variant="outline" className="border-[var(--divider01)] text-[var(--text04)]">{specialty}</Badge>
-                                  ))}
-                                </div>
-                              )}
+                              <div className="text-[var(--text01)] whitespace-pre-wrap leading-relaxed">
+                                {sanitizeText(coachIntroduction)}
+                              </div>
                             </AccordionContent>
                           </AccordionItem>
                         </Accordion>

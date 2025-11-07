@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
+import Image from "next/image"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -10,7 +11,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Loader2, Save, X, Plus, Upload, ChevronLeft, ChevronRight, Search, Check } from "lucide-react"
+import { Loader2, Save, X, Plus, Upload, ChevronLeft, ChevronRight, Check } from "lucide-react"
 import { checkAuth, type User } from "@/lib/auth"
 import Link from "next/link"
 import { toast } from "sonner"
@@ -51,18 +52,6 @@ const gameTiers: Record<string, string[]> = {
   "배틀그라운드": ["브론즈", "실버", "골드", "플래티넘", "다이아", "마스터"],
 }
 
-const valorantPositions = [
-  { id: "sentinel", name: "감시자", icon: "🛡️" },
-  { id: "controller", name: "전략가", icon: "🎯" },
-  { id: "initiator", name: "척후대", icon: "⬆️" },
-  { id: "duelist", name: "타격대", icon: "⚔️" },
-]
-
-const valorantAgents = [
-  "게코", "네온", "데드록", "레이나", "레이즈", "바이퍼", "브리치", "브림스톤",
-  "사이퍼", "세이지", "소바", "스카이", "아스트라", "아이소", "오멘", "요루",
-  "제트", "체임버", "케이/오", "클로브", "킬조이", "페이드", "피닉스", "하버"
-]
 
 const courseTypes = ["온라인 강의", "오프라인 강의"]
 
@@ -90,8 +79,7 @@ export default function CourseSettingsPage() {
     tier: "",
     experience: "",
     thumbnails: [] as string[],
-    positions: [] as string[],
-    agents: [] as string[],
+    introduction: "",
   })
   
   // 강의 유형
@@ -164,29 +152,12 @@ export default function CourseSettingsPage() {
             }
           }
           
-          // 포지션과 에이전트 정보 복원
-          const positionsItem = introductionItems.find((item: any) => item.title === "__positions__")
-          const agentsItem = introductionItems.find((item: any) => item.title === "__agents__")
+          // 코치 소개 정보 복원 (별도 컬럼 우선, 없으면 기존 JSON에서 파싱)
+          const coachIntroFromColumn = result.data.coachIntroduction || ""
+          const coachIntroItem = introductionItems.find((item: any) => item.title === "__coachIntroduction__")
+          const coachIntroFromJson = coachIntroItem?.content || ""
           const courseTypeItem = introductionItems.find((item: any) => item.title === "__courseType__")
-          let positions: string[] = []
-          let agents: string[] = []
           let courseTypeData = { type: "", guarantees: [] as string[] }
-          
-          if (positionsItem && positionsItem.content) {
-            try {
-              positions = JSON.parse(positionsItem.content)
-            } catch {
-              positions = []
-            }
-          }
-          
-          if (agentsItem && agentsItem.content) {
-            try {
-              agents = JSON.parse(agentsItem.content)
-            } catch {
-              agents = []
-            }
-          }
           
           if (courseTypeItem && courseTypeItem.content) {
             try {
@@ -202,8 +173,7 @@ export default function CourseSettingsPage() {
             tier: result.data.tier || "",
             experience: result.data.experience || "",
             thumbnails: result.data.thumbnailImage ? [result.data.thumbnailImage] : [],
-            positions: positions,
-            agents: agents,
+            introduction: coachIntroFromColumn || coachIntroFromJson,
           })
           
           // introductionItems에서 "강의 소개" 찾기
@@ -482,24 +452,6 @@ export default function CourseSettingsPage() {
       // 강의 대상과 효과, 강의 상세 내용을 모두 포함
       const introductionItems: any[] = []
       
-      // 발로란트 포지션 정보 저장 (발로란트인 경우만)
-      if (gameInfo.game === "발로란트" && gameInfo.positions.length > 0) {
-        introductionItems.push({
-          title: "__positions__",
-          content: JSON.stringify(gameInfo.positions),
-          items: [],
-        })
-      }
-      
-      // 발로란트 에이전트 정보 저장 (발로란트인 경우만)
-      if (gameInfo.game === "발로란트" && gameInfo.agents.length > 0) {
-        introductionItems.push({
-          title: "__agents__",
-          content: JSON.stringify(gameInfo.agents),
-          items: [],
-        })
-      }
-      
       // 강의 유형 정보 저장
       if (courseType.type || courseType.guarantees.length > 0) {
         introductionItems.push({
@@ -563,6 +515,7 @@ export default function CourseSettingsPage() {
           specialties: courseDetail.keywords,
           description: courseDetail.title || null, // 코치 카드 설명 (제목)
           headline: courseSummary.headline || null, // 한문장 표현 (상세 페이지 상단)
+          coachIntroduction: gameInfo.introduction || null, // 코치 소개 (별도 컬럼)
           thumbnailImage: gameInfo.thumbnails[0] || null, // 섬네일 (코치 카드, 사이드바용)
           introductionImage: courseDetail.image || null, // 강의 소개 이미지
           introductionContent: JSON.stringify(introductionItems),
@@ -753,7 +706,7 @@ export default function CourseSettingsPage() {
                     <label className={`flex items-center justify-center w-full h-48 border-2 border-dashed border-[var(--divider01)] rounded-md cursor-pointer hover:border-[var(--primary01)]/50 ${uploading ? 'opacity-50 pointer-events-none' : ''}`}>
                       {uploadPreview && uploading ? (
                         <div className="relative w-full h-full">
-                          <img src={uploadPreview} alt="업로드 중" className="w-full h-full object-cover rounded-md opacity-50" />
+                          <Image src={uploadPreview} alt="업로드 중" fill className="object-cover rounded-md opacity-50" />
                           <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/50 rounded-md">
                             <Loader2 className="w-8 h-8 text-white animate-spin mb-2" />
                             <span className="text-white text-sm">{Math.round(uploadProgress)}%</span>
@@ -767,7 +720,7 @@ export default function CourseSettingsPage() {
                         </div>
                       ) : gameInfo.thumbnails[0] ? (
                         <>
-                          <img src={gameInfo.thumbnails[0]} alt="섬네일" className="w-full h-full object-cover rounded-md" />
+                          <Image src={gameInfo.thumbnails[0]} alt="섬네일" fill className="object-cover rounded-md" />
                           <div className="absolute top-2 left-2 bg-primary text-white rounded-full p-1">
                             <Check className="w-4 h-4" />
                           </div>
@@ -813,101 +766,21 @@ export default function CourseSettingsPage() {
                 </div>
               </div>
 
-              {gameInfo.game === "발로란트" && (
-                <>
-                  <div>
-                    <div className="flex items-center justify-between mb-4">
-                      <Label>포지션</Label>
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        onClick={() => {
-                          if (gameInfo.positions.length === valorantPositions.length) {
-                            setGameInfo({ ...gameInfo, positions: [] })
-                          } else {
-                            setGameInfo({ ...gameInfo, positions: valorantPositions.map(p => p.id) })
-                          }
-                        }}
-                      >
-                        모두 선택
-                      </Button>
-                    </div>
-                    <div className="flex gap-2 flex-wrap">
-                      {valorantPositions.map((position) => (
-                        <Button
-                          key={position.id}
-                          type="button"
-                          variant={gameInfo.positions.includes(position.id) ? "default" : "outline"}
-                          onClick={() => {
-                            const newPositions = gameInfo.positions.includes(position.id)
-                              ? gameInfo.positions.filter(p => p !== position.id)
-                              : [...gameInfo.positions, position.id]
-                            setGameInfo({ ...gameInfo, positions: newPositions })
-                          }}
-                          className="rounded-full"
-                        >
-                          <span className="mr-2">{position.icon}</span>
-                          {position.name}
-                        </Button>
-                      ))}
-                    </div>
-                  </div>
+              <div>
+                <Label htmlFor="coach-introduction">코치 소개</Label>
+                <Textarea
+                  id="coach-introduction"
+                  value={gameInfo.introduction}
+                  onChange={(e) => setGameInfo({ ...gameInfo, introduction: e.target.value })}
+                  placeholder="코치에 대한 소개를 입력해주세요"
+                  rows={6}
+                  maxLength={1000}
+                />
+                <p className="text-xs text-[var(--text04)] mt-1">
+                  {gameInfo.introduction.length} / 1000
+                </p>
+              </div>
 
-                  <div>
-                    <div className="flex items-center justify-between mb-4">
-                      <Label>요원</Label>
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        onClick={() => {
-                          if (gameInfo.agents.length === valorantAgents.length) {
-                            setGameInfo({ ...gameInfo, agents: [] })
-                          } else {
-                            setGameInfo({ ...gameInfo, agents: [...valorantAgents] })
-                          }
-                        }}
-                      >
-                        모두 선택
-                      </Button>
-                    </div>
-                    <div className="relative mb-4">
-                      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-[var(--text04)] w-4 h-4" />
-                      <Input
-                        placeholder="Q 요원 검색"
-                        className="pl-10"
-                      />
-                    </div>
-                    <div className="grid grid-cols-6 gap-2">
-                      {valorantAgents.map((agent) => (
-                        <Button
-                          key={agent}
-                          type="button"
-                          variant={gameInfo.agents.includes(agent) ? "default" : "outline"}
-                          onClick={() => {
-                            const newAgents = gameInfo.agents.includes(agent)
-                              ? gameInfo.agents.filter(a => a !== agent)
-                              : [...gameInfo.agents, agent]
-                            setGameInfo({ ...gameInfo, agents: newAgents })
-                          }}
-                          className="rounded-full flex flex-col items-center gap-1 h-auto py-2"
-                        >
-                          <span className="text-xs">{agent}</span>
-                        </Button>
-                      ))}
-                    </div>
-                  </div>
-                </>
-              )}
-
-              <Card className="bg-[var(--systemWarning01)]/10 border-[var(--systemWarning01)]">
-                <CardContent className="pt-6">
-                  <p className="font-semibold mb-2">TIP!</p>
-                  <p className="text-sm">강의와 관련된 상세 정보는 필수로 선택해 주셔야합니다.</p>
-                  <p className="text-sm">선택한 정보는 강의 상세 페이지 및 검색 결과에 표시되며, 이로 인해 수익 창출 기회가 확대될 수 있습니다. (중복 선택 가능)</p>
-                </CardContent>
-              </Card>
             </div>
           )}
 
@@ -1288,7 +1161,7 @@ export default function CourseSettingsPage() {
                   <label className={`relative flex items-center justify-center w-32 h-32 border-2 border-dashed border-[var(--divider01)] rounded-md cursor-pointer hover:border-[var(--primary01)]/50 ${uploading ? 'opacity-50 pointer-events-none' : ''}`}>
                     {uploadPreview && uploading ? (
                       <div className="relative w-full h-full">
-                        <img src={uploadPreview} alt="업로드 중" className="w-full h-full object-cover rounded-md opacity-50" />
+                        <Image src={uploadPreview} alt="업로드 중" fill className="object-cover rounded-md opacity-50" />
                         <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/50 rounded-md">
                           <Loader2 className="w-6 h-6 text-white animate-spin mb-1" />
                           <span className="text-white text-xs">{Math.round(uploadProgress)}%</span>
@@ -1302,7 +1175,7 @@ export default function CourseSettingsPage() {
                       </div>
                     ) : courseDetail.image ? (
                       <>
-                        <img src={courseDetail.image} alt="미리보기" className="w-full h-full object-cover rounded-md" />
+                        <Image src={courseDetail.image} alt="미리보기" fill className="object-cover rounded-md" />
                         <button
                           type="button"
                           onClick={async () => {

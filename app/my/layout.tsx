@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react"
 import { useRouter, usePathname } from "next/navigation"
+import Image from "next/image"
 import { SidebarProvider, Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from "@/components/ui/sidebar"
 import { checkAuth, logout, type User } from "@/lib/auth"
 import Link from "next/link"
@@ -24,6 +25,7 @@ export default function MyPageLayout({ children }: { children: React.ReactNode }
   const pathname = usePathname()
   const [authenticated, setAuthenticated] = useState(false)
   const [currentUser, setCurrentUser] = useState<User | null>(null)
+  const [coachProfile, setCoachProfile] = useState<{ profileImage: string | null } | null>(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -45,6 +47,19 @@ export default function MyPageLayout({ children }: { children: React.ReactNode }
         
         setAuthenticated(true)
         setCurrentUser(user)
+        
+        // 코치인 경우 프로필 이미지 가져오기
+        if (user.role === 'coach') {
+          try {
+            const coachResponse = await fetch('/api/coaches/my', { credentials: 'include' })
+            const coachResult = await coachResponse.json()
+            if (coachResult.success && coachResult.data) {
+              setCoachProfile({ profileImage: coachResult.data.profileImage || null })
+            }
+          } catch (error) {
+            console.error('코치 프로필 로드 실패:', error)
+          }
+        }
       } catch (error) {
         console.error('Auth verification error:', error)
         router.push("/login")
@@ -55,6 +70,21 @@ export default function MyPageLayout({ children }: { children: React.ReactNode }
     
     verifyAuth()
   }, [router])
+  
+  // 프로필 이미지 업데이트 이벤트 리스너
+  useEffect(() => {
+    const handleProfileImageUpdate = (event: CustomEvent) => {
+      if (currentUser?.role === 'coach') {
+        setCoachProfile({ profileImage: event.detail.profileImage || null })
+      }
+    }
+    
+    window.addEventListener('profileImageUpdated', handleProfileImageUpdate as EventListener)
+    
+    return () => {
+      window.removeEventListener('profileImageUpdated', handleProfileImageUpdate as EventListener)
+    }
+  }, [currentUser])
 
   const handleLogout = async () => {
     await logout()
@@ -81,11 +111,23 @@ export default function MyPageLayout({ children }: { children: React.ReactNode }
             <div className="px-6 py-5 bg-[var(--layer02)]/50">
               <div className="flex items-center gap-3 mb-4">
                 <div className="relative">
-                  <div className="w-12 h-12 bg-[var(--primary01)] rounded-full flex items-center justify-center">
-                    <span className="text-white font-semibold text-base">
-                      {currentUser?.username.charAt(0).toUpperCase() || "U"}
-                    </span>
-                  </div>
+                  {currentUser?.role === 'coach' && coachProfile?.profileImage ? (
+                    <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-[var(--primary01)]">
+                      <Image
+                        src={coachProfile.profileImage}
+                        alt={currentUser?.username || "프로필"}
+                        width={48}
+                        height={48}
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                  ) : (
+                    <div className="w-12 h-12 bg-[var(--primary01)] rounded-full flex items-center justify-center">
+                      <span className="text-white font-semibold text-base">
+                        {currentUser?.username.charAt(0).toUpperCase() || "U"}
+                      </span>
+                    </div>
+                  )}
                   {currentUser?.role && (
                     <div className="absolute -top-1 -right-1">
                       <Badge className="bg-[var(--systemSuccess01)] text-white text-[10px] px-1.5 py-0.5 h-5">

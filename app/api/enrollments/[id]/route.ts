@@ -5,6 +5,7 @@ import { eq, and, sql } from 'drizzle-orm'
 import { getAuthenticatedUser } from '@/lib/auth-server'
 import { enrollmentStatusUpdateSchema, idSchema } from '@/lib/validations'
 import { verifyCsrfToken } from '@/lib/csrf'
+import { handleError, unauthorizedError, validationError, notFoundError, forbiddenError } from '@/lib/error-handler'
 
 /**
  * 수강 신청 상세 조회 (GET)
@@ -17,19 +18,13 @@ export async function GET(
     // 인증 확인
     const user = await getAuthenticatedUser(request)
     if (!user) {
-      return NextResponse.json({
-        success: false,
-        message: '인증이 필요합니다.'
-      }, { status: 401 })
+      throw unauthorizedError()
     }
 
     // ID 검증
     const idValidation = idSchema.safeParse(params.id)
     if (!idValidation.success) {
-      return NextResponse.json({
-        success: false,
-        message: '유효하지 않은 ID입니다.'
-      }, { status: 400 })
+      throw validationError('유효하지 않은 ID입니다.')
     }
     const id = idValidation.data
 
@@ -39,10 +34,7 @@ export async function GET(
       .limit(1)
 
     if (!enrollment) {
-      return NextResponse.json({
-        success: false,
-        message: '수강 신청을 찾을 수 없습니다.'
-      }, { status: 404 })
+      throw notFoundError('수강 신청을 찾을 수 없습니다.')
     }
 
     // 권한 확인: 자신의 신청이거나, 코치가 자신의 코치 프로필에 대한 신청이거나, 관리자
@@ -59,16 +51,10 @@ export async function GET(
             .limit(1)
           
           if (!coach) {
-            return NextResponse.json({
-              success: false,
-              message: '권한이 없습니다.'
-            }, { status: 403 })
+            throw forbiddenError('권한이 없습니다.')
           }
         } else {
-          return NextResponse.json({
-            success: false,
-            message: '권한이 없습니다.'
-          }, { status: 403 })
+          throw forbiddenError('권한이 없습니다.')
         }
       }
     }
@@ -78,11 +64,10 @@ export async function GET(
       data: enrollment
     }, { status: 200 })
   } catch (error) {
-    console.error('Enrollment GET error:', error)
-    return NextResponse.json({
-      success: false,
-      message: '수강 신청 조회 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.'
-    }, { status: 500 })
+    return handleError(error, {
+      path: '/api/enrollments/[id]',
+      method: 'GET',
+    })
   }
 }
 
@@ -99,28 +84,19 @@ export async function PATCH(
     // 인증 확인
     const user = await getAuthenticatedUser(request)
     if (!user) {
-      return NextResponse.json({
-        success: false,
-        message: '인증이 필요합니다.'
-      }, { status: 401 })
+      throw unauthorizedError()
     }
 
     // CSRF 토큰 검증
     const csrfToken = request.headers.get('X-CSRF-Token')
     if (!await verifyCsrfToken(csrfToken)) {
-      return NextResponse.json({
-        success: false,
-        message: 'CSRF 토큰이 유효하지 않습니다.'
-      }, { status: 403 })
+      throw forbiddenError('CSRF 토큰이 유효하지 않습니다.')
     }
 
     // ID 검증
     const idValidation = idSchema.safeParse(params.id)
     if (!idValidation.success) {
-      return NextResponse.json({
-        success: false,
-        message: '유효하지 않은 ID입니다.'
-      }, { status: 400 })
+      throw validationError('유효하지 않은 ID입니다.')
     }
     const id = idValidation.data
 
@@ -130,10 +106,7 @@ export async function PATCH(
     const validationResult = enrollmentStatusUpdateSchema.safeParse(body)
     if (!validationResult.success) {
       const firstError = validationResult.error.errors[0]
-      return NextResponse.json({
-        success: false,
-        message: firstError.message || '입력값이 올바르지 않습니다.'
-      }, { status: 400 })
+      throw validationError(firstError.message || '입력값이 올바르지 않습니다.')
     }
 
     const { status, coachMessage } = validationResult.data
@@ -145,10 +118,7 @@ export async function PATCH(
       .limit(1)
 
     if (!enrollment) {
-      return NextResponse.json({
-        success: false,
-        message: '수강 신청을 찾을 수 없습니다.'
-      }, { status: 404 })
+      throw notFoundError('수강 신청을 찾을 수 없습니다.')
     }
 
     // 권한 및 상태 변경 검증
@@ -175,18 +145,12 @@ export async function PATCH(
       }
       
       if (!canUpdate) {
-        return NextResponse.json({
-          success: false,
-          message: '승인/거절 권한이 없습니다.'
-        }, { status: 403 })
+        throw forbiddenError('승인/거절 권한이 없습니다.')
       }
 
       // pending 상태에서만 승인/거절 가능
       if (enrollment.status !== 'pending') {
-        return NextResponse.json({
-          success: false,
-          message: '대기 중인 신청만 승인/거절할 수 있습니다.'
-        }, { status: 400 })
+        throw validationError('대기 중인 신청만 승인/거절할 수 있습니다.')
       }
     } else if (status === 'cancelled') {
       // 취소: 사용자 본인, 관리자, 또는 코치(자신의 코치 프로필에 대한 신청)
@@ -208,18 +172,12 @@ export async function PATCH(
       }
       
       if (!canUpdate) {
-        return NextResponse.json({
-          success: false,
-          message: '취소 권한이 없습니다.'
-        }, { status: 403 })
+        throw forbiddenError('취소 권한이 없습니다.')
       }
 
       // pending 또는 approved 상태에서만 취소 가능
       if (enrollment.status !== 'pending' && enrollment.status !== 'approved') {
-        return NextResponse.json({
-          success: false,
-          message: '대기 중이거나 승인된 신청만 취소할 수 있습니다.'
-        }, { status: 400 })
+        throw validationError('대기 중이거나 승인된 신청만 취소할 수 있습니다.')
       }
     } else if (status === 'completed') {
       // 완료: 관리자만 가능
@@ -227,16 +185,10 @@ export async function PATCH(
         canUpdate = true
         newStatus = 'completed'
       } else {
-        return NextResponse.json({
-          success: false,
-          message: '완료 처리는 관리자만 가능합니다.'
-        }, { status: 403 })
+        throw forbiddenError('완료 처리는 관리자만 가능합니다.')
       }
     } else {
-      return NextResponse.json({
-        success: false,
-        message: '유효하지 않은 상태입니다.'
-      }, { status: 400 })
+      throw validationError('유효하지 않은 상태입니다.')
     }
 
     // 상태 업데이트
@@ -282,11 +234,10 @@ export async function PATCH(
       message: '수강 신청 상태가 변경되었습니다.'
     }, { status: 200 })
   } catch (error) {
-    console.error('Enrollment PATCH error:', error)
-    return NextResponse.json({
-      success: false,
-      message: '수강 신청 상태 변경 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.'
-    }, { status: 500 })
+    return handleError(error, {
+      path: '/api/enrollments/[id]',
+      method: 'PATCH',
+    })
   }
 }
 

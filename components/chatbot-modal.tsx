@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useRef, useEffect } from "react"
+import Image from "next/image"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent } from "@/components/ui/card"
@@ -605,11 +606,13 @@ export function ChatbotModal({ isOpen, onClose }: ChatbotModalProps) {
               <div className="space-y-3">
                 <div className="border border-[var(--divider01)] rounded-lg p-4 bg-[var(--layer02)]">
                   <div className="flex items-start gap-3">
-                    <div className="w-16 h-16 bg-gradient-to-br from-primary/20 to-primary/10 rounded-full flex items-center justify-center flex-shrink-0 overflow-hidden border-2 border-primary/30 shadow-lg">
-                      <img 
+                    <div className="w-16 h-16 bg-gradient-to-br from-primary/20 to-primary/10 rounded-full flex items-center justify-center flex-shrink-0 overflow-hidden border-2 border-primary/30 shadow-lg relative">
+                      <Image 
                         src={matchedInstructor.image} 
                         alt={matchedInstructor.name}
-                        className="w-full h-full object-cover"
+                        width={64}
+                        height={64}
+                        className="object-cover"
                       />
                     </div>
                     <div className="flex-1">

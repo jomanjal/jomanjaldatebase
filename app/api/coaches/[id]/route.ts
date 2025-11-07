@@ -3,6 +3,7 @@ import { db } from '@/lib/db'
 import { coaches } from '@/lib/db/schema'
 import { eq } from 'drizzle-orm'
 import { getAuthenticatedUser } from '@/lib/auth-server'
+import { handleError, validationError, notFoundError, forbiddenError, unauthorizedError, conflictError } from '@/lib/error-handler'
 
 /**
  * 코치 조회 (GET)
@@ -14,10 +15,7 @@ export async function GET(
   try {
     const id = parseInt(params.id)
     if (isNaN(id)) {
-      return NextResponse.json({
-        success: false,
-        message: '유효하지 않은 ID입니다.'
-      }, { status: 400 })
+      throw validationError('유효하지 않은 ID입니다.')
     }
 
     const [coach] = await db.select()
@@ -26,10 +24,7 @@ export async function GET(
       .limit(1)
 
     if (!coach) {
-      return NextResponse.json({
-        success: false,
-        message: '코치를 찾을 수 없습니다.'
-      }, { status: 404 })
+      throw notFoundError('코치를 찾을 수 없습니다.')
     }
 
     // specialties, curriculumItems 파싱
@@ -66,11 +61,10 @@ export async function GET(
       data: formattedCoach
     }, { status: 200 })
   } catch (error) {
-    console.error('Coach GET error:', error)
-    return NextResponse.json({
-      success: false,
-      message: '코치 조회 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.'
-    }, { status: 500 })
+    return handleError(error, {
+      path: '/api/coaches/[id]',
+      method: 'GET',
+    })
   }
 }
 
@@ -86,18 +80,12 @@ export async function PUT(
     // 인증 확인
     const user = await getAuthenticatedUser(request)
     if (!user) {
-      return NextResponse.json({
-        success: false,
-        message: '인증이 필요합니다.'
-      }, { status: 401 })
+      throw unauthorizedError()
     }
 
     const id = parseInt(params.id)
     if (isNaN(id)) {
-      return NextResponse.json({
-        success: false,
-        message: '유효하지 않은 ID입니다.'
-      }, { status: 400 })
+      throw validationError('유효하지 않은 ID입니다.')
     }
 
     // 코치 정보 조회
@@ -107,19 +95,13 @@ export async function PUT(
       .limit(1)
 
     if (!coach) {
-      return NextResponse.json({
-        success: false,
-        message: '코치를 찾을 수 없습니다.'
-      }, { status: 404 })
+      throw notFoundError('코치를 찾을 수 없습니다.')
     }
 
     // 권한 확인: 관리자이거나 본인 코치 프로필만 수정 가능
     const isOwnProfile = user.role === 'coach' && coach.userId === user.userId
     if (!user.isAdmin && !isOwnProfile) {
-      return NextResponse.json({
-        success: false,
-        message: '수정 권한이 없습니다.'
-      }, { status: 403 })
+      throw forbiddenError('수정 권한이 없습니다.')
     }
 
     const body = await request.json()
@@ -184,10 +166,7 @@ export async function PUT(
       .returning()
 
     if (!updated) {
-      return NextResponse.json({
-        success: false,
-        message: '코치를 찾을 수 없습니다.'
-      }, { status: 404 })
+      throw notFoundError('코치를 찾을 수 없습니다.')
     }
 
     // specialties, curriculumItems 파싱
@@ -203,11 +182,10 @@ export async function PUT(
       message: '코치 정보가 수정되었습니다.'
     }, { status: 200 })
   } catch (error) {
-    console.error('Coach PUT error:', error)
-    return NextResponse.json({
-      success: false,
-      message: '코치 수정 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.'
-    }, { status: 500 })
+    return handleError(error, {
+      path: '/api/coaches/[id]',
+      method: 'PUT',
+    })
   }
 }
 
@@ -223,18 +201,12 @@ export async function DELETE(
     // 인증 확인
     const user = await getAuthenticatedUser(request)
     if (!user || !user.isAdmin) {
-      return NextResponse.json({
-        success: false,
-        message: '관리자 권한이 필요합니다.'
-      }, { status: 403 })
+      throw forbiddenError('관리자 권한이 필요합니다.')
     }
 
     const id = parseInt(params.id)
     if (isNaN(id)) {
-      return NextResponse.json({
-        success: false,
-        message: '유효하지 않은 ID입니다.'
-      }, { status: 400 })
+      throw validationError('유효하지 않은 ID입니다.')
     }
 
     // 삭제
@@ -243,31 +215,23 @@ export async function DELETE(
       .returning()
 
     if (!deleted) {
-      return NextResponse.json({
-        success: false,
-        message: '코치를 찾을 수 없습니다.'
-      }, { status: 404 })
+      throw notFoundError('코치를 찾을 수 없습니다.')
     }
 
     return NextResponse.json({
       success: true,
       message: '코치가 삭제되었습니다.'
     }, { status: 200 })
-  } catch (error: any) {
-    console.error('Coach DELETE error:', error)
-    
+  } catch (error) {
     // 외래 키 제약 오류 (리뷰가 있는 경우)
-    if (error.code === '23503') {
-      return NextResponse.json({
-        success: false,
-        message: '관련 리뷰가 있어 삭제할 수 없습니다.'
-      }, { status: 400 })
+    if (error instanceof Error && 'code' in error && error.code === '23503') {
+      throw conflictError('관련 리뷰가 있어 삭제할 수 없습니다.')
     }
-
-    return NextResponse.json({
-      success: false,
-      message: '코치 삭제 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.'
-    }, { status: 500 })
+    
+    return handleError(error, {
+      path: '/api/coaches/[id]',
+      method: 'DELETE',
+    })
   }
 }
 

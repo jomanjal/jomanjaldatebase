@@ -44,9 +44,9 @@ export function GameCoachSection() {
   }
 
   return (
-    <section className="py-12 sm:py-16 lg:py-20 bg-[var(--layer01)]">
+    <section className="py-6 sm:py-8 lg:py-12 bg-[var(--layer01)]">
       <div className="max-w-[1400px] mx-auto px-4 sm:px-6 md:px-8 lg:px-12 xl:px-24 2xl:px-32">
-        <div className="text-center mb-8 sm:mb-12">
+        <div className="text-center mb-4 sm:mb-6">
           <h2 className="mb-2 text-balance text-[var(--text01)]">전 프로와 코치 출신에게 직접 배우는 게 가능할까요?</h2>
           <p className="text-sm text-[var(--text04)]">프로는 가르치는 방식부터 다릅니다. 압도적인 티어 상승을 경험하세요.</p>
         </div>

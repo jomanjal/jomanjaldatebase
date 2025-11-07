@@ -1,24 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { verifyToken, getTokenFromNextRequest } from '@/lib/jwt'
+import { handleError, unauthorizedError } from '@/lib/error-handler'
 
 export async function GET(request: NextRequest) {
   try {
     const token = getTokenFromNextRequest(request)
     
     if (!token) {
-      return NextResponse.json({ 
-        success: false, 
-        message: '토큰이 제공되지 않았습니다.' 
-      }, { status: 401 })
+      throw unauthorizedError('토큰이 제공되지 않았습니다.')
     }
     
     const payload = verifyToken(token)
     
     if (!payload) {
-      return NextResponse.json({ 
-        success: false, 
-        message: '유효하지 않은 토큰입니다.' 
-      }, { status: 401 })
+      throw unauthorizedError('유효하지 않은 토큰입니다.')
     }
     
     return NextResponse.json({ 
@@ -31,10 +26,10 @@ export async function GET(request: NextRequest) {
       }
     }, { status: 200 })
   } catch (error) {
-    return NextResponse.json({ 
-      success: false, 
-      message: '토큰 검증 중 오류가 발생했습니다.' 
-    }, { status: 500 })
+    return handleError(error, {
+      path: '/api/auth/verify',
+      method: 'GET',
+    })
   }
 }
 

@@ -31,9 +31,9 @@ const useCases = [
 
 export function UseCaseSection() {
   return (
-    <section className="py-12 sm:py-16 lg:py-20 bg-[var(--layer01)]">
+    <section className="py-6 sm:py-8 lg:py-12 bg-[var(--layer01)]">
       <div className="max-w-[1400px] mx-auto px-4 sm:px-6 md:px-8 lg:px-12 xl:px-24 2xl:px-32">
-        <div className="text-center mb-8 sm:mb-12">
+        <div className="text-center mb-4 sm:mb-6">
           <h2 className="mb-2 text-balance text-[var(--text01)]">
             <span className="text-[var(--textPrimary)]">성공 스토리</span>
           </h2>

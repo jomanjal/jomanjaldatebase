@@ -4,36 +4,24 @@ import { coaches, reviews, waitlist, users } from '@/lib/db/schema'
 import { getAuthenticatedUser } from '@/lib/auth-server'
 import { sql, eq } from 'drizzle-orm'
 import { rateLimit } from '@/lib/rate-limit'
+import { handleError, forbiddenError, rateLimitExceededError } from '@/lib/error-handler'
 
 /**
  * 관리자 대시보드 통계 조회
  * 관리자 권한 필요
  */
 export async function GET(request: NextRequest) {
-  // Rate Limiting: IP당 30회/분
-  const rateLimitResult = rateLimit(30, 60000)(request)
-  if (!rateLimitResult.allowed) {
-    return NextResponse.json({
-      success: false,
-      message: '너무 많은 요청이 발생했습니다. 잠시 후 다시 시도해주세요.',
-    }, {
-      status: 429,
-      headers: {
-        'X-RateLimit-Limit': '30',
-        'X-RateLimit-Remaining': rateLimitResult.remaining.toString(),
-        'X-RateLimit-Reset': new Date(rateLimitResult.resetTime).toISOString(),
-      },
-    })
-  }
-
   try {
+    // Rate Limiting: IP당 30회/분
+    const rateLimitResult = rateLimit(30, 60000)(request)
+    if (!rateLimitResult.allowed) {
+      throw rateLimitExceededError()
+    }
+
     // 인증 확인
     const user = await getAuthenticatedUser(request)
     if (!user || !user.isAdmin) {
-      return NextResponse.json({ 
-        success: false, 
-        message: '관리자 권한이 필요합니다.' 
-      }, { status: 403 })
+      throw forbiddenError('관리자 권한이 필요합니다.')
     }
 
     // 총 코치 수
@@ -127,11 +115,10 @@ export async function GET(request: NextRequest) {
       }
     }, { status: 200 })
   } catch (error) {
-    console.error('Stats GET error:', error)
-    return NextResponse.json({ 
-      success: false, 
-      message: '통계 조회 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.' 
-    }, { status: 500 })
+    return handleError(error, {
+      path: '/api/admin/stats',
+      method: 'GET',
+    })
   }
 }
 

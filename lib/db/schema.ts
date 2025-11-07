@@ -35,6 +35,7 @@ export const coaches = pgTable('coaches', {
   specialties: text('specialties').default('[]'), // JSON 배열 형태
   description: text('description'), // 코치 카드 설명 (제목)
   headline: text('headline'), // 한문장 표현 (상세 페이지 상단 표시)
+  coachIntroduction: text('coach_introduction'), // 코치 소개 (별도 컬럼)
   // 상세 페이지 구성 정보
   thumbnailImage: text('thumbnail_image'), // 섬네일 이미지 URL (코치 카드용)
   profileImage: text('profile_image'), // 프로필 이미지 URL (코치 상세 페이지 우측바용)

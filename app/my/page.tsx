@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import Image from "next/image"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -11,6 +12,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { checkAuth } from "@/lib/auth"
 import { Loader2, UserCircle, BookOpen, Star, Users, Edit, UserCheck, MessageSquare, Calendar, TrendingUp, CheckCircle, Clock, FolderCheck, AlertCircle, Search, Info } from "lucide-react"
 import Link from "next/link"
+import { format, addDays, startOfWeek, isSameDay } from "date-fns"
+import { ko } from "date-fns/locale"
 
 interface Coach {
   id: number
@@ -24,8 +27,39 @@ interface Coach {
   price: number | null // 숫자로 변경
   specialties: string[]
   description: string | null
+  profileImage: string | null
   verified: boolean
   active?: boolean
+}
+
+interface Stats {
+  satisfaction: {
+    rating: number
+    messageResponseRate: number
+    scheduleComplianceRate: number
+    orderSuccessRate: number
+  }
+  revenue: {
+    totalRevenue: number
+    totalSales: number
+    todayRevenue: number
+    todaySales: number
+  }
+  sales: {
+    pending: number
+    approved: number
+    inProgress: number
+    completed: number
+    confirmed: number
+    cancelled: number
+  }
+}
+
+interface Schedule {
+  dayOfWeek: number
+  enabled: boolean
+  startTime: string
+  endTime: string
 }
 
 export default function MyPage() {
@@ -33,6 +67,16 @@ export default function MyPage() {
   const [loading, setLoading] = useState(true)
   const [updatingActive, setUpdatingActive] = useState(false)
   const [currentUser, setCurrentUser] = useState<any>(null)
+  const [stats, setStats] = useState<Stats | null>(null)
+  const [schedules, setSchedules] = useState<Schedule[]>([])
+  const [currentWeekStart, setCurrentWeekStart] = useState<Date>(() => {
+    const today = new Date()
+    const day = today.getDay()
+    const diff = today.getDate() - day + (day === 0 ? -6 : 1) // 월요일 기준
+    const monday = new Date(today.setDate(diff))
+    monday.setHours(0, 0, 0, 0)
+    return monday
+  })
 
   useEffect(() => {
     async function loadData() {
@@ -47,14 +91,25 @@ export default function MyPage() {
 
         // 코치 프로필 조회 (코치만)
         if (user.role === 'coach') {
-          const response = await fetch('/api/coaches/my', {
-            credentials: 'include',
-          })
+          const [coachResponse, statsResponse, scheduleResponse] = await Promise.all([
+            fetch('/api/coaches/my', { credentials: 'include' }),
+            fetch('/api/coaches/my/stats', { credentials: 'include' }),
+            fetch('/api/coaches/my/schedule', { credentials: 'include' })
+          ])
 
-          const result = await response.json()
+          const coachResult = await coachResponse.json()
+          if (coachResult.success && coachResult.data) {
+            setCoach(coachResult.data)
+          }
 
-          if (result.success && result.data) {
-            setCoach(result.data)
+          const statsResult = await statsResponse.json()
+          if (statsResult.success && statsResult.data) {
+            setStats(statsResult.data)
+          }
+
+          const scheduleResult = await scheduleResponse.json()
+          if (scheduleResult.success && scheduleResult.data) {
+            setSchedules(scheduleResult.data)
           }
         }
       } catch (error) {
@@ -89,6 +144,54 @@ export default function MyPage() {
     } finally {
       setUpdatingActive(false)
     }
+  }
+
+  const handlePrevWeek = () => {
+    setCurrentWeekStart(prev => addDays(prev, -7))
+  }
+
+  const handleNextWeek = () => {
+    setCurrentWeekStart(prev => addDays(prev, 7))
+  }
+
+  const handleTodaySchedule = () => {
+    const today = new Date()
+    const day = today.getDay()
+    const diff = today.getDate() - day + (day === 0 ? -6 : 1) // 월요일 기준
+    const monday = new Date(today.setDate(diff))
+    monday.setHours(0, 0, 0, 0)
+    setCurrentWeekStart(monday)
+  }
+
+  // 주간 날짜 배열 생성
+  const weekDates = Array.from({ length: 7 }, (_, i) => addDays(currentWeekStart, i))
+  const weekEnd = addDays(currentWeekStart, 6)
+
+  // 특정 날짜의 일정 가져오기
+  const getScheduleForDate = (date: Date) => {
+    const dayOfWeek = date.getDay() === 0 ? 6 : date.getDay() - 1 // 0: 월요일, 6: 일요일
+    return schedules.find(s => s.dayOfWeek === dayOfWeek && s.enabled)
+  }
+
+  // 시간 슬롯 생성 (30분 단위)
+  const generateTimeSlots = (startTime: string, endTime: string) => {
+    const slots: string[] = []
+    const [startHour, startMin] = startTime.split(':').map(Number)
+    const [endHour, endMin] = endTime.split(':').map(Number)
+    
+    let currentHour = startHour
+    let currentMin = startMin
+    
+    while (currentHour < endHour || (currentHour === endHour && currentMin <= endMin)) {
+      slots.push(`${String(currentHour).padStart(2, '0')}:${String(currentMin).padStart(2, '0')}`)
+      currentMin += 30
+      if (currentMin >= 60) {
+        currentMin = 0
+        currentHour += 1
+      }
+    }
+    
+    return slots
   }
 
   if (loading) {
@@ -149,7 +252,9 @@ export default function MyPage() {
                         </div>
                         <div className="flex-1">
                           <p className="text-xs text-[var(--text04)] mb-1">만족도</p>
-                          <p className="text-xl font-bold text-[var(--text01)]">{coach.rating.toFixed(1)}%</p>
+                          <p className="text-xl font-bold text-[var(--text01)]">
+                            {stats ? `${(stats.satisfaction.rating * 20).toFixed(1)}%` : `${(coach.rating * 20).toFixed(1)}%`}
+                          </p>
                         </div>
                       </div>
                       <div className="flex items-center gap-3">
@@ -158,7 +263,9 @@ export default function MyPage() {
                         </div>
                         <div className="flex-1">
                           <p className="text-xs text-[var(--text04)] mb-1">메시지 응답</p>
-                          <p className="text-xl font-bold text-[var(--text01)]">92%</p>
+                          <p className="text-xl font-bold text-[var(--text01)]">
+                            {stats ? `${stats.satisfaction.messageResponseRate}%` : '0%'}
+                          </p>
                         </div>
                       </div>
                       <div className="flex items-center gap-3">
@@ -167,7 +274,9 @@ export default function MyPage() {
                         </div>
                         <div className="flex-1">
                           <p className="text-xs text-[var(--text04)] mb-1">일정 준수</p>
-                          <p className="text-xl font-bold text-[var(--text01)]">98%</p>
+                          <p className="text-xl font-bold text-[var(--text01)]">
+                            {stats ? `${stats.satisfaction.scheduleComplianceRate}%` : '0%'}
+                          </p>
                         </div>
                       </div>
                       <div className="flex items-center gap-3">
@@ -176,7 +285,9 @@ export default function MyPage() {
                         </div>
                         <div className="flex-1">
                           <p className="text-xs text-[var(--text04)] mb-1">주문 성공</p>
-                          <p className="text-xl font-bold text-[var(--text01)]">100%</p>
+                          <p className="text-xl font-bold text-[var(--text01)]">
+                            {stats ? `${stats.satisfaction.orderSuccessRate}%` : '0%'}
+                          </p>
                         </div>
                       </div>
                     </div>
@@ -194,20 +305,26 @@ export default function MyPage() {
                       <div className="flex items-center justify-between">
                         <p className="text-xs text-[var(--text04)]">누적 수익금</p>
                         <p className="text-base font-bold text-[var(--text01)]">
-                          {coach.price ? `₩${(coach.price * coach.students).toLocaleString()}` : "-"}
+                          {stats ? `₩${stats.revenue.totalRevenue.toLocaleString()}` : (coach.price ? `₩${(coach.price * coach.students).toLocaleString()}` : "-")}
                         </p>
                       </div>
                       <div className="flex items-center justify-between">
                         <p className="text-xs text-[var(--text04)]">누적 판매 건</p>
-                        <p className="text-base font-bold text-[var(--text01)]">{coach.students}건</p>
+                        <p className="text-base font-bold text-[var(--text01)]">
+                          {stats ? `${stats.revenue.totalSales}건` : `${coach.students}건`}
+                        </p>
                       </div>
                       <div className="flex items-center justify-between">
                         <p className="text-xs text-[var(--text04)]">금일 수익금</p>
-                        <p className="text-base font-bold text-[var(--text01)]">-</p>
+                        <p className="text-base font-bold text-[var(--text01)]">
+                          {stats ? `₩${stats.revenue.todayRevenue.toLocaleString()}` : '₩0'}
+                        </p>
                       </div>
                       <div className="flex items-center justify-between">
                         <p className="text-xs text-[var(--text04)]">금일 판매 건</p>
-                        <p className="text-base font-bold text-[var(--text01)]">-</p>
+                        <p className="text-base font-bold text-[var(--text01)]">
+                          {stats ? `${stats.revenue.todaySales}건` : '0건'}
+                        </p>
                       </div>
                     </div>
                   </div>
@@ -223,42 +340,42 @@ export default function MyPage() {
                         <div className="w-1 h-8 bg-[var(--primary01)] rounded-full"></div>
                         <div>
                           <p className="text-xs text-[var(--text04)]">대기</p>
-                          <p className="text-lg font-bold text-[var(--text01)]">0</p>
+                          <p className="text-lg font-bold text-[var(--text01)]">{stats ? stats.sales.pending : 0}</p>
                         </div>
                       </div>
                       <div className="flex items-center gap-2">
                         <div className="w-1 h-8 bg-[var(--systemSuccess01)] rounded-full"></div>
                         <div>
                           <p className="text-xs text-[var(--text04)]">일정 확정</p>
-                          <p className="text-lg font-bold text-[var(--text01)]">0</p>
+                          <p className="text-lg font-bold text-[var(--text01)]">{stats ? stats.sales.approved : 0}</p>
                         </div>
                       </div>
                       <div className="flex items-center gap-2">
                         <div className="w-1 h-8 bg-[var(--systemWarning01)] rounded-full"></div>
                         <div>
                           <p className="text-xs text-[var(--text04)]">진행 중</p>
-                          <p className="text-lg font-bold text-[var(--text01)]">0</p>
+                          <p className="text-lg font-bold text-[var(--text01)]">{stats ? stats.sales.inProgress : 0}</p>
                         </div>
                       </div>
                       <div className="flex items-center gap-2">
                         <div className="w-1 h-8 bg-[var(--systemSuccess01)] rounded-full"></div>
                         <div>
                           <p className="text-xs text-[var(--text04)]">완료</p>
-                          <p className="text-lg font-bold text-[var(--text01)]">{coach.students}</p>
+                          <p className="text-lg font-bold text-[var(--text01)]">{stats ? stats.sales.completed : coach.students}</p>
                         </div>
                       </div>
                       <div className="flex items-center gap-2">
                         <div className="w-1 h-8 bg-[var(--systemDanger01)] rounded-full"></div>
                         <div>
                           <p className="text-xs text-[var(--text04)]">확정</p>
-                          <p className="text-lg font-bold text-[var(--text01)]">{coach.students}</p>
+                          <p className="text-lg font-bold text-[var(--text01)]">{stats ? stats.sales.confirmed : coach.students}</p>
                         </div>
                       </div>
                       <div className="flex items-center gap-2">
                         <div className="w-1 h-8 bg-[var(--text04)] rounded-full"></div>
                         <div>
                           <p className="text-xs text-[var(--text04)]">취소</p>
-                          <p className="text-lg font-bold text-[var(--text01)]">0</p>
+                          <p className="text-lg font-bold text-[var(--text01)]">{stats ? stats.sales.cancelled : 0}</p>
                         </div>
                       </div>
                     </div>
@@ -268,7 +385,7 @@ export default function MyPage() {
                   <div className="space-y-3">
                     <div className="flex items-center justify-between mb-3">
                       <h3 className="text-base font-semibold text-[var(--text01)]">일정 관리</h3>
-                      <Button size="sm">
+                      <Button size="sm" onClick={handleTodaySchedule}>
                         오늘 일정 모아보기
                       </Button>
                     </div>
@@ -276,13 +393,13 @@ export default function MyPage() {
                       {/* 날짜 선택 */}
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
-                          <Button variant="outline" size="sm">
+                          <Button variant="outline" size="sm" onClick={handlePrevWeek}>
                             ←
                           </Button>
                           <span className="text-xs font-medium text-[var(--text01)]">
-                            2025년 11월 02일 ~ 08일
+                            {format(currentWeekStart, 'yyyy년 MM월 dd일', { locale: ko })} ~ {format(weekEnd, 'MM월 dd일', { locale: ko })}
                           </span>
-                          <Button variant="outline" size="sm">
+                          <Button variant="outline" size="sm" onClick={handleNextWeek}>
                             →
                           </Button>
                         </div>
@@ -301,25 +418,40 @@ export default function MyPage() {
                         
                         {/* 날짜 그리드 */}
                         <div className="grid grid-cols-7">
-                          {Array.from({ length: 7 }).map((_, index) => (
-                            <div key={index} className="p-2 min-h-[80px] border-r border-b border-[var(--divider01)] last:border-r-0">
-                              <div className={`text-xs mb-1 text-center ${
-                                index === 4 ? 'bg-[var(--primary01)] text-white rounded px-1 py-0.5 font-semibold' : 'text-[var(--text04)]'
-                              }`}>
-                                {index === 4 ? '06일 (목)' : `${2 + index}일`}
+                          {weekDates.map((date, index) => {
+                            const schedule = getScheduleForDate(date)
+                            const isToday = isSameDay(date, new Date())
+                            const timeSlots = schedule ? generateTimeSlots(schedule.startTime, schedule.endTime).slice(0, 3) : []
+                            
+                            return (
+                              <div key={index} className="p-2 min-h-[80px] border-r border-b border-[var(--divider01)] last:border-r-0">
+                                <div className={`text-xs mb-1 text-center ${
+                                  isToday ? 'bg-[var(--primary01)] text-white rounded px-1 py-0.5 font-semibold' : 'text-[var(--text04)]'
+                                }`}>
+                                  {format(date, 'dd일 (E)', { locale: ko })}
+                                </div>
+                                <div className="space-y-1">
+                                  {schedule && schedule.enabled ? (
+                                    timeSlots.length > 0 ? (
+                                      timeSlots.map((time, idx) => (
+                                        <div key={idx} className="text-xs text-[var(--text04)]">
+                                          {time}
+                                        </div>
+                                      ))
+                                    ) : (
+                                      <div className="text-xs text-[var(--text04)]">
+                                        {schedule.startTime} ~ {schedule.endTime}
+                                      </div>
+                                    )
+                                  ) : (
+                                    <div className="text-xs text-[var(--text04)] opacity-50">
+                                      휴무
+                                    </div>
+                                  )}
+                                </div>
                               </div>
-                              <div className="space-y-1">
-                                {/* 시간 슬롯 (더미) */}
-                                {index === 4 && (
-                                  <>
-                                    <div className="text-xs text-[var(--text04)]">00:00</div>
-                                    <div className="text-xs text-[var(--text04)]">01:00</div>
-                                    <div className="text-xs text-[var(--text04)]">02:00</div>
-                                  </>
-                                )}
-                              </div>
-                            </div>
-                          ))}
+                            )
+                          })}
                         </div>
                       </div>
                     </div>
@@ -344,9 +476,21 @@ export default function MyPage() {
               <CardContent className="p-4">
               <div className="space-y-3">
                 <div className="flex items-center gap-3">
-                    <div className="w-16 h-16 bg-[var(--primary01)] rounded-full flex items-center justify-center">
-                      <UserCircle className="w-8 h-8 text-white" />
-                  </div>
+                    {coach.profileImage ? (
+                      <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-[var(--primary01)]">
+                        <Image
+                          src={coach.profileImage}
+                          alt={coach.name}
+                          width={64}
+                          height={64}
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                    ) : (
+                      <div className="w-16 h-16 bg-[var(--primary01)] rounded-full flex items-center justify-center">
+                        <UserCircle className="w-8 h-8 text-white" />
+                      </div>
+                    )}
                   <div className="flex-1">
                       <h3 className="text-lg font-semibold text-[var(--text01)]">{coach.name}</h3>
                       <p className="text-xs text-[var(--text04)]">{coach.specialty} • {coach.tier}</p>

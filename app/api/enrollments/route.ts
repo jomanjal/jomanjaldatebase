@@ -5,6 +5,7 @@ import { eq, and, desc, count, sql } from 'drizzle-orm'
 import { getAuthenticatedUser } from '@/lib/auth-server'
 import { enrollmentSchema, sanitizeSearchQuery } from '@/lib/validations'
 import { verifyCsrfToken } from '@/lib/csrf'
+import { handleError, unauthorizedError, forbiddenError, validationError, notFoundError, conflictError } from '@/lib/error-handler'
 
 /**
  * 수강 신청 목록 조회 (GET)
@@ -150,11 +151,10 @@ export async function GET(request: NextRequest) {
       }
     }, { status: 200 })
   } catch (error) {
-    console.error('Enrollments GET error:', error)
-    return NextResponse.json({
-      success: false,
-      message: '수강 신청 조회 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.'
-    }, { status: 500 })
+    return handleError(error, {
+      path: '/api/enrollments',
+      method: 'GET',
+    })
   }
 }
 
@@ -166,27 +166,18 @@ export async function POST(request: NextRequest) {
     // 인증 확인
     const user = await getAuthenticatedUser(request)
     if (!user || !user.userId) {
-      return NextResponse.json({
-        success: false,
-        message: '인증이 필요합니다.'
-      }, { status: 401 })
+      throw unauthorizedError()
     }
 
     // 일반 사용자만 수강 신청 가능
     if (user.role !== 'user') {
-      return NextResponse.json({
-        success: false,
-        message: '일반 사용자만 수강 신청이 가능합니다.'
-      }, { status: 403 })
+      throw forbiddenError('일반 사용자만 수강 신청이 가능합니다.')
     }
 
     // CSRF 토큰 검증
     const csrfToken = request.headers.get('X-CSRF-Token')
     if (!await verifyCsrfToken(csrfToken)) {
-      return NextResponse.json({
-        success: false,
-        message: 'CSRF 토큰이 유효하지 않습니다.'
-      }, { status: 403 })
+      throw forbiddenError('CSRF 토큰이 유효하지 않습니다.')
     }
 
     const body = await request.json()
@@ -195,10 +186,7 @@ export async function POST(request: NextRequest) {
     const validationResult = enrollmentSchema.safeParse(body)
     if (!validationResult.success) {
       const firstError = validationResult.error.errors[0]
-      return NextResponse.json({
-        success: false,
-        message: firstError.message || '입력값이 올바르지 않습니다.'
-      }, { status: 400 })
+      throw validationError(firstError.message || '입력값이 올바르지 않습니다.')
     }
 
     const { coachId, message } = validationResult.data
@@ -210,10 +198,7 @@ export async function POST(request: NextRequest) {
       .limit(1)
 
     if (!coach) {
-      return NextResponse.json({
-        success: false,
-        message: '코치를 찾을 수 없습니다.'
-      }, { status: 404 })
+      throw notFoundError('코치를 찾을 수 없습니다.')
     }
 
     // 중복 신청 체크 (같은 사용자가 같은 코치에게 이미 신청했는지 확인)
@@ -227,10 +212,7 @@ export async function POST(request: NextRequest) {
       .limit(1)
 
     if (existingEnrollment.length > 0) {
-      return NextResponse.json({
-        success: false,
-        message: '이미 이 코치에게 수강 신청을 하셨습니다.'
-      }, { status: 400 })
+      throw conflictError('이미 이 코치에게 수강 신청을 하셨습니다.')
     }
 
     // 수강 신청 추가
@@ -246,13 +228,11 @@ export async function POST(request: NextRequest) {
       data: newEnrollment,
       message: '수강 신청이 완료되었습니다.'
     }, { status: 201 })
-  } catch (error: any) {
-    console.error('Enrollments POST error:', error)
-    
-    return NextResponse.json({
-      success: false,
-      message: '수강 신청 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.'
-    }, { status: 500 })
+  } catch (error) {
+    return handleError(error, {
+      path: '/api/enrollments',
+      method: 'POST',
+    })
   }
 }
 

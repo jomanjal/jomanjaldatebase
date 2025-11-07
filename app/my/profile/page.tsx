@@ -195,6 +195,7 @@ export default function ProfileSettingsPage() {
           discount: coach.discount || null,
           specialties: coach.specialties || [],
           description: formData.description || null,
+          thumbnailImage: coach.thumbnailImage || null, // 섬네일 이미지 유지
           profileImage: formData.profileImage || null,
           headline: coach.headline || null,
           introductionImage: coach.introductionImage || null,
@@ -213,7 +214,13 @@ export default function ProfileSettingsPage() {
         const refreshResult = await refreshResponse.json()
         if (refreshResult.success && refreshResult.data) {
           setCoach(refreshResult.data)
+          // 사이드바 프로필 이미지 업데이트를 위한 이벤트 발생
+          window.dispatchEvent(new CustomEvent('profileImageUpdated', { 
+            detail: { profileImage: refreshResult.data.profileImage } 
+          }))
         }
+        // 레이아웃 새로고침을 위해 router.refresh() 호출
+        router.refresh()
       } else {
         toast.error(result.message || '프로필 저장에 실패했습니다.')
       }
@@ -336,7 +343,7 @@ export default function ProfileSettingsPage() {
             <CardHeader>
               <CardTitle className="text-[var(--text01)]">경력</CardTitle>
               <CardDescription className="text-[var(--text04)]">
-                코치의 경력을 입력해주세요. (예: "5년", "프로게이머 경력 3년")
+                코치의 경력을 입력해주세요. (예: &quot;5년&quot;, &quot;프로게이머 경력 3년&quot;)
               </CardDescription>
             </CardHeader>
             <CardContent>

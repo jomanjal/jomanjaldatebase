@@ -31,13 +31,13 @@ export function AIMatchingProcessSection() {
   const [isChatbotOpen, setIsChatbotOpen] = useState(false)
 
   return (
-    <section className="py-12 sm:py-16 lg:py-20 bg-[var(--layer01)]">
+    <section className="py-6 sm:py-8 lg:py-12 bg-[var(--layer01)]">
       <div className="max-w-[1400px] mx-auto px-4 sm:px-6 md:px-8 lg:px-12 xl:px-24 2xl:px-32">
-        <div className="text-center mb-8 sm:mb-12">
+        <div className="text-center mb-4 sm:mb-6">
           <h2 className="mb-2 text-balance text-[var(--text01)]">AI 매칭 프로세스</h2>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6 mb-8 sm:mb-12">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6 mb-4 sm:mb-6">
           {steps.map((step, index) => (
             <div key={index} className="relative">
               <Card className="bg-transparent hover:border-[var(--primary01)] border border-[var(--divider01)] transition-colors">
