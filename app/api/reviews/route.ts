@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { db } from '@/lib/db'
+import { db, withRLSContext } from '@/lib/db'
 import { reviews, coaches, users } from '@/lib/db/schema'
 import { eq, desc, and, like, or } from 'drizzle-orm'
 import { getAuthenticatedUser, requireAdmin } from '@/lib/auth-server'
@@ -37,72 +37,83 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    // 쿼리 빌드
-    let query = db.select({
-      id: reviews.id,
-      coachId: reviews.coachId,
-      userId: reviews.userId,
-      rating: reviews.rating,
-      comment: reviews.comment,
-      verified: reviews.verified,
-      createdAt: reviews.createdAt,
-      updatedAt: reviews.updatedAt,
-      coachName: coaches.name,
-      coachSpecialty: coaches.specialty,
-      userName: users.username,
-      userEmail: users.email,
-    })
-      .from(reviews)
-      .leftJoin(coaches, eq(reviews.coachId, coaches.id))
-      .leftJoin(users, eq(reviews.userId, users.id))
+    // RLS 컨텍스트를 설정한 후 쿼리 실행
+    const { allResults, results } = await withRLSContext(
+      user?.userId || null,
+      user?.role || null,
+      async (tx) => {
+        // 쿼리 빌드
+        let query = tx.select({
+          id: reviews.id,
+          coachId: reviews.coachId,
+          userId: reviews.userId,
+          rating: reviews.rating,
+          comment: reviews.comment,
+          verified: reviews.verified,
+          createdAt: reviews.createdAt,
+          updatedAt: reviews.updatedAt,
+          coachName: coaches.name,
+          coachSpecialty: coaches.specialty,
+          userName: users.username,
+          userEmail: users.email,
+        })
+          .from(reviews)
+          .leftJoin(coaches, eq(reviews.coachId, coaches.id))
+          .leftJoin(users, eq(reviews.userId, users.id))
 
-    // 필터 조건
-    const conditions = []
-    
-    if (sanitizedSearch) {
-      conditions.push(
-        or(
-          like(users.username, `%${sanitizedSearch}%`),
-          like(coaches.name, `%${sanitizedSearch}%`)
-        )!
-      )
-    }
+        // 필터 조건
+        const conditions = []
+        
+        if (sanitizedSearch) {
+          conditions.push(
+            or(
+              like(users.username, `%${sanitizedSearch}%`),
+              like(coaches.name, `%${sanitizedSearch}%`)
+            )!
+          )
+        }
 
-    if (rating) {
-      const ratingValidation = ratingSchema.safeParse(rating)
-      if (!ratingValidation.success) {
-        throw validationError('유효하지 않은 평점입니다.')
+        if (rating) {
+          const ratingValidation = ratingSchema.safeParse(rating)
+          if (!ratingValidation.success) {
+            throw validationError('유효하지 않은 평점입니다.')
+          }
+          conditions.push(eq(reviews.rating, ratingValidation.data))
+        }
+
+        if (coachId) {
+          const coachIdValidation = idSchema.safeParse(coachId)
+          if (!coachIdValidation.success) {
+            throw validationError('유효하지 않은 코치 ID입니다.')
+          }
+          conditions.push(eq(reviews.coachId, coachIdValidation.data))
+        }
+
+        if (verified === 'true') {
+          conditions.push(eq(reviews.verified, true))
+        } else if (verified === 'false') {
+          conditions.push(eq(reviews.verified, false))
+        }
+
+        if (conditions.length > 0) {
+          query = query.where(and(...conditions)) as any
+        }
+
+        // 전체 개수 조회 (페이지네이션용)
+        const allResults = await query.orderBy(desc(reviews.createdAt))
+        const totalCount = allResults.length
+
+        // 페이지네이션 적용
+        const results = await query
+          .orderBy(desc(reviews.createdAt))
+          .limit(limit)
+          .offset(offset)
+
+        return { allResults, results }
       }
-      conditions.push(eq(reviews.rating, ratingValidation.data))
-    }
+    )
 
-    if (coachId) {
-      const coachIdValidation = idSchema.safeParse(coachId)
-      if (!coachIdValidation.success) {
-        throw validationError('유효하지 않은 코치 ID입니다.')
-      }
-      conditions.push(eq(reviews.coachId, coachIdValidation.data))
-    }
-
-    if (verified === 'true') {
-      conditions.push(eq(reviews.verified, true))
-    } else if (verified === 'false') {
-      conditions.push(eq(reviews.verified, false))
-    }
-
-    if (conditions.length > 0) {
-      query = query.where(and(...conditions)) as any
-    }
-
-    // 전체 개수 조회 (페이지네이션용)
-    const allResults = await query.orderBy(desc(reviews.createdAt))
     const totalCount = allResults.length
-
-    // 페이지네이션 적용
-    const results = await query
-      .orderBy(desc(reviews.createdAt))
-      .limit(limit)
-      .offset(offset)
 
     // 사용자 정보 마스킹 (일부만 표시)
     const formattedResults = results.map(review => ({

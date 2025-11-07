@@ -30,6 +30,7 @@ interface Coach {
   description: string | null
   headline: string | null
   thumbnailImage: string | null
+  profileImage: string | null
   introductionImage: string | null
   introductionContent: string | null
   curriculumItems: string[]
@@ -517,6 +518,7 @@ export default function CourseSettingsPage() {
           headline: courseSummary.headline || null, // 한문장 표현 (상세 페이지 상단)
           coachIntroduction: gameInfo.introduction || null, // 코치 소개 (별도 컬럼)
           thumbnailImage: gameInfo.thumbnails[0] || null, // 섬네일 (코치 카드, 사이드바용)
+          profileImage: coach?.profileImage || null, // 프로필 이미지 (기존 값 유지)
           introductionImage: courseDetail.image || null, // 강의 소개 이미지
           introductionContent: JSON.stringify(introductionItems),
           curriculumItems: curriculumItems,

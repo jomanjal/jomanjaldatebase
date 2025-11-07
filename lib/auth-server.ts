@@ -1,6 +1,6 @@
 import { NextRequest } from 'next/server'
 import { verifyToken, getTokenFromNextRequest } from './jwt'
-import { db } from './db'
+import { db, withRLSContext } from './db'
 import { users, admins } from './db/schema'
 import { eq } from 'drizzle-orm'
 
@@ -29,21 +29,35 @@ export async function getAuthenticatedUser(request: NextRequest): Promise<Authen
       return null
     }
     
-    // 데이터베이스에서 사용자 정보 확인 (최신 정보 가져오기)
-    const [user] = await db.select()
-      .from(users)
-      .where(eq(users.id, payload.userId))
-      .limit(1)
+    // RLS 컨텍스트를 설정한 후 사용자 정보 조회
+    // JWT에서 가져온 userId로 RLS 컨텍스트 설정
+    const { user, admin } = await withRLSContext(
+      payload.userId,
+      payload.role || 'user',
+      async (tx) => {
+        // 데이터베이스에서 사용자 정보 확인 (최신 정보 가져오기)
+        const [user] = await tx.select()
+          .from(users)
+          .where(eq(users.id, payload.userId))
+          .limit(1)
+        
+        if (!user) {
+          return { user: null, admin: null }
+        }
+        
+        // 관리자 여부 확인
+        const [admin] = await tx.select()
+          .from(admins)
+          .where(eq(admins.userId, user.id))
+          .limit(1)
+        
+        return { user, admin }
+      }
+    )
     
     if (!user) {
       return null
     }
-    
-    // 관리자 여부 확인
-    const [admin] = await db.select()
-      .from(admins)
-      .where(eq(admins.userId, user.id))
-      .limit(1)
     
     return {
       userId: user.id,

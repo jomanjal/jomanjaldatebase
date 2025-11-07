@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { db } from '@/lib/db'
+import { db, withRLSContext } from '@/lib/db'
 import { coaches } from '@/lib/db/schema'
 import { eq } from 'drizzle-orm'
 import { getAuthenticatedUser } from '@/lib/auth-server'
@@ -18,10 +18,20 @@ export async function GET(
       throw validationError('유효하지 않은 ID입니다.')
     }
 
-    const [coach] = await db.select()
-      .from(coaches)
-      .where(eq(coaches.id, id))
-      .limit(1)
+    // 공개 조회용 - 사용자 컨텍스트 확인 후 설정
+    const user = await getAuthenticatedUser(request)
+    
+    // RLS 컨텍스트를 설정한 후 쿼리 실행
+    const [coach] = await withRLSContext(
+      user?.userId || null,
+      user?.role || null,
+      async (tx) => {
+        return await tx.select()
+          .from(coaches)
+          .where(eq(coaches.id, id))
+          .limit(1)
+      }
+    )
 
     if (!coach) {
       throw notFoundError('코치를 찾을 수 없습니다.')

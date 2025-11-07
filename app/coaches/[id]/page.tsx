@@ -221,8 +221,16 @@ export default function CoachDetailPage({ params }: { params: { id: string } }) 
             const coachData = { 
               ...result.data, 
               introductionItems,
-              totalCourseTime: calculatedTotalTime || result.data.totalCourseTime
+              totalCourseTime: calculatedTotalTime || result.data.totalCourseTime,
+              coachIntroduction: result.data.coachIntroduction || result.data.coach_introduction || null
             }
+            
+            // 디버깅: coachIntroduction 확인
+            console.log('코치 소개 데이터:', {
+              coachIntroduction: result.data.coachIntroduction,
+              coach_introduction: result.data.coach_introduction,
+              final: coachData.coachIntroduction
+            })
             
             setCoach(coachData)
           } else {
@@ -515,9 +523,8 @@ export default function CoachDetailPage({ params }: { params: { id: string } }) 
     displayPrice = originalPrice
   }
 
-  // introductionItems 분리: 강의 대상, 강의 효과, 나머지
+  // introductionItems 분리: 강의 대상, 나머지 (강의 효과는 제외)
   const targetItems = coach.introductionItems?.filter(item => item.title === "강의 대상") || []
-  const effectItems = coach.introductionItems?.filter(item => item.title === "강의 효과") || []
   const otherItems = coach.introductionItems?.filter(item => item.title !== "강의 대상" && item.title !== "강의 효과" && !item.title.startsWith("__")) || []
   
   // 코치 소개 (별도 컬럼에서 가져오기, 없으면 기존 JSON에서 파싱)
@@ -669,45 +676,29 @@ export default function CoachDetailPage({ params }: { params: { id: string } }) 
                     </Card>
                   )}
 
-                  {/* 강의 효과 */}
-                  {effectItems.length > 0 && (
-                    <Card className="border border-[var(--divider01)]">
-                      <CardContent className="p-4">
-                        <div className="flex items-center gap-2 mb-3">
-                          <Rocket className="w-5 h-5 text-[var(--textPrimary)]" />
-                          <h2 className="text-lg font-semibold text-[var(--text01)]">강의 효과는 얼마나 될까요?</h2>
-                        </div>
-                        <div className="space-y-2 text-[var(--text04)]">
-                          {effectItems.map((item, index) => (
-                            <div key={index} className="flex items-start gap-2">
-                          <Check className="w-5 h-5 text-[var(--textGreen)] mt-0.5 flex-shrink-0" />
-                              <div className="flex-1">{item.content}</div>
-                          </div>
-                          ))}
-                        </div>
-                      </CardContent>
-                    </Card>
-                  )}
-
                   {/* 코치 소개 - Accordion */}
-                  {coachIntroduction ? (
-                    <Card className="border border-[var(--divider01)]">
-                      <CardContent className="p-0">
-                        <Accordion type="single" collapsible className="w-full">
-                          <AccordionItem value="coach-intro">
-                            <AccordionTrigger className="px-4 py-3 hover:no-underline">
-                              <h2 className="text-lg font-semibold text-[var(--text01)]">코치 소개</h2>
-                            </AccordionTrigger>
-                            <AccordionContent className="px-4 pb-4">
+                  <Card className="border border-[var(--divider01)]">
+                    <CardContent className="p-0">
+                      <Accordion type="single" collapsible className="w-full">
+                        <AccordionItem value="coach-intro">
+                          <AccordionTrigger className="px-4 py-3 hover:no-underline">
+                            <h2 className="text-lg font-semibold text-[var(--text01)]">코치 소개</h2>
+                          </AccordionTrigger>
+                          <AccordionContent className="px-4 pb-4">
+                            {coachIntroduction && coachIntroduction.trim() ? (
                               <div className="text-[var(--text01)] whitespace-pre-wrap leading-relaxed">
                                 {sanitizeText(coachIntroduction)}
                               </div>
-                            </AccordionContent>
-                          </AccordionItem>
-                        </Accordion>
+                            ) : (
+                              <div className="text-[var(--text04)] text-sm">
+                                코치 소개가 등록되지 않았습니다.
+                              </div>
+                            )}
+                          </AccordionContent>
+                        </AccordionItem>
+                      </Accordion>
                     </CardContent>
                   </Card>
-                  ) : null}
 
                   {/* 취소 및 환불 - Accordion */}
                   <Card className="border border-[var(--divider01)]">

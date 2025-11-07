@@ -149,11 +149,11 @@ export async function POST(request: NextRequest) {
           discount: discount || null,
           specialties: specialties ? JSON.stringify(specialties) : JSON.stringify([]),
           description: description || null,
-          thumbnailImage: thumbnailImage || null,
-          profileImage: profileImage || null,
-          headline: headline || null,
-          coachIntroduction: coachIntroduction || null,
-          introductionImage: introductionImage || null,
+          thumbnailImage: thumbnailImage !== undefined ? thumbnailImage : existingCoach.thumbnailImage, // undefined면 기존 값 유지
+          profileImage: profileImage !== undefined ? profileImage : existingCoach.profileImage, // undefined면 기존 값 유지
+          headline: headline !== undefined ? headline : existingCoach.headline, // undefined면 기존 값 유지
+          coachIntroduction: coachIntroduction !== undefined ? coachIntroduction : existingCoach.coachIntroduction, // undefined면 기존 값 유지
+          introductionImage: introductionImage !== undefined ? introductionImage : existingCoach.introductionImage, // undefined면 기존 값 유지
           introductionContent: introductionContent || null,
           curriculumItems: curriculumItems ? JSON.stringify(curriculumItems) : JSON.stringify([]),
           totalCourseTime: totalCourseTime || null,

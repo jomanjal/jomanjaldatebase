@@ -22,6 +22,7 @@ interface Coach {
   thumbnailImage: string | null
   profileImage: string | null
   headline: string | null
+  coachIntroduction: string | null
   introductionImage: string | null
   introductionContent: string | null
   curriculumItems: Array<{ title: string; duration: string }>
@@ -198,6 +199,7 @@ export default function ProfileSettingsPage() {
           thumbnailImage: coach.thumbnailImage || null, // 섬네일 이미지 유지
           profileImage: formData.profileImage || null,
           headline: coach.headline || null,
+          coachIntroduction: coach.coachIntroduction || null, // 코치 소개 유지
           introductionImage: coach.introductionImage || null,
           introductionContent: coach.introductionContent || null,
           curriculumItems: coach.curriculumItems || [],

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { db } from '@/lib/db'
+import { db, withRLSContext } from '@/lib/db'
 import { coaches } from '@/lib/db/schema'
 import { eq, desc, asc, and, sql, count } from 'drizzle-orm'
 import { getAuthenticatedUser } from '@/lib/auth-server'
@@ -49,127 +49,140 @@ export async function GET(request: NextRequest) {
     if (isAdmin) {
       user = await getAuthenticatedUser(request)
       if (!user || !user.isAdmin) {
-        return NextResponse.json({ 
-          success: false, 
-          message: '관리자 권한이 필요합니다.' 
+        return NextResponse.json({
+          success: false,
+          message: '관리자 권한이 필요합니다.'
         }, { status: 403 })
       }
+    } else {
+      // 공개 조회용 - 사용자 컨텍스트 확인
+      user = await getAuthenticatedUser(request)
     }
 
-    // 쿼리 빌드
-    const conditions = []
+    // RLS 컨텍스트를 설정한 후 쿼리 실행
+    const { countResult, results } = await withRLSContext(
+      user?.userId || null,
+      user?.role || null,
+      async (tx) => {
+        // 쿼리 빌드
+        const conditions = []
 
-    // 검색 필터 (ILIKE 사용 - 대소문자 구분 없음, 인덱스 활용을 위해 prefix 검색도 고려)
-    // PostgreSQL의 B-tree 인덱스는 prefix 검색에 최적화되어 있음
-    if (validatedSearch && validatedSearch.trim() !== '') {
-      // sanitized search 사용 (SQL Injection 방지)
-      conditions.push(
-        sql`${coaches.name} ILIKE ${`%${validatedSearch}%`}`
-      )
-    }
+        // 검색 필터 (ILIKE 사용 - 대소문자 구분 없음, 인덱스 활용을 위해 prefix 검색도 고려)
+        // PostgreSQL의 B-tree 인덱스는 prefix 검색에 최적화되어 있음
+        if (validatedSearch && validatedSearch.trim() !== '') {
+          // sanitized search 사용 (SQL Injection 방지)
+          conditions.push(
+            sql`${coaches.name} ILIKE ${`%${validatedSearch}%`}`
+          )
+        }
 
-    // 전문 분야 필터
-    if (specialty !== 'all') {
-      conditions.push(eq(coaches.specialty, specialty))
-    }
+        // 전문 분야 필터
+        if (specialty !== 'all') {
+          conditions.push(eq(coaches.specialty, specialty))
+        }
 
-    // 티어 필터
-    if (tier !== 'all') {
-      conditions.push(eq(coaches.tier, tier))
-    }
+        // 티어 필터
+        if (tier !== 'all') {
+          conditions.push(eq(coaches.tier, tier))
+        }
 
-    // 가격 필터 (DB 레벨에서 처리)
-    // 할인을 고려한 최종 가격 계산: price * (1 - discount / 100)
-    if (minPrice || maxPrice) {
-      const minPriceNum = minPrice ? parseInt(minPrice, 10) : null
-      const maxPriceNum = maxPrice ? parseInt(maxPrice, 10) : null
-      
-      if (minPriceNum !== null && !isNaN(minPriceNum)) {
-        // 최소 가격: 할인을 고려한 최종 가격이 minPriceNum 이상이어야 함
-        // 즉, price * (1 - discount / 100) >= minPriceNum
-        // 또는 price >= minPriceNum / (1 - discount / 100)
-        // 하지만 discount가 NULL일 수 있으므로, CASE 문을 사용
-        conditions.push(
-          sql`CASE 
-            WHEN ${coaches.discount} IS NULL OR ${coaches.discount} = 0 
-            THEN ${coaches.price} >= ${minPriceNum}
-            ELSE ${coaches.price} * (1 - ${coaches.discount}::float / 100) >= ${minPriceNum}
-          END`
-        )
+        // 가격 필터 (DB 레벨에서 처리)
+        // 할인을 고려한 최종 가격 계산: price * (1 - discount / 100)
+        if (minPrice || maxPrice) {
+          const minPriceNum = minPrice ? parseInt(minPrice, 10) : null
+          const maxPriceNum = maxPrice ? parseInt(maxPrice, 10) : null
+          
+          if (minPriceNum !== null && !isNaN(minPriceNum)) {
+            // 최소 가격: 할인을 고려한 최종 가격이 minPriceNum 이상이어야 함
+            // 즉, price * (1 - discount / 100) >= minPriceNum
+            // 또는 price >= minPriceNum / (1 - discount / 100)
+            // 하지만 discount가 NULL일 수 있으므로, CASE 문을 사용
+            conditions.push(
+              sql`CASE 
+                WHEN ${coaches.discount} IS NULL OR ${coaches.discount} = 0 
+                THEN ${coaches.price} >= ${minPriceNum}
+                ELSE ${coaches.price} * (1 - ${coaches.discount}::float / 100) >= ${minPriceNum}
+              END`
+            )
+          }
+          
+          if (maxPriceNum !== null && !isNaN(maxPriceNum)) {
+            // 최대 가격: 할인을 고려한 최종 가격이 maxPriceNum 이하여야 함
+            conditions.push(
+              sql`CASE 
+                WHEN ${coaches.discount} IS NULL OR ${coaches.discount} = 0 
+                THEN ${coaches.price} <= ${maxPriceNum}
+                ELSE ${coaches.price} * (1 - ${coaches.discount}::float / 100) <= ${maxPriceNum}
+              END`
+            )
+          }
+          
+          // 가격이 NULL이 아닌 코치만
+          conditions.push(sql`${coaches.price} IS NOT NULL`)
+        }
+
+        // 일반 사용자는 verified되고 active인 코치만 보기
+        if (!isAdmin) {
+          conditions.push(eq(coaches.verified, true))
+          conditions.push(eq(coaches.active, true))
+        }
+
+        // 정렬 옵션
+        let orderByClause
+        switch (sortBy) {
+          case 'ranking':
+            // 랭킹순: 평점 높은순
+            orderByClause = desc(coaches.rating)
+            break
+          case 'reviews':
+            // 후기순: 리뷰 수 많은순
+            orderByClause = desc(coaches.reviews)
+            break
+          case 'rating-high':
+            orderByClause = desc(coaches.rating)
+            break
+          case 'rating-low':
+            orderByClause = asc(coaches.rating)
+            break
+          case 'price-high':
+            orderByClause = desc(coaches.price)
+            break
+          case 'price-low':
+            orderByClause = asc(coaches.price)
+            break
+          case 'students':
+            orderByClause = desc(coaches.students)
+            break
+          case 'latest':
+          default:
+            orderByClause = desc(coaches.createdAt)
+            break
+        }
+
+        // 조건 적용
+        let baseQuery = tx.select().from(coaches)
+        if (conditions.length > 0) {
+          baseQuery = baseQuery.where(and(...conditions)) as any
+        }
+
+        // 전체 개수 조회 (COUNT 쿼리로 최적화 - 전체 데이터를 가져오지 않음)
+        let countQuery = tx.select({ count: count() }).from(coaches)
+        if (conditions.length > 0) {
+          countQuery = countQuery.where(and(...conditions)) as any
+        }
+        const countResult = await countQuery
+
+        // 정렬 및 페이지네이션 적용 (DB 레벨에서 처리)
+        const results = await baseQuery
+          .orderBy(orderByClause)
+          .limit(limit)
+          .offset(offset)
+
+        return { countResult, results }
       }
-      
-      if (maxPriceNum !== null && !isNaN(maxPriceNum)) {
-        // 최대 가격: 할인을 고려한 최종 가격이 maxPriceNum 이하여야 함
-        conditions.push(
-          sql`CASE 
-            WHEN ${coaches.discount} IS NULL OR ${coaches.discount} = 0 
-            THEN ${coaches.price} <= ${maxPriceNum}
-            ELSE ${coaches.price} * (1 - ${coaches.discount}::float / 100) <= ${maxPriceNum}
-          END`
-        )
-      }
-      
-      // 가격이 NULL이 아닌 코치만
-      conditions.push(sql`${coaches.price} IS NOT NULL`)
-    }
+    )
 
-    // 일반 사용자는 verified되고 active인 코치만 보기
-    if (!isAdmin) {
-      conditions.push(eq(coaches.verified, true))
-      conditions.push(eq(coaches.active, true))
-    }
-
-    // 정렬 옵션
-    let orderByClause
-    switch (sortBy) {
-      case 'ranking':
-        // 랭킹순: 평점 높은순
-        orderByClause = desc(coaches.rating)
-        break
-      case 'reviews':
-        // 후기순: 리뷰 수 많은순
-        orderByClause = desc(coaches.reviews)
-        break
-      case 'rating-high':
-        orderByClause = desc(coaches.rating)
-        break
-      case 'rating-low':
-        orderByClause = asc(coaches.rating)
-        break
-      case 'price-high':
-        orderByClause = desc(coaches.price)
-        break
-      case 'price-low':
-        orderByClause = asc(coaches.price)
-        break
-      case 'students':
-        orderByClause = desc(coaches.students)
-        break
-      case 'latest':
-      default:
-        orderByClause = desc(coaches.createdAt)
-        break
-    }
-
-    // 조건 적용
-    let baseQuery = db.select().from(coaches)
-    if (conditions.length > 0) {
-      baseQuery = baseQuery.where(and(...conditions)) as any
-    }
-
-    // 전체 개수 조회 (COUNT 쿼리로 최적화 - 전체 데이터를 가져오지 않음)
-    let countQuery = db.select({ count: count() }).from(coaches)
-    if (conditions.length > 0) {
-      countQuery = countQuery.where(and(...conditions)) as any
-    }
-    const countResult = await countQuery
     const totalCountNum = countResult.length > 0 ? Number(countResult[0].count) : 0
-
-    // 정렬 및 페이지네이션 적용 (DB 레벨에서 처리)
-    const results = await baseQuery
-      .orderBy(orderByClause)
-      .limit(limit)
-      .offset(offset)
 
     // specialties를 JSON 파싱
     const formattedResults = results.map(coach => ({
